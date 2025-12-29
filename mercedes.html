@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercedes - 3 Boys Auto</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="index.html">3 Boys Auto</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Trang chủ</a>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-trigger">Loại xe <i class="fas fa-chevron-down"></i></a>
+                    <div class="dropdown-content">
+                        <a href="toyota.html">Toyota</a>
+                        <a href="mercedes.html" class="active">Mercedes</a>
+                        <a href="bmw.html">BMW</a>
+                        <a href="audi.html">Audi</a>
+                        <a href="lexus.html">Lexus</a>
+                        <a href="honda.html">Honda</a>
+                        <a href="hyundai.html">Hyundai</a>
+                        <a href="kia.html">KIA</a>
+                        <a href="vinfast.html">Vinfast</a>
+                    </div>
+                </div>
+                <a href="index.html#about">Giới thiệu</a>
+                <a href="index.html#contact">Liên hệ</a>
+            </div>
+            <div class="user-actions">
+                <a href="#" onclick="checkLoginAndGoToCart()" class="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-text">Xem giỏ hàng</span>
+                    <span class="cart-count">0</span>
+                </a>
+                <div class="login-options" id="loginOptions">
+                    <a href="login.html" class="blob-btn login-btn" id="loginBtn">
+                        <span class="blob-btn__inner">
+                            <span class="blob-btn__blobs">
+                                <span class="blob-btn__blob"></span>
+                                <span class="blob-btn__blob"></span>
+                                <span class="blob-btn__blob"></span>
+                                <span class="blob-btn__blob"></span>
+                            </span>
+                        </span>
+                        Đăng nhập
+                    </a>
+                </div>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='profile.html'">
+                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='profile.html'"></span>
+                    <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main style="padding-top: 2rem;">
+        <!-- Hero Section -->
+        <section class="hero" style="margin-bottom: 3rem; padding: 4rem 5%;">
+            <div style="text-align: center;">
+                <img src="assets/images/logo-mercedes.png" alt="Mercedes Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
+                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">MERCEDES</h1>
+                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Sự sang trọng và đẳng cấp từ Đức</p>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="brands-section" style="padding: 0 5%;">
+            <div class="brand-container" style="margin-bottom: 0;">
+                <div class="car-slider" style="margin: 0;">
+                    <div class="car-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                        
+                        <!-- Mercedes C200 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="1.5L Turbo" data-desc="Sedan hạng C sang trọng, vận hành linh hoạt và tiết kiệm.">
+                            <img src="assets/images/mercedes-c200.jpg" alt="Mercedes C200">
+                            <h3>Mercedes C200</h3>
+                            <p class="price">1.669.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Mercedes E200 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan hạng E êm ái, nhiều công nghệ an toàn và tiện nghi.">
+                            <img src="assets/images/mercedes-e200.jpg" alt="Mercedes E200">
+                            <h3>Mercedes E200</h3>
+                            <p class="price">2.310.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Mercedes GLC200 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="SUV 5 chỗ cao cấp, vận hành ổn định và tiết kiệm.">
+                            <img src="assets/images/mercedes-glc200.jpg" alt="Mercedes GLC200">
+                            <h3>Mercedes GLC200</h3>
+                            <p class="price">1.859.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Maybach GLC300 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="SUV hạng sang, thiết kế thể thao và tiện nghi hiện đại.">
+                            <img src="assets/images/mercedes-glc300.jpg" alt="Mercedes GLC300">
+                            <h3>Maybach GLC300</h3>
+                            <p class="price">2.639.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Maybach GLE450 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="3.0L I6" data-desc="SUV hạng sang mạnh mẽ, không gian rộng và êm ái.">
+                            <img src="assets/images/mercedes-gle450.jpg" alt="Mercedes GLE450">
+                            <h3>Maybach GLE450</h3>
+                            <p class="price">4.409.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Maybach GLS600 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="4.0L V8" data-desc="SUV 7 chỗ siêu sang, tiện nghi đỉnh cao và êm ái.">
+                            <img src="assets/images/mercedes-maybach-GLS600.jpg" alt="Mercedes Maybach GLS600">
+                            <h3>Maybach GLS600</h3>
+                            <p class="price">12.119.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Maybach S450 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="3.0L V6" data-desc="Sedan siêu sang, tiện nghi đẳng cấp và cách âm tuyệt vời.">
+                            <img src="assets/images/mercedes-maybach-S450.jpg" alt="Mercedes Maybach S450">
+                            <h3>Maybach S450</h3>
+                            <p class="price">4.969.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Maybach S480 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="3.0L I6" data-desc="Sedan siêu sang với công nghệ tối tân và nội thất xa xỉ.">
+                            <img src="assets/images/mercedes-maybach-S480.jpg" alt="Mercedes Maybach S480">
+                            <h3>Maybach S480</h3>
+                            <p class="price">8.799.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <!-- Maybach S650 -->
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="6.0L V12" data-desc="Đỉnh cao sang trọng, vận hành êm ái và quyền lực.">
+                            <img src="assets/images/mercedes-maybach-S650.jpg" alt="Mercedes Maybach S650">
+                            <h3>Maybach S650</h3>
+                            <p class="price">14.899.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 3rem;">
+                        <button class="page-btn" onclick="changePage('prev')" style="
+                            padding: 10px 20px;
+                            background: rgba(255, 255, 255, 0.2);
+                            backdrop-filter: blur(10px);
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            border-radius: 8px;
+                            color: #fff;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                           onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </button>
+                        
+                        <span class="page-info" style="
+                            color: #fff;
+                            font-weight: 600;
+                            font-size: 1.1rem;
+                            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+                        ">
+                            Trang <span id="currentPage">1</span> / <span id="totalPages">2</span>
+                        </span>
+                        
+                        <button class="page-btn" onclick="changePage('next')" style="
+                            padding: 10px 20px;
+                            background: rgba(255, 255, 255, 0.2);
+                            backdrop-filter: blur(10px);
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            border-radius: 8px;
+                            color: #fff;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                           onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                            Sau <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" style="margin-top: 4rem; padding: 3rem 5%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-top: 1px solid rgba(255, 255, 255, 0.2);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; color: #fff;">
+            <div>
+                <h3 style="margin-bottom: 1rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">3 Boys Auto</h3>
+                <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Đại lý xe hơi uy tín, cung cấp các dòng xe chất lượng cao từ nhiều thương hiệu nổi tiếng.</p>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 1rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Liên hệ</h3>
+                <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fas fa-phone"></i> 1900-xxxx</p>
+                <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fas fa-envelope"></i> contact@3boysauto.vn</p>
+                <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 1rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Theo dõi chúng tôi</h3>
+                <div style="display: flex; gap: 1rem; font-size: 1.5rem;">
+                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            <p>&copy; 2024 3 Boys Auto. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modal chi tiết xe -->
+    <div id="carModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <img id="modalImg" src="" alt="Xe ô tô">
+            <h2 id="modalTitle"></h2>
+            <p id="modalPrice"></p>
+            <p id="modalDesc"></p>
+            <button id="addToCartBtn" class="btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Thêm vào giỏ</button>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/brand-page.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đơn hàng đã đặt</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .orders-container { max-width: 900px; margin: 50px auto; padding: 24px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    h2 { text-align:center; margin-bottom:24px; }
+    .order-card { background:#f8f9fa; border-radius:8px; margin-bottom:24px; padding:18px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .order-header { font-weight:600; margin-bottom:8px; }
+    .order-items th, .order-items td { padding:8px 12px; text-align:center; }
+    .order-items th { background:#007bff; color:#fff; }
+    .order-items { width:100%; border-collapse:collapse; margin-bottom:8px; }
+    .order-total { text-align:right; font-weight:600; font-size:1.1rem; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="orders-container">
+    <h2>Đơn hàng đã đặt</h2>
+    <div style="display:flex;justify-content:center;gap:24px;margin-bottom:32px;">
+      <a href="index.html" style="padding:12px 32px;background:#007bff;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,123,255,0.08);transition:background 0.2s;">Về trang chủ</a>
+      <a href="cart.html" style="padding:12px 32px;background:#28a745;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(40,167,69,0.08);transition:background 0.2s;">Về giỏ hàng</a>
+    </div>
+    <div id="ordersList"></div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Đơn hàng mẫu cố định cho prototype
+      const sampleOrder = {
+        id: 1730188800000,
+        name: 'Nguyễn Văn A',
+        phone: '0901234567',
+        address: '123 Đường ABC, Quận 1, TP.HCM',
+        payment: 'cod',
+        items: [
+          {
+            name: 'Mercedes E200',
+            price: 2310000000,
+            img: 'assets/images/mercedes-e200.jpg',
+            quantity: 1
+          }
+        ],
+        total: 2310000000,
+        date: '29/10/2025, 10:30:00',
+        status: 'pending'
+      };
+      
+      const ordersList = document.getElementById('ordersList');
+      console.log('Sample Order:', sampleOrder);
+      let html = '<div class="order-card">';
+      html += `<div class="order-header">Mã đơn: ${sampleOrder.id} | Ngày đặt: ${sampleOrder.date}</div>`;
+      html += `<div><strong>Người nhận:</strong> ${sampleOrder.name} | <strong>ĐT:</strong> ${sampleOrder.phone} | <strong>Địa chỉ:</strong> ${sampleOrder.address} | <strong>Thanh toán:</strong> Tiền mặt khi nhận hàng</div>`;
+      html += '<table class="order-items"><thead><tr><th>Ảnh</th><th>Tên xe</th><th>Giá</th><th>Số lượng</th></tr></thead><tbody>';
+      sampleOrder.items.forEach(item => {
+        console.log('Rendering item:', item);
+        html += `<tr><td><img src="${item.img}" alt="${item.name}" style="width:70px;border-radius:8px;"></td><td>${item.name}</td><td>${item.price.toLocaleString('vi-VN')} VNĐ</td><td>${item.quantity}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      html += `<div class="order-total">Tổng cộng: ${sampleOrder.total.toLocaleString('vi-VN')} VNĐ</div>`;
+      html += '</div>';
+      console.log('Final HTML:', html);
+      ordersList.innerHTML = html;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm loại sản phẩm - Admin Panel</title>
+    <link rel="stylesheet" href="assets/css/admin-style-new.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .back-btn {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .save-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .cancel-btn {
+            padding: 12px 30px;
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .cancel-btn:hover {
+            background: #e9ecef;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .required {
+            color: red;
+            margin-left: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-plus-circle"></i> Thêm loại xe mới</h2>
+            <a href="admin-themsanpham.html#categories" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+        
+        <form id="addCategoryForm">
+            <div class="form-group">
+                <label for="categoryName">
+                    Tên loại xe:<span class="required">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="categoryName" 
+                    name="categoryName" 
+                    required 
+                    placeholder="Ví dụ: Toyota, Honda, BMW, Mercedes..."
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="categoryDescription">Mô tả:</label>
+                <textarea 
+                    id="categoryDescription" 
+                    name="categoryDescription" 
+                    placeholder="Nhập mô tả về loại xe này (không bắt buộc)..."
+                ></textarea>
+                <small>Mô tả ngắn gọn về thương hiệu xe này.</small>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input 
+                        type="checkbox" 
+                        id="categoryVisible" 
+                        name="categoryVisible" 
+                        checked
+                    >
+                    <label for="categoryVisible">Hiển thị trên trang chủ</label>
+                </div>
+                <small>Bỏ chọn nếu muốn ẩn loại xe này khỏi trang chủ.</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="window.location.href='admin-themsanpham.html#categories'" class="cancel-btn">
+                    Hủy
+                </button>
+                <button type="submit" class="save-btn" onclick="return false;">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Xử lý submit form (prototype mode - không lưu)
+        document.getElementById('addCategoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Prototype mode: nút Lưu không hoạt động
+            return false;
+        });
+
+        // Auto-focus vào trường đầu tiên
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('categoryName').focus();
+        });
+    </script>
+</body>
+</html>

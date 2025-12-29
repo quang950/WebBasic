@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Xác nhận đơn hàng</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .confirmation-container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+    
+    .success-header {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .success-header i {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      animation: scaleIn 0.5s ease-out;
+    }
+    
+    @keyframes scaleIn {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    .success-header h1 {
+      font-size: 2rem;
+      margin: 0 0 8px 0;
+    }
+    
+    .success-header p {
+      font-size: 1.1rem;
+      margin: 0;
+      opacity: 0.95;
+    }
+    
+    .order-content {
+      padding: 32px;
+    }
+    
+    .order-info-section {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .order-info-section h3 {
+      color: #333;
+      font-size: 1.3rem;
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .order-info-section h3 i {
+      color: #667eea;
+    }
+    
+    .info-row {
+      display: flex;
+      margin-bottom: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #555;
+      width: 150px;
+      flex-shrink: 0;
+    }
+    
+    .info-value {
+      color: #333;
+      flex: 1;
+    }
+    
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    
+    .products-table th {
+      background: #667eea;
+      color: white;
+      padding: 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    .products-table td {
+      padding: 14px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .products-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .products-table .product-name {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .products-table .product-price {
+      color: #667eea;
+      font-weight: 600;
+    }
+    
+    .total-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      text-align: right;
+    }
+    
+    .total-section .total-label {
+      color: rgba(255,255,255,0.9);
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    
+    .total-section .total-amount {
+      color: white;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,123,255,0.3);
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(40,167,69,0.3);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #545b62;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(108,117,125,0.3);
+    }
+    
+    .note-box {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 24px;
+    }
+    
+    .note-box p {
+      margin: 0;
+      color: #856404;
+      display: flex;
+      align-items: start;
+      gap: 10px;
+    }
+    
+    .note-box i {
+      color: #ffc107;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="confirmation-container">
+    <div class="success-header">
+      <i class="fas fa-check-circle"></i>
+      <h1>Đặt hàng thành công!</h1>
+      <p>Cảm ơn bạn đã đặt hàng tại showroom của chúng tôi</p>
+    </div>
+    
+    <div class="order-content">
+      <!-- Thông tin đơn hàng -->
+      <div class="order-info-section">
+        <h3><i class="fas fa-receipt"></i> Thông tin đơn hàng</h3>
+        <div class="info-row">
+          <span class="info-label">Mã đơn hàng:</span>
+          <span class="info-value" id="orderId">DH001</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Ngày đặt:</span>
+          <span class="info-value" id="orderDate">11/11/2025 10:30</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Trạng thái:</span>
+          <span class="info-value" style="color: #ffc107; font-weight: 600;">
+            <i class="fas fa-clock"></i> Đang xử lý
+          </span>
+        </div>
+      </div>
+      
+      <!-- Thông tin nhận hàng -->
+      <div class="order-info-section">
+        <h3><i class="fas fa-user"></i> Thông tin người nhận</h3>
+        <div class="info-row">
+          <span class="info-label">Họ và tên:</span>
+          <span class="info-value" id="receiverName">Nguyễn Văn A</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Số điện thoại:</span>
+          <span class="info-value" id="receiverPhone">0901234567</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value" id="receiverEmail">nguyenvana@example.com</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Địa chỉ:</span>
+          <span class="info-value" id="receiverAddress">123 Nguyễn Văn Linh, Phường Tân Thuận Đông, Quận 7, TP. Hồ Chí Minh</span>
+        </div>
+      </div>
+      
+      <!-- Phương thức thanh toán -->
+      <div class="order-info-section">
+        <h3><i class="fas fa-credit-card"></i> Phương thức thanh toán</h3>
+        <div class="info-row">
+          <span class="info-label">Hình thức:</span>
+          <span class="info-value" id="paymentMethod">
+            <i class="fas fa-money-bill-wave" style="color: #28a745;"></i> Thanh toán khi nhận hàng (COD)
+          </span>
+        </div>
+      </div>
+      
+      <!-- Danh sách sản phẩm -->
+      <div class="order-info-section">
+        <h3><i class="fas fa-car"></i> Sản phẩm đã đặt</h3>
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Sản phẩm</th>
+              <th style="text-align: center;">Số lượng</th>
+              <th style="text-align: right;">Đơn giá</th>
+              <th style="text-align: right;">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody id="productsBody">
+            <!-- Sẽ được load bằng JS -->
+          </tbody>
+        </table>
+        
+        <div class="total-section">
+          <div class="total-label">Tổng cộng:</div>
+          <div class="total-amount" id="totalAmount">0 VNĐ</div>
+        </div>
+      </div>
+      
+      <!-- Ghi chú -->
+      <div class="note-box">
+        <p>
+          <i class="fas fa-info-circle"></i>
+          <span>
+            <strong>Lưu ý:</strong> Đơn hàng của bạn đang được xử lý. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận và giao hàng. 
+            Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ hotline: <strong>1900-xxxx</strong>
+          </span>
+        </p>
+      </div>
+      
+      <!-- Nút hành động -->
+      <div class="action-buttons">
+        <a href="index.html" class="btn btn-primary">
+          <i class="fas fa-home"></i> Về trang chủ
+        </a>
+        <a href="orders.html" class="btn btn-success">
+          <i class="fas fa-list"></i> Xem đơn hàng của tôi
+        </a>
+        <a href="cart.html" class="btn btn-secondary">
+          <i class="fas fa-shopping-cart"></i> Tiếp tục mua hàng
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Kiểm tra đăng nhập
+      const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        alert('Vui lòng đăng nhập!');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Lấy thông tin đơn hàng từ sessionStorage
+      const orderData = JSON.parse(sessionStorage.getItem('currentOrder') || '{}');
+      
+      if (!orderData.products || orderData.products.length === 0) {
+        // Nếu không có dữ liệu, dùng dữ liệu mẫu từ giỏ hàng
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length === 0) {
+          alert('Không có thông tin đơn hàng!');
+          window.location.href = 'cart.html';
+          return;
+        }
+        
+        // Tạo dữ liệu đơn hàng mẫu
+        orderData.orderId = 'DH' + Date.now().toString().slice(-6);
+        orderData.orderDate = new Date().toLocaleString('vi-VN');
+        orderData.products = cart;
+        orderData.receiverName = 'Nguyễn Văn A';
+        orderData.receiverPhone = '0901234567';
+        orderData.receiverEmail = localStorage.getItem('userEmail') || 'customer@example.com';
+        orderData.receiverAddress = '123 Nguyễn Văn Linh, Phường Tân Thuận Đông, Quận 7, TP. Hồ Chí Minh';
+        orderData.paymentMethod = 'Thanh toán khi nhận hàng (COD)';
+      }
+      
+      // Hiển thị thông tin đơn hàng
+      document.getElementById('orderId').textContent = orderData.orderId || 'DH001';
+      document.getElementById('orderDate').textContent = orderData.orderDate || new Date().toLocaleString('vi-VN');
+      document.getElementById('receiverName').textContent = orderData.receiverName || 'N/A';
+      document.getElementById('receiverPhone').textContent = orderData.receiverPhone || 'N/A';
+      document.getElementById('receiverEmail').textContent = orderData.receiverEmail || 'N/A';
+      document.getElementById('receiverAddress').textContent = orderData.receiverAddress || 'N/A';
+      
+      // Hiển thị phương thức thanh toán
+      const paymentMethod = orderData.paymentMethod || 'Thanh toán khi nhận hàng (COD)';
+      let paymentIcon = '<i class="fas fa-money-bill-wave" style="color: #28a745;"></i>';
+      if (paymentMethod.includes('ngân hàng')) {
+        paymentIcon = '<i class="fas fa-university" style="color: #007bff;"></i>';
+      } else if (paymentMethod.includes('trực tuyến')) {
+        paymentIcon = '<i class="fas fa-wallet" style="color: #17a2b8;"></i>';
+      }
+      document.getElementById('paymentMethod').innerHTML = paymentIcon + ' ' + paymentMethod;
+      
+      // Hiển thị danh sách sản phẩm
+      const productsBody = document.getElementById('productsBody');
+      let totalAmount = 0;
+      
+      orderData.products.forEach(product => {
+        const quantity = product.quantity || 1;
+        const price = product.price || 0;
+        const subtotal = price * quantity;
+        totalAmount += subtotal;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <div class="product-name">
+              <i class="fas fa-car" style="color: #667eea; margin-right: 8px;"></i>
+              ${product.brand || ''} ${product.name || 'Sản phẩm'}
+            </div>
+          </td>
+          <td style="text-align: center;">${quantity}</td>
+          <td style="text-align: right;" class="product-price">${formatPrice(price)}</td>
+          <td style="text-align: right;" class="product-price">${formatPrice(subtotal)}</td>
+        `;
+        productsBody.appendChild(row);
+      });
+      
+      // Hiển thị tổng tiền
+      document.getElementById('totalAmount').textContent = formatPrice(totalAmount);
+      
+      // Xóa giỏ hàng sau khi đặt hàng thành công
+      localStorage.removeItem('cart');
+    });
+    
+    function formatPrice(price) {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(price);
+    }
+  </script>
+</body>
+</html>

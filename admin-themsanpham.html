@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Quản lý sản phẩm</title>
+    <link rel="stylesheet" href="assets/css/admin-style-new.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="admin-nav">
+                <h1>Admin Panel - 3 Boys Auto</h1>
+                <div class="admin-actions">
+                    <span id="admin-welcome">Xin chào, Admin!</span>
+                    <button onclick="goToHomePage()" class="home-btn">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <div class="admin-sidebar">
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li class="active">
+                            <a href="#products" onclick="showSection('products')">
+                                <i class="fas fa-car"></i> Quản lý sản phẩm
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#orders" onclick="showSection('orders')">
+                                <i class="fas fa-file-invoice"></i> Quản lý đơn hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#imports" onclick="showSection('imports')">
+                                <i class="fas fa-truck"></i> Quản lý nhập hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#stock" onclick="showSection('stock')">
+                                <i class="fas fa-boxes"></i> Quản lý tồn kho
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#customers" onclick="showSection('customers')">
+                                <i class="fas fa-users"></i> Quản lý khách hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#pricing" onclick="showSection('pricing')">
+                                <i class="fas fa-tags"></i> Quản lý giá bán
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#categories" onclick="showSection('categories')">
+                                <i class="fas fa-list"></i> Quản lý loại sản phẩm
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#dashboard" onclick="showSection('dashboard')">
+                                <i class="fas fa-dashboard"></i> Thống kê
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="admin-content">
+                <!-- Quản lý đơn hàng -->
+                <section id="orders-section" class="content-section" style="display:none">
+                    <div class="section-header">
+                        <h2>Quản lý đơn hàng</h2>
+                    </div>
+                    <div style="margin-bottom:18px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+                        <label>Ngày đặt: <input type="date" id="orderDateFrom"></label>
+                        <label>đến: <input type="date" id="orderDateTo"></label>
+                        <label>Tình trạng: 
+                            <select id="orderStatusFilter">
+                                <option value="">Tất cả</option>
+                                <option value="new">Mới đặt</option>
+                                <option value="processing">Đã xử lý</option>
+                                <option value="delivered">Đã giao</option>
+                                <option value="cancelled">Hủy</option>
+                            </select>
+                        </label>
+                        <button onclick="filterAdminOrders()" class="search-btn"><i class="fas fa-search"></i> Lọc</button>
+                    </div>
+                    <div id="adminOrdersGrid"></div>
+                </section>
+
+                <!-- Quản lý phiếu nhập hàng -->
+                <section id="imports-section" class="content-section" style="display:none">
+                    <div class="section-header">
+                        <h2>Quản lý phiếu nhập hàng</h2>
+                        <button onclick="showAddImportModal()" class="add-btn" style="padding:10px 14px;"><i class="fas fa-plus"></i> Thêm phiếu nhập</button>
+                    </div>
+                    <div style="margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="importSearchId" placeholder="Tìm theo mã hoặc sản phẩm" style="padding:8px;border-radius:6px;border:1px solid #ccc;min-width:220px;">
+                        <label style="font-weight:600;color:#0d279d;">Ngày từ: <input type="text" id="importDateFrom" placeholder="dd/mm/yyyy" style="padding:6px 8px;border-radius:6px;border:1px solid #ccc;width:120px;margin-left:6px;"></label>
+                        <label style="font-weight:600;color:#0d279d;">đến: <input type="text" id="importDateTo" placeholder="dd/mm/yyyy" style="padding:6px 8px;border-radius:6px;border:1px solid #ccc;width:120px;margin-left:6px;"></label>
+                        <select id="importStatusFilter" style="padding:8px;border-radius:6px;border:1px solid #ccc;">
+                            <option value="">Tất cả</option>
+                            <option value="pending">Chưa hoàn thành</option>
+                            <option value="completed">Đã hoàn thành</option>
+                        </select>
+                        <button onclick="filterImports()" class="search-btn"><i class="fas fa-search"></i> Lọc</button>
+                    </div>
+                    <div id="importsGrid" style="margin-top:18px;"></div>
+                </section>
+
+                <!-- Quản lý tồn kho -->
+                <section id="stock-section" class="content-section" style="display:none">
+                    <div class="section-header">
+                        <h2>Quản lý tồn kho</h2>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="stockSearchName" placeholder="Tìm theo tên sản phẩm" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:250px;font-size:14px;">
+                        <select id="stockCategoryFilter" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
+                            <option value="">Tất cả loại xe</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="hatchback">Hatchback</option>
+                            <option value="pickup">Pickup</option>
+                        </select>
+                        <button onclick="searchStockProduct()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tìm kiếm</button>
+                    </div>
+
+                    <!-- Tra cứu nhập-xuất-tồn -->
+                    <div style="background:#f8f9fa;padding:20px;border-radius:8px;border:1px solid #dee2e6;margin-bottom:20px;">
+                        <h3 style="color:#0d279d;margin-bottom:16px;font-size:1.1rem;">
+                            <i class="fas fa-clipboard-list"></i> Tra cứu nhập-xuất-tồn của sản phẩm
+                        </h3>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <input type="text" id="inventorySearchProduct" placeholder="Nhập mã xe hoặc tên xe" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:300px;font-size:14px;">
+                            <input type="date" id="inventoryFromDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
+                            <span style="color:#666;font-weight:600;">đến</span>
+                            <input type="date" id="inventoryToDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
+                            <button onclick="searchInventoryReport()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tra cứu</button>
+                        </div>
+                        <div id="inventoryResult" style="margin-top:16px;display:none;">
+                            <div style="background:#fff;padding:16px;border-radius:6px;border:1px solid #ddd;">
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;">
+                                    <div style="text-align:center;padding:12px;background:#e3f2fd;border-radius:6px;">
+                                        <div style="color:#1976d2;font-size:0.9em;margin-bottom:4px;font-weight:600;">Tồn đầu kỳ</div>
+                                        <div style="color:#0d47a1;font-size:1.5em;font-weight:700;">15</div>
+                                    </div>
+                                    <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:6px;">
+                                        <div style="color:#2e7d32;font-size:0.9em;margin-bottom:4px;font-weight:600;">Số lượng nhập</div>
+                                        <div style="color:#1b5e20;font-size:1.5em;font-weight:700;">10</div>
+                                    </div>
+                                    <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:6px;">
+                                        <div style="color:#f57c00;font-size:0.9em;margin-bottom:4px;font-weight:600;">Số lượng xuất</div>
+                                        <div style="color:#e65100;font-size:1.5em;font-weight:700;">8</div>
+                                    </div>
+                                    <div style="text-align:center;padding:12px;background:#f3e5f5;border-radius:6px;">
+                                        <div style="color:#7b1fa2;font-size:0.9em;margin-bottom:4px;font-weight:600;">Tồn cuối kỳ</div>
+                                        <div style="color:#4a148c;font-size:1.5em;font-weight:700;">17</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Xe sắp hết hàng -->
+                    <div style="background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:20px;">
+                        <h3 style="color:#ff9800;margin-bottom:16px;font-size:1.2rem;">
+                            <i class="fas fa-exclamation-circle"></i> Cảnh báo: Sản phẩm sắp hết hàng (Số lượng ≤ 1)
+                        </h3>
+                        <div id="lowStockList"></div>
+                    </div>
+
+                    <!-- Xe tồn kho lâu -->
+                    <div style="background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:20px;">
+                        <h3 style="color:#d9534f;margin-bottom:16px;font-size:1.2rem;">
+                            <i class="fas fa-exclamation-triangle"></i> Xe tồn kho lâu (Trên 1 năm)
+                        </h3>
+                        <div id="oldStockList"></div>
+                    </div>
+
+                    <!-- Xe thường -->
+                    <div style="background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;">
+                        <h3 style="color:#28a745;margin-bottom:16px;font-size:1.2rem;">
+                            <i class="fas fa-check-circle"></i> Xe thường
+                        </h3>
+                        <div id="normalStockList"></div>
+                    </div>
+                </section>
+
+
+                <!-- Quản lý sản phẩm -->
+                <section id="products-section" class="content-section active">
+                    <div class="section-header">
+                        <h2>Quản lý sản phẩm</h2>
+                        <button onclick="showAddProductModal()" class="add-btn">
+                            <i class="fas fa-plus"></i> Thêm sản phẩm mới
+                        </button>
+                    </div>
+                    <div class="products-grid" id="products-grid">
+                        <!-- Danh sách sản phẩm sẽ được hiển thị ở đây -->
+                    </div>
+                </section>
+
+                <!-- Quản lý khách hàng -->
+                <section id="customers-section" class="content-section" style="display:none">
+                    <div class="section-header">
+                        <h2>Quản lý khách hàng</h2>
+                    </div>
+                    <div class="customers-grid" id="customers-grid">
+                        <!-- Danh sách khách hàng sẽ được hiển thị ở đây -->
+                    </div>
+                </section>
+
+                <!-- Thống kê -->
+                                </section>
+
+                <!-- Quản lý giá bán -->
+                <section id="pricing-section" class="content-section" style="display:none">
+                    <div class="section-header">
+                        <h2>Quản lý giá bán</h2>
+                    </div>
+                    <div style="margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="pricingSearchProduct" placeholder="Tìm theo tên sản phẩm" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:250px;font-size:14px;">
+                        <select id="pricingCategoryFilter" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
+                            <option value="">Tất cả loại xe</option>
+                        </select>
+                        <button onclick="searchPricingProduct()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tìm kiếm</button>
+                    </div>
+                    <div id="pricingGrid"></div>
+                </section>
+
+                <!-- Quản lý loại sản phẩm -->
+                <section id="categories-section" class="content-section" style="display:none">
+                    <div class="section-header">
+                        <h2>Quản lý loại sản phẩm</h2>
+                        <button onclick="window.location.href='admin-add-category.html'" class="add-btn">
+                            <i class="fas fa-plus"></i> Thêm loại xe
+                        </button>
+                    </div>
+                    <div style="margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="categorySearchInput" placeholder="Tìm theo tên loại xe" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:250px;font-size:14px;">
+                        <select id="categoryStatusFilter" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="visible">Đang hiển thị</option>
+                            <option value="hidden">Đang ẩn</option>
+                        </select>
+                        <button onclick="searchCategories()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tìm kiếm</button>
+                    </div>
+                    <table class="data-table" style="width:100%;table-layout:auto;">
+                        <thead>
+                            <tr>
+                                <th style="color:#000;text-align:left;padding:12px;">Tên loại xe</th>
+                                <th style="width:150px;color:#000;text-align:center;padding:12px;">Số sản phẩm</th>
+                                <th style="width:150px;color:#000;text-align:center;padding:12px;">Trạng thái</th>
+                                <th style="width:280px;color:#000;text-align:center;padding:12px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            <!-- Dữ liệu loại xe sẽ được render ở đây -->
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Dashboard -->
+                <section id="dashboard-section" class="content-section">
+                    <h2>Thống kê</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-car"></i>
+                            <div class="stat-info">
+                                <h3 id="total-products">0</h3>
+                                <p>Tổng sản phẩm</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-eye"></i>
+                            <div class="stat-info">
+                                <h3 id="total-views">0</h3>
+                                <p>Lượt xem</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal thêm sản phẩm -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Thêm sản phẩm mới</h3>
+                <span class="close" onclick="closeAddProductModal()">&times;</span>
+            </div>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label for="productName">Tên sản phẩm:</label>
+                    <input type="text" id="productName" name="productName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productBrand">Thương hiệu:</label>
+                    <select id="productBrand" name="productBrand" required>
+                        <option value="">Chọn thương hiệu</option>
+                        <option value="toyota">Toyota</option>
+                        <option value="mercedes">Mercedes</option>
+                        <option value="bmw">BMW</option>
+                        <option value="audi">Audi</option>
+                        <option value="lexus">Lexus</option>
+                        <option value="honda">Honda</option>
+                        <option value="hyundai">Hyundai</option>
+                        <option value="kia">KIA</option>
+                        <option value="vinfast">Vinfast</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productPrice">Giá (VNĐ):</label>
+                    <input type="number" id="productPrice" name="productPrice" required min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="productYear">Năm sản xuất:</label>
+                    <input type="number" id="productYear" name="productYear" required min="2000" max="2025">
+                </div>
+
+                <div class="form-group">
+                    <label for="productFuel">Loại nhiên liệu:</label>
+                    <select id="productFuel" name="productFuel" required>
+                        <option value="">Chọn loại nhiên liệu</option>
+                        <option value="Xăng">Xăng</option>
+                        <option value="Dầu">Dầu</option>
+                        <option value="Hybrid">Hybrid</option>
+                        <option value="Điện">Điện</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productTransmission">Hộp số:</label>
+                    <select id="productTransmission" name="productTransmission" required>
+                        <option value="">Chọn hộp số</option>
+                        <option value="Số tự động">Số tự động</option>
+                        <option value="Số sàn">Số sàn</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productCategory">Loại sản phẩm:</label>
+                    <select id="productCategory" name="productCategory">
+                        <option value="">Chọn loại</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productImageUrl">URL Hình ảnh:</label>
+                    <input type="url" id="productImageUrl" name="productImageUrl" placeholder="https://example.com/image.jpg" required>
+                    <small style="color: #666;">Nhập đường dẫn URL hình ảnh sản phẩm</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="productDescription">Mô tả:</label>
+                    <textarea id="productDescription" name="productDescription" rows="4"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" onclick="closeAddProductModal()" class="cancel-btn">Hủy</button>
+                    <button type="submit" class="save-btn" onclick="return false;">Lưu sản phẩm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        <!-- Modal thêm / sửa phiếu nhập -->
+        <div id="addImportModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Thêm phiếu nhập</h3>
+                    <span class="close" onclick="closeAddImportModal()">&times;</span>
+                </div>
+                <form id="addImportForm">
+                    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px 0;">
+                        <label>Ngày nhập: <input type="date" id="importDate" name="importDate" required></label>
+                        <label>Mã phiếu (Auto): <input type="text" id="importCode" name="importCode" disabled placeholder="(tự động)"></label>
+                    </div>
+
+                    <div id="importItemsContainer">
+                        <div class="import-item-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                            <select class="import-product-select" style="flex:2;padding:8px;border-radius:6px;border:1px solid #ccc;">
+                                <option value="">-- Chọn sản phẩm --</option>
+                            </select>
+                            <input type="number" class="import-price" placeholder="Giá nhập" min="0" style="flex:1;padding:8px;border-radius:6px;border:1px solid #ccc;">
+                            <input type="number" class="import-qty" placeholder="Số lượng" min="1" value="1" style="width:100px;padding:8px;border-radius:6px;border:1px solid #ccc;">
+                            <button type="button" class="remove-item-btn" onclick="removeImportItemRow(this)" style="padding:8px 10px;border-radius:6px;background:#dc3545;color:#fff;border:none;">Xóa</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:8px;margin-bottom:12px;">
+                        <button type="button" onclick="addImportItemRow()" class="add-btn" style="padding:8px 12px;border-radius:6px;"><i class="fas fa-plus"></i> Thêm dòng</button>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeAddImportModal()" class="cancel-btn">Hủy</button>
+                        <button type="submit" class="save-btn" onclick="return false;">Lưu phiếu nhập</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal thêm / sửa loại sản phẩm -->
+        <div id="addCategoryModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="categoryModalTitle">Thêm loại sản phẩm</h3>
+                    <span class="close" onclick="closeAddCategoryModal()">&times;</span>
+                </div>
+                <form id="addCategoryForm">
+                    <input type="hidden" id="categoryEditId" value="">
+                    
+                    <div class="form-group">
+                        <label for="categoryName">Tên loại xe:</label>
+                        <input type="text" id="categoryName" name="categoryName" required placeholder="Ví dụ: Toyota, Honda, BMW...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categorySlug">Slug (URL):</label>
+                        <input type="text" id="categorySlug" name="categorySlug" required placeholder="Ví dụ: toyota, honda, bmw...">
+                        <small style="color:#666;font-size:12px;">Chỉ dùng chữ thường, số và dấu gạch ngang</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoryDescription">Mô tả:</label>
+                        <textarea id="categoryDescription" name="categoryDescription" rows="3" placeholder="Mô tả về loại xe này..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="categoryVisible" name="categoryVisible" checked>
+                            Hiển thị trên trang chủ
+                        </label>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeAddCategoryModal()" class="cancel-btn">Hủy</button>
+                        <button type="submit" class="save-btn" onclick="return false;">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="assets/js/admin.js"></script>
+    <script>
+        // Function để quay về trang chủ
+        function goToHomePage() {
+            // Lưu trạng thái admin đang đăng nhập khi về trang chủ
+            localStorage.setItem('adminViewingHome', 'true');
+            window.location.href = 'index.html';
+        }
+
+        // Kiểm tra đăng nhập khi load trang
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!localStorage.getItem('adminLoggedIn')) {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+            
+            const username = localStorage.getItem('adminUsername');
+            if (username) {
+                document.getElementById('admin-welcome').textContent = `Xin chào, ${username}!`;
+            }
+            
+            // Khởi tạo loại sản phẩm và cập nhật select
+            if (typeof initCategories === 'function') initCategories();
+            if (typeof updateCategorySelect === 'function') updateCategorySelect();
+
+            // Tự động nhập các xe có sẵn từ trang chủ (nếu đã được cache)
+            if (typeof importHomepageCars === 'function') {
+                try { importHomepageCars(true); } catch (e) { /* ignore */ }
+            }
+
+            loadProducts();
+            updateStats();
+            loadCategories(); // Load danh sách loại sản phẩm
+        });
+
+        // ========== QUẢN LÝ LOẠI SẢN PHẨM ==========
+        
+        // Khởi tạo dữ liệu mẫu cho loại sản phẩm
+        function initCategories() {
+            // Xóa dữ liệu cũ và tạo mới với 20 loại xe
+            // Random số sản phẩm từ 5-25 và trạng thái random
+            const randomCount = () => Math.floor(Math.random() * 21) + 5; // 5-25
+            const randomVisible = () => Math.random() > 0.3; // 70% visible, 30% hidden
+            
+            const categories = [
+                    { id: 1, name: 'Toyota', slug: 'toyota', description: 'Thương hiệu xe Nhật Bản uy tín', productCount: randomCount(), visible: randomVisible() },
+                    { id: 2, name: 'Mercedes', slug: 'mercedes', description: 'Thương hiệu xe Đức cao cấp', productCount: randomCount(), visible: randomVisible() },
+                    { id: 3, name: 'BMW', slug: 'bmw', description: 'Xe Đức thể thao sang trọng', productCount: randomCount(), visible: randomVisible() },
+                    { id: 4, name: 'Audi', slug: 'audi', description: 'Xe Đức công nghệ cao', productCount: randomCount(), visible: randomVisible() },
+                    { id: 5, name: 'Lexus', slug: 'lexus', description: 'Xe Nhật cao cấp', productCount: randomCount(), visible: randomVisible() },
+                    { id: 6, name: 'Honda', slug: 'honda', description: 'Xe Nhật bền bỉ tiết kiệm', productCount: randomCount(), visible: randomVisible() },
+                    { id: 7, name: 'Hyundai', slug: 'hyundai', description: 'Xe Hàn Quốc hiện đại', productCount: randomCount(), visible: randomVisible() },
+                    { id: 8, name: 'Kia', slug: 'kia', description: 'Xe Hàn Quốc thời trang', productCount: randomCount(), visible: randomVisible() },
+                    { id: 9, name: 'VinFast', slug: 'vinfast', description: 'Xe điện Việt Nam', productCount: randomCount(), visible: randomVisible() },
+                    { id: 10, name: 'Mazda', slug: 'mazda', description: 'Xe Nhật thiết kế đẹp', productCount: randomCount(), visible: randomVisible() },
+                    { id: 11, name: 'Ford', slug: 'ford', description: 'Xe Mỹ mạnh mẽ', productCount: randomCount(), visible: randomVisible() },
+                    { id: 12, name: 'Chevrolet', slug: 'chevrolet', description: 'Xe Mỹ đa dạng', productCount: randomCount(), visible: randomVisible() },
+                    { id: 13, name: 'Nissan', slug: 'nissan', description: 'Xe Nhật công nghệ', productCount: randomCount(), visible: randomVisible() },
+                    { id: 14, name: 'Mitsubishi', slug: 'mitsubishi', description: 'Xe Nhật bền bỉ', productCount: randomCount(), visible: randomVisible() },
+                    { id: 15, name: 'Suzuki', slug: 'suzuki', description: 'Xe Nhật nhỏ gọn', productCount: randomCount(), visible: randomVisible() },
+                    { id: 16, name: 'Subaru', slug: 'subaru', description: 'Xe Nhật off-road', productCount: randomCount(), visible: randomVisible() },
+                    { id: 17, name: 'Volkswagen', slug: 'volkswagen', description: 'Xe Đức phổ thông', productCount: randomCount(), visible: randomVisible() },
+                    { id: 18, name: 'Porsche', slug: 'porsche', description: 'Xe Đức siêu sang', productCount: randomCount(), visible: randomVisible() },
+                    { id: 19, name: 'Volvo', slug: 'volvo', description: 'Xe Thụy Điển an toàn', productCount: randomCount(), visible: randomVisible() },
+                    { id: 20, name: 'Land Rover', slug: 'land-rover', description: 'Xe Anh địa hình', productCount: randomCount(), visible: randomVisible() }
+                ];
+            
+            // Luôn cập nhật lại dữ liệu mới
+            localStorage.setItem('categories', JSON.stringify(categories));
+            return categories;
+        }
+
+        // Reset và tạo lại dữ liệu mới
+        function resetCategories() {
+            localStorage.removeItem('categories');
+            initCategories();
+            loadCategories();
+            alert('Đã làm mới dữ liệu với số sản phẩm và trạng thái ngẫu nhiên!');
+        }
+
+        // Load và hiển thị danh sách loại sản phẩm
+        function loadCategories() {
+            initCategories();
+            const categories = JSON.parse(localStorage.getItem('categories')) || [];
+            const tbody = document.getElementById('categoriesTableBody');
+            
+            if (!tbody) return;
+            
+            if (categories.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Chưa có loại sản phẩm nào</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = categories.map(cat => `
+                <tr>
+                    <td style="padding:12px;text-align:left;">${cat.name}</td>
+                    <td style="padding:12px;text-align:center;">${cat.productCount || 0}</td>
+                    <td style="padding:12px;text-align:center;">
+                        ${cat.visible 
+                            ? '<i class="fas fa-eye" style="color:#28a745;"></i> Hiển thị' 
+                            : '<i class="fas fa-eye-slash" style="color:#dc3545;"></i> Ẩn'
+                        }
+                    </td>
+                    <td style="padding:8px;text-align:center;">
+                        <div style="display:flex;gap:0.5rem;align-items:center;justify-content:center;">
+                            <button onclick="editCategory(${cat.id})" class="edit-btn" title="Sửa">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button onclick="toggleHideCategory(${cat.id})" title="${cat.visible ? 'Ẩn' : 'Hiện'}" style="flex:1;padding:0.5rem;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background-color 0.3s ease;">
+                                <i class="fas fa-${cat.visible ? 'eye-slash' : 'eye'}"></i> ${cat.visible ? 'Ẩn' : 'Hiện'}
+                            </button>
+                            <button onclick="deleteCategory(${cat.id})" class="delete-btn" title="Xóa">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Hiển thị modal thêm loại sản phẩm
+        function showAddCategoryModal() {
+            document.getElementById('categoryModalTitle').textContent = 'Thêm loại sản phẩm';
+            document.getElementById('categoryEditId').value = '';
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categorySlug').value = '';
+            document.getElementById('categoryDescription').value = '';
+            document.getElementById('categoryVisible').checked = true;
+            document.getElementById('addCategoryModal').style.display = 'block';
+        }
+
+        // Đóng modal
+        function closeAddCategoryModal() {
+            document.getElementById('addCategoryModal').style.display = 'none';
+        }
+
+        // Sửa loại sản phẩm
+        function editCategory(id) {
+            const categories = JSON.parse(localStorage.getItem('categories')) || [];
+            const category = categories.find(c => c.id === id);
+            
+            if (!category) return;
+            
+            document.getElementById('categoryModalTitle').textContent = 'Sửa loại sản phẩm';
+            document.getElementById('categoryEditId').value = category.id;
+            document.getElementById('categoryName').value = category.name;
+            document.getElementById('categorySlug').value = category.slug;
+            document.getElementById('categoryDescription').value = category.description || '';
+            document.getElementById('categoryVisible').checked = category.visible;
+            document.getElementById('addCategoryModal').style.display = 'block';
+        }
+
+        // Xóa loại sản phẩm (prototype)
+        function deleteCategory(id) {
+            if (!confirm('Bạn có chắc muốn xóa loại sản phẩm này?')) return;
+            alert('Chức năng xóa chưa khả dụng trong phiên bản demo');
+        }
+
+        // Ẩn/Hiện loại sản phẩm (prototype)
+        function toggleHideCategory(id) {
+            alert('Chức năng ẩn/hiện chưa khả dụng trong phiên bản demo');
+        }
+
+        // Tìm kiếm loại sản phẩm
+        function searchCategories() {
+            const tableBody = document.getElementById('categoriesTableBody');
+            if (!tableBody) return;
+            
+            // Hiển thị 1 loại xe Toyota
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="padding: 12px 12px 0 12px;">
+                        <button onclick="loadCategoriesData()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-undo"></i> Quay lại
+                        </button>
+                    </td>
+                </tr>
+                <tr style="border-bottom:1px solid #e0e0e0;">
+                    <td style="color:#000;padding:12px;font-weight:500;">Toyota</td>
+                    <td style="color:#000;text-align:center;padding:12px;">8</td>
+                    <td style="color:#000;text-align:center;padding:12px;">
+                        <span style="padding:6px 12px;background:#e8f5e9;color:#2e7d32;border-radius:6px;font-weight:600;font-size:0.9em;">
+                            <i class="fas fa-eye"></i> Hiển thị
+                        </span>
+                    </td>
+                    <td style="color:#000;text-align:center;padding:12px;">
+                        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                            <button onclick="return false;" class="edit-btn" style="flex:1;padding:0.5rem;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;min-width:80px;transition:background-color 0.3s ease;">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button onclick="return false;" title="Ẩn" style="flex:1;padding:0.5rem;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background-color 0.3s ease;">
+                                <i class="fas fa-eye-slash"></i> Ẩn
+                            </button>
+                            <button onclick="return false;" class="delete-btn" title="Xóa" style="padding:0.5rem;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;min-width:80px;transition:background-color 0.3s ease;">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Load lại dữ liệu loại sản phẩm
+        function loadCategoriesData() {
+            if (typeof loadCategories === 'function') {
+                loadCategories();
+            }
+        }
+
+        // Tìm kiếm sản phẩm tồn kho
+        function searchStockProduct() {
+            const oldStockList = document.getElementById('oldStockList');
+            if (!oldStockList) return;
+            
+            // Hiển thị 1 xe Toyota Fortuner tồn kho lâu
+            oldStockList.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <button onclick="loadStockData()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-undo"></i> Quay lại
+                    </button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+                    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <img src="assets/images/toyota-fortuner.jpg" alt="Toyota Fortuner" style="width:100%;height:180px;object-fit:cover;border-radius:6px;margin-bottom:12px;">
+                        <h4 style="color:#333;margin-bottom:8px;">Toyota Fortuner 2023</h4>
+                        <div style="color:#666;font-size:0.9em;margin-bottom:6px;">
+                            <strong>Mã:</strong> TK001
+                        </div>
+                        <div style="color:#666;font-size:0.9em;margin-bottom:6px;">
+                            <strong>Loại:</strong> SUV
+                        </div>
+                        <div style="color:#666;font-size:0.9em;margin-bottom:6px;">
+                            <strong>Giá gốc:</strong> 1.450.000.000 VNĐ
+                        </div>
+                        <div style="color:#d9534f;font-size:0.9em;margin-bottom:6px;">
+                            <strong>Giảm giá:</strong> 10% (145.000.000 VNĐ)
+                        </div>
+                        <div style="color:#666;font-size:0.9em;margin-bottom:6px;">
+                            <strong>Số lượng tồn:</strong> 3 xe
+                        </div>
+                        <div style="color:#d9534f;font-size:0.9em;margin-bottom:6px;">
+                            <strong>Ngày nhập:</strong> 15/09/2023 (410 ngày)
+                        </div>
+                        <div style="color:#666;font-size:0.9em;margin-top:8px;padding:8px;background:#fff3cd;border-radius:6px;">
+                            <strong>Lý do tồn:</strong> Ít người mua do giá cao
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tra cứu nhập-xuất-tồn
+        function searchInventoryReport() {
+            const inventoryResult = document.getElementById('inventoryResult');
+            if (!inventoryResult) return;
+            
+            inventoryResult.style.display = 'block';
+            
+            // Thêm nút quay lại
+            const resultDiv = inventoryResult.querySelector('div > div:first-child');
+            if (resultDiv && !document.getElementById('inventoryBackBtn')) {
+                const backBtn = document.createElement('div');
+                backBtn.id = 'inventoryBackBtn';
+                backBtn.style.cssText = 'margin-bottom: 15px;';
+                backBtn.innerHTML = `
+                    <button onclick="hideInventoryReport()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-undo"></i> Quay lại
+                    </button>
+                `;
+                inventoryResult.insertBefore(backBtn, inventoryResult.firstChild);
+            }
+        }
+
+        // Ẩn kết quả tra cứu
+        function hideInventoryReport() {
+            const inventoryResult = document.getElementById('inventoryResult');
+            const backBtn = document.getElementById('inventoryBackBtn');
+            if (inventoryResult) inventoryResult.style.display = 'none';
+            if (backBtn) backBtn.remove();
+        }
+
+        // Load lại dữ liệu tồn kho
+        function loadStockData() {
+            // Gọi lại hàm load dữ liệu ban đầu từ admin.js
+            if (typeof window.initStockSection === 'function') {
+                window.initStockSection();
+            }
+        }
+
+        // Tìm kiếm sản phẩm giá bán
+        function searchPricingProduct() {
+            const pricingGrid = document.getElementById('pricingGrid');
+            if (!pricingGrid) return;
+            
+            // Hiển thị 1 xe Toyota Camry
+            pricingGrid.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <button onclick="loadPricingData()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-undo"></i> Quay lại
+                    </button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Hãng</th>
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
+                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">% Lợi nhuận</th>
+                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #f0f0f0;">
+                                <td style="padding:12px;">
+                                    <div style="font-weight:600;color:#333;margin-bottom:4px;">Camry</div>
+                                    <div style="font-size:0.85em;color:#666;">ID: 1</div>
+                                </td>
+                                <td style="padding:12px;">
+                                    <span style="display:inline-block;background:#e3f2fd;color:#1976d2;padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">
+                                        TOYOTA
+                                    </span>
+                                </td>
+                                <td style="padding:12px;color:#555;">Sedan</td>
+                                <td style="padding:12px;text-align:right;font-weight:500;color:#333;">1.100.000.000</td>
+                                <td style="padding:12px;text-align:center;">
+                                    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                                        <input type="number" value="12.3" min="0" max="100" step="0.1" 
+                                            style="width:70px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.95em;"
+                                            onchange="return false;">
+                                        <span style="font-weight:600;color:#2e7d32;">%</span>
+                                    </div>
+                                </td>
+                                <td style="padding:12px;text-align:right;">
+                                    <div style="font-weight:600;color:#0d279d;font-size:1.05em;">1.235.000.000</div>
+                                    <div style="font-size:0.85em;color:#28a745;margin-top:4px;">
+                                        +135.000.000
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Load lại dữ liệu giá bán
+        function loadPricingData() {
+            if (typeof window.loadPricing === 'function') {
+                window.loadPricing();
+            }
+        }
+
+        // Export các hàm ra window
+        window.searchStockProduct = searchStockProduct;
+        window.searchInventoryReport = searchInventoryReport;
+        window.hideInventoryReport = hideInventoryReport;
+        window.loadStockData = loadStockData;
+        window.searchPricingProduct = searchPricingProduct;
+        window.loadPricingData = loadPricingData;
+        window.searchCategories = searchCategories;
+        window.loadCategoriesData = loadCategoriesData;
+    </script>
+    <script>
+        // Prototype mode: disable mutating admin actions and seed demo data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seed demo products if empty
+            try {
+                let demoProducts = JSON.parse(localStorage.getItem('products')) || [];
+                if (!demoProducts.length) {
+                    demoProducts = [
+                        {
+                            id: Date.now(),
+                            name: 'Toyota Camry',
+                            brand: 'toyota',
+                            price: 1235000000,
+                            year: 2025,
+                            fuel: 'Xăng',
+                            transmission: 'Tự động (CVT)',
+                            category: 'Sedan',
+                            image: 'assets/images/toyota-camry.jpg',
+                            description: 'Sedan hạng D sang trọng, tiết kiệm.',
+                            dateAdded: new Date().toISOString(),
+                            hidden: false
+                        },
+                        {
+                            id: Date.now() + 1,
+                            name: 'Mercedes E200',
+                            brand: 'mercedes',
+                            price: 2310000000,
+                            year: 2024,
+                            fuel: 'Xăng',
+                            transmission: 'Tự động (AT)',
+                            category: 'Sedan',
+                            image: 'assets/images/mercedes-e200.jpg',
+                            description: 'Doanh nhân lịch lãm, công nghệ hiện đại.',
+                            dateAdded: new Date().toISOString(),
+                            hidden: false
+                        }
+                    ];
+                    localStorage.setItem('products', JSON.stringify(demoProducts));
+                }
+            } catch (e) { /* ignore */ }
+
+            // Helper: unified prototype notice (silent for submission)
+            function protoNotice(msg) {
+                // no-op: intentionally silent to avoid any popup/toast in submission
+            }
+
+            // Override mutating functions to no-op
+            const noopFns = [
+                'deleteProduct','toggleHideProduct',
+                'deleteImport','editImport','completeImport','saveImports',
+                'showAddCategoryModal','deleteCategory','editCategory','toggleHideCategory',
+                'updateDiscount',  // Vô hiệu hóa chức năng cập nhật discount
+                'filterPricing'    // Vô hiệu hóa chức năng tìm kiếm giá bán
+                // Cho phép: loadPricing (chỉ hiển thị), updateOrderStatus (cho phép cập nhật tình trạng đơn hàng)
+            ];
+            noopFns.forEach(fn => {
+                if (typeof window[fn] === 'function') {
+                    window[fn] = function() { protoNotice(); return false; };
+                } else {
+                    // create stub in case referenced by onclick
+                    window[fn] = function() { protoNotice(); return false; };
+                }
+            });
+
+            // Prevent form submissions and destructive buttons
+            document.addEventListener('submit', function(e) {
+                if (e.target && (e.target.id === 'addImportForm' || e.target.id === 'addCategoryForm')) {
+                    e.preventDefault();
+                    protoNotice();
+                    return false;
+                }
+            }, true);
+
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const classes = ['edit-btn','delete-btn','save-btn','lock-btn','unhide-btn','hide-btn'];
+                if (classes.some(c => btn.classList.contains(c))) {
+                    e.preventDefault();
+                    protoNotice();
+                    return false;
+                }
+            }, true);
+
+            // Refresh UI after seeding / overrides
+            try { loadProducts(); updateStats(); } catch (e) { /* ignore */ }
+        });
+    </script>
+</body>
+</html>
