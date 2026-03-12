@@ -16,6 +16,22 @@
   </head>
   <body>
     <header>
+      <!-- Top Info Bar -->
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <span><i class="fas fa-phone"></i> Hotline: 0799.429.767</span>
+          <span
+            ><i class="fas fa-map-marker-alt"></i> 163/8, đường Thành Thái, quận
+            10, TP.HCM</span
+          >
+          <span><i class="fas fa-clock"></i> Giờ làm việc: 8:00 - 18:00</span>
+        </div>
+        <div class="top-bar-right">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
       <nav class="navbar">
         <div class="logo">
           <a href="index.html">3 Boys Auto</a>
@@ -190,18 +206,206 @@
     </header>
 
     <main>
-      <section class="hero">
-        <div
-          class="hero-bg-static"
-          style="
-            background-image: url(&quot;assets/images/images-index/hero-bg.jpg&quot;);
-          "
-        ></div>
-        <div class="hero-content">
-          <h1>3 Boys Auto</h1>
-          <p>Chiếc xe mơ ước của bạn ở đây</p>
+      <!-- Hero Full Wrapper: fills viewport below header -->
+      <div class="hero-full-wrapper">
+        <!-- Hero Slider -->
+        <section class="hero-slider" id="heroSlider">
+          <div class="hero-slides-wrapper">
+            <!-- Slide 1 -->
+            <div
+              class="hero-slide active"
+              style="
+                background-image: url(&quot;assets/images/merc-amg.jpg&quot;);
+              "
+            >
+              <div class="slide-content">
+                <p class="slide-model">Mercedes-Benz · AMG</p>
+                <h1 class="slide-name">
+                  <span class="highlight">AMG GT</span><br />2017
+                </h1>
+                <p class="slide-info">
+                  Siêu phẩm AMG – sức mạnh thuần khiết, thiết kế đỉnh cao.
+                </p>
+                <p class="slide-price">
+                  Giá từ <strong>Liên Hệ Để Biết Thêm</strong>
+                </p>
+                <div class="slide-btns">
+                  <a href="pages/brands/mercedes.html" class="btn-test"
+                    ><i class="fas fa-shield-alt"></i> Lái Thử</a
+                  >
+                  <a href="pages/brands/mercedes.html" class="btn-more"
+                    >Xem Thêm</a
+                  >
+                </div>
+              </div>
+            </div>
+            <!-- Slide 2 -->
+            <div
+              class="hero-slide"
+              style="background-image: url(&quot;assets/images/1.jpg&quot;)"
+            >
+              <div class="slide-content">
+                <p class="slide-model">Toyota · 2025</p>
+                <h1 class="slide-name">
+                  FORD<br /><span class="highlight">EXPLORER</span>
+                </h1>
+                <p class="slide-info">SUV 7 chỗ gầm cao, mạnh mẽ và đa dụng.</p>
+                <p class="slide-price">
+                  Giá từ <strong>1.350.000.000 VNĐ</strong>
+                </p>
+                <div class="slide-btns">
+                  <a href="pages/brands/toyota.html" class="btn-test"
+                    ><i class="fas fa-shield-alt"></i> Lái Thử</a
+                  >
+                  <a href="pages/brands/toyota.html" class="btn-more"
+                    >Xem Thêm</a
+                  >
+                </div>
+              </div>
+            </div>
+            <!-- Slide 3 -->
+            <div
+              class="hero-slide"
+              style="
+                background-image: url(&quot;assets/images/slide3.jpg&quot;);
+              "
+            >
+              <div class="slide-content">
+                <p class="slide-model">Toyota · 2025</p>
+                <h1 class="slide-name">
+                  TOYOTA<br /><span class="highlight">HIGHLANDER</span>
+                </h1>
+                <p class="slide-info">
+                  Sự kết hợp hoàn hảo giữa không gian rộng rãi và công nghệ tiên
+                  tiến cho mọi chuyến hành trình.
+                </p>
+                <p class="slide-price">
+                  Giá từ <strong>1.650.000.000 VNĐ</strong>
+                </p>
+                <div class="slide-btns">
+                  <a href="pages/brands/toyota.html" class="btn-test"
+                    ><i class="fas fa-shield-alt"></i> Lái Thử</a
+                  >
+                  <a href="pages/brands/toyota.html" class="btn-more"
+                    >Xem Thêm</a
+                  >
+                </div>
+              </div>
+            </div>
+            <!-- Slide 4 -->
+            <div
+              class="hero-slide"
+              style="
+                background-image: url(&quot;assets/images/slide4.jpg&quot;);
+              "
+            >
+              <div class="slide-content">
+                <p class="slide-model">Mercedes-Benz · 2025</p>
+                <h1 class="slide-name">
+                  <span class="highlight">MERCEDES-BENZ</span><br />GLS 450
+                </h1>
+                <p class="slide-info">
+                  Biểu tượng của sự quyền lực, mang đến trải nghiệm thượng lưu
+                  trên mọi địa hình.
+                </p>
+                <p class="slide-price">
+                  Giá từ <strong>5.249.000.000 VNĐ</strong>
+                </p>
+                <div class="slide-btns">
+                  <a href="pages/brands/mercedes.html" class="btn-test"
+                    ><i class="fas fa-shield-alt"></i> Lái Thử</a
+                  >
+                  <a href="pages/brands/mercedes.html" class="btn-more"
+                    >Xem Thêm</a
+                  >
+                </div>
+              </div>
+            </div>
+            <!-- Slide 5 -->
+            <div
+              class="hero-slide"
+              style="
+                background-image: url(&quot;assets/images/slide5.jpg&quot;);
+              "
+            >
+              <div class="slide-content">
+                <p class="slide-model">Honda · 2025</p>
+                <h1 class="slide-name">
+                  HONDA<br /><span class="highlight">CR-V L</span>
+                </h1>
+                <p class="slide-info">
+                  Khơi dậy cảm hứng lái xe mạnh mẽ với thiết kế năng động và hệ
+                  thống an toàn Honda Sensing.
+                </p>
+                <p class="slide-price">
+                  Giá từ <strong>1.119.000.000 VNĐ</strong>
+                </p>
+                <div class="slide-btns">
+                  <a href="pages/brands/honda.html" class="btn-test"
+                    ><i class="fas fa-shield-alt"></i> Lái Thử</a
+                  >
+                  <a href="pages/brands/honda.html" class="btn-more"
+                    >Xem Thêm</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Navigation arrows -->
+          <button class="hero-arrow prev-arrow">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="hero-arrow next-arrow">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          <!-- Dots -->
+          <div class="hero-dots">
+            <span class="hero-dot active"></span>
+            <span class="hero-dot"></span>
+            <span class="hero-dot"></span>
+            <span class="hero-dot"></span>
+            <span class="hero-dot"></span>
+          </div>
+        </section>
+
+        <!-- Search Inventory Bar -->
+        <div class="search-inventory-bar">
+          <div class="si-inner">
+            <div class="si-title"><i class="fas fa-car"></i> Tìm Kiếm Xe</div>
+            <select class="si-select" id="si-condition">
+              <option value="">Tình Trạng Xe</option>
+              <option value="new">Xe Mới</option>
+              <option value="used">Xe Cũ</option>
+            </select>
+            <select class="si-select" id="si-make">
+              <option value="">Hãng Xe</option>
+              <option value="toyota">Toyota</option>
+              <option value="mercedes">Mercedes</option>
+              <option value="bmw">BMW</option>
+              <option value="audi">Audi</option>
+              <option value="lexus">Lexus</option>
+              <option value="honda">Honda</option>
+              <option value="hyundai">Hyundai</option>
+              <option value="kia">KIA</option>
+              <option value="vinfast">Vinfast</option>
+            </select>
+            <select class="si-select" id="si-model">
+              <option value="">Dòng Xe</option>
+            </select>
+            <button class="si-search-btn" onclick="searchInventory()">
+              <i class="fas fa-search"></i> TÌM KIẾM
+            </button>
+            <button
+              class="si-reset-btn"
+              onclick="resetInventorySearch()"
+              title="Đặt lại"
+            >
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
         </div>
-      </section>
+      </div>
+      <!-- end hero-full-wrapper -->
 
       <section id="products" class="brands-section">
         <div class="section-title">
@@ -2887,7 +3091,184 @@
 
     <script src="assets/js/main.js"></script>
     <script>
-      // Toast notification (tự ẩn sau 2s)
+      // ===== HERO SLIDER =====
+      (function () {
+        var slides = document.querySelectorAll(".hero-slide");
+        var dots = document.querySelectorAll(".hero-dot");
+        var current = 0;
+        var autoTimer;
+
+        function goTo(n) {
+          slides[current].classList.remove("active");
+          dots[current].classList.remove("active");
+          current = (n + slides.length) % slides.length;
+          slides[current].classList.add("active");
+          dots[current].classList.add("active");
+        }
+
+        function startAuto() {
+          autoTimer = setInterval(function () {
+            goTo(current + 1);
+          }, 3500);
+        }
+
+        document
+          .querySelector(".prev-arrow")
+          .addEventListener("click", function () {
+            clearInterval(autoTimer);
+            goTo(current - 1);
+            startAuto();
+          });
+
+        document
+          .querySelector(".next-arrow")
+          .addEventListener("click", function () {
+            clearInterval(autoTimer);
+            goTo(current + 1);
+            startAuto();
+          });
+
+        document.querySelectorAll(".hero-dot").forEach(function (dot, i) {
+          dot.addEventListener("click", function () {
+            clearInterval(autoTimer);
+            goTo(i);
+            startAuto();
+          });
+        });
+
+        startAuto();
+      })();
+
+      // ===== SEARCH INVENTORY =====
+      var siModels = {
+        toyota: [
+          "Camry",
+          "Vios",
+          "Fortuner",
+          "Cross",
+          "Innova",
+          "Yaris",
+          "Corolla",
+          "Raize",
+          "Alphard",
+          "Hilux",
+        ],
+        mercedes: [
+          "C200",
+          "E200",
+          "GLC200",
+          "GLC300",
+          "GLE450",
+          "Maybach S450",
+          "Maybach S680",
+        ],
+        bmw: [
+          "320i",
+          "330i",
+          "430i",
+          "520i",
+          "530i",
+          "730Li",
+          "X5",
+          "X7",
+          "M8",
+          "Z4",
+        ],
+        audi: ["A4", "A6", "A8", "Q3", "Q5", "Q7", "RS7", "S5", "S8"],
+        lexus: [
+          "ES250",
+          "NX350h",
+          "RX350",
+          "RX500h",
+          "GX550",
+          "LX600",
+          "LS500",
+          "LM500h",
+          "LC500",
+          "UX",
+        ],
+        honda: [
+          "City",
+          "Civic",
+          "CR-V",
+          "HR-V",
+          "Accord",
+          "Odyssey",
+          "BR-V",
+          "Jazz",
+          "Pilot",
+          "NSX",
+        ],
+        hyundai: [
+          "Accent",
+          "Elantra",
+          "Creta",
+          "Tucson",
+          "Santa Fe",
+          "Palisade",
+          "Sonata",
+          "Custin",
+          "Grand",
+          "Stargazer",
+        ],
+        kia: [
+          "Morning",
+          "Soluto",
+          "K3",
+          "K5",
+          "Cerato",
+          "Carens",
+          "Sonet",
+          "Sportage",
+          "Sorento",
+          "Carnival",
+        ],
+        vinfast: [
+          "VF3",
+          "VF5",
+          "VF5 Plus",
+          "VF6",
+          "VF7",
+          "VF8",
+          "VF9",
+          "VFe34",
+          "Lux A2.0",
+          "President",
+        ],
+      };
+
+      document
+        .getElementById("si-make")
+        .addEventListener("change", function () {
+          var make = this.value;
+          var modelSel = document.getElementById("si-model");
+          modelSel.innerHTML = '<option value="">Dòng Xe</option>';
+          if (siModels[make]) {
+            siModels[make].forEach(function (m) {
+              var opt = document.createElement("option");
+              opt.value = m.toLowerCase().replace(/\s/g, "-");
+              opt.textContent = m;
+              modelSel.appendChild(opt);
+            });
+          }
+        });
+
+      function searchInventory() {
+        var make = document.getElementById("si-make").value;
+        var model = document.getElementById("si-model").value;
+        var params = new URLSearchParams();
+        var term = model || make;
+        if (term) params.append("name", term);
+        window.location.href =
+          "pages/user/search-results.html?" + params.toString();
+      }
+
+      function resetInventorySearch() {
+        document.getElementById("si-condition").value = "";
+        document.getElementById("si-make").value = "";
+        document.getElementById("si-model").innerHTML =
+          '<option value="">Dòng Xe</option>';
+      }
       function showToast(message, redirectUrl) {
         var t = document.createElement("div");
         t.style.cssText =
