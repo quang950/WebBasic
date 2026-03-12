@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -27,15 +27,15 @@
               >Loại xe <i class="fas fa-chevron-down"></i
             ></a>
             <div class="dropdown-content">
-              <a href="toyota.html">Toyota</a>
-              <a href="mercedes.html">Mercedes</a>
-              <a href="bmw.html">BMW</a>
-              <a href="audi.html">Audi</a>
-              <a href="lexus.html">Lexus</a>
-              <a href="honda.html">Honda</a>
-              <a href="hyundai.html">Hyundai</a>
-              <a href="kia.html">KIA</a>
-              <a href="vinfast.html">Vinfast</a>
+              <a href="pages/brands/toyota.html">Toyota</a>
+              <a href="pages/brands/mercedes.html">Mercedes</a>
+              <a href="pages/brands/bmw.html">BMW</a>
+              <a href="pages/brands/audi.html">Audi</a>
+              <a href="pages/brands/lexus.html">Lexus</a>
+              <a href="pages/brands/honda.html">Honda</a>
+              <a href="pages/brands/hyundai.html">Hyundai</a>
+              <a href="pages/brands/kia.html">KIA</a>
+              <a href="pages/brands/vinfast.html">Vinfast</a>
             </div>
           </div>
           <button id="filterToggleBtn">
@@ -136,7 +136,7 @@
 
                   // Chuyển sang trang kết quả tìm kiếm
                   window.location.href =
-                    "search-results.html?" + params.toString();
+                    "pages/user/search-results.html?" + params.toString();
                 });
 
                 // Cho phép Enter để tìm kiếm
@@ -160,7 +160,11 @@
             <span class="cart-count">0</span>
           </a>
           <div class="login-options" id="loginOptions">
-            <a href="login.html" class="blob-btn login-btn" id="loginBtn">
+            <a
+              href="pages/user/login.html"
+              class="blob-btn login-btn"
+              id="loginBtn"
+            >
               <span class="blob-btn__inner">
                 <span class="blob-btn__blobs">
                   <span class="blob-btn__blob"></span>
@@ -177,7 +181,7 @@
               class="user-name"
               id="userName"
               style="cursor: pointer"
-              onclick="window.location.href = 'profile.html'"
+              onclick="window.location.href = 'pages/user/profile.html'"
             ></span>
             <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
           </div>

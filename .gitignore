@@ -1,0 +1,51 @@
+# ===========================
+# Hệ điều hành
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# ===========================
+# Editor / IDE
+# ===========================
+.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# ===========================
+# Node.js (nếu dùng npm sau này)
+# ===========================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ===========================
+# Build output
+# ===========================
+dist/
+build/
+out/
+
+# ===========================
+# File tạm / Log
+# ===========================
+*.log
+*.tmp
+*.bak
+*.orig
+.cache/
+
+# ===========================
+# File nén
+# ===========================
+*.zip
+*.rar
+*.7z
+*.tar.gz

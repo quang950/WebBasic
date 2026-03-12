@@ -1,28 +1,26 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toyota - 3 Boys Auto</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Audi - 3 Boys Auto</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo">
-                <a href="index.html">3 Boys Auto</a>
-            </div>
+            <div class="logo"><a href="../../index.html">3 Boys Auto</a></div>
             <div class="nav-links">
-                <a href="index.html">Trang chủ</a>
+                <a href="../../index.html">Trang chủ</a>
                 <div class="dropdown">
                     <a href="#" class="dropdown-trigger">Loại xe <i class="fas fa-chevron-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="toyota.html" class="active">Toyota</a>
+                        <a href="toyota.html">Toyota</a>
                         <a href="mercedes.html">Mercedes</a>
                         <a href="bmw.html">BMW</a>
-                        <a href="audi.html">Audi</a>
+                        <a href="audi.html" class="active">Audi</a>
                         <a href="lexus.html">Lexus</a>
                         <a href="honda.html">Honda</a>
                         <a href="hyundai.html">Hyundai</a>
@@ -40,7 +38,7 @@
                     <span class="cart-count">0</span>
                 </a>
                 <div class="login-options" id="loginOptions">
-                    <a href="login.html" class="blob-btn login-btn" id="loginBtn">
+                    <a href="../user/login.html" class="blob-btn login-btn" id="loginBtn">
                         <span class="blob-btn__inner">
                             <span class="blob-btn__blobs">
                                 <span class="blob-btn__blob"></span>
@@ -53,8 +51,8 @@
                     </a>
                 </div>
                 <div class="user-info" id="userInfo" style="display: none;">
-                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='profile.html'">
-                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='profile.html'"></span>
+                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.html'">
+                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.html'"></span>
                     <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
                 </div>
             </div>
@@ -62,125 +60,113 @@
     </header>
 
     <main style="padding-top: 2rem;">
-        <!-- Hero Section -->
         <section class="hero" style="margin-bottom: 3rem; padding: 4rem 5%;">
             <div style="text-align: center;">
-                <img src="assets/images/logo-toyota.png" alt="Toyota Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
-                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">TOYOTA</h1>
-                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Những dòng xe Toyota đẳng cấp và bền bỉ</p>
+                <img src="../../assets/images/logo-audi.png" alt="Audi Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
+                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">AUDI</h1>
+                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Dẫn đầu công nghệ</p>
             </div>
         </section>
 
-        <!-- Products Section -->
         <section id="products" class="brands-section" style="padding: 0 5%;">
             <div class="brand-container" style="margin-bottom: 0;">
                 <div class="car-slider" style="margin: 0;">
                     <div class="car-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
                         
-                        <!-- Toyota Camry -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.5L" data-desc="Sedan hạng D êm ái, tiện nghi, tiết kiệm.">
-                            <img src="assets/images/toyota-camry.jpg" alt="Toyota Camry">
-                            <h3>Toyota Camry</h3>
-                            <p class="price">1.235.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan hạng C sang trọng, cách âm tốt và êm ái.">
+                            <img src="../../assets/images/audi-a4.jpg" alt="Audi A4">
+                            <h3>Audi A4</h3>
+                            <p class="price">1.046.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Vios -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (CVT)" data-engine="1.5L" data-desc="Sedan đô thị bền bỉ, tiết kiệm nhiên liệu.">
-                            <img src="assets/images/toyota-vios.jpg" alt="Toyota Vios">
-                            <h3>Toyota Vios</h3>
-                            <p class="price">592.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan hạng E tinh tế, nhiều công nghệ mới.">
+                            <img src="../../assets/images/audi-a6.jpg" alt="Audi A6">
+                            <h3>Audi A6</h3>
+                            <p class="price">1.510.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Fortuner -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Dầu" data-seats="7" data-transmission="Tự động (AT)" data-engine="2.8L Diesel" data-desc="SUV 7 chỗ gầm cao, mạnh mẽ và đa dụng.">
-                            <img src="assets/images/toyota-fortuner.jpg" alt="Toyota Fortuner">
-                            <h3>Toyota Fortuner</h3>
-                            <p class="price">1.350.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="3.0L V6" data-desc="Sedan hạng sang cỡ lớn, tiện nghi đỉnh cao.">
+                            <img src="../../assets/images/audi-a8.jpg" alt="Audi A8">
+                            <h3>Audi A8</h3>
+                            <p class="price">5.299.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Cross -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (CVT)" data-engine="1.8L" data-desc="Crossover đô thị, vận hành mượt và tiết kiệm.">
-                            <img src="assets/images/toyota-cross.jpg" alt="Toyota Cross">
-                            <h3>Toyota Cross</h3>
-                            <p class="price">820.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="SUV cỡ nhỏ cao cấp, đa dụng trong đô thị.">
+                            <img src="../../assets/images/audi-q3.jpg" alt="Audi Q3">
+                            <h3>Audi Q3</h3>
+                            <p class="price">1.089.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Innova -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="2.0L" data-desc="MPV 7 chỗ rộng rãi, phù hợp gia đình.">
-                            <img src="assets/images/toyota-innova.jpg" alt="Toyota Innova">
-                            <h3>Toyota Innova</h3>
-                            <p class="price">755.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="SUV hạng sang 5 chỗ, vận hành êm ái và an toàn.">
+                            <img src="../../assets/images/audi-q5.jpg" alt="Audi Q5">
+                            <h3>Audi Q5</h3>
+                            <p class="price">2.039.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Yaris -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (CVT)" data-engine="1.5L" data-desc="Hatchback linh hoạt, dễ lái, tiết kiệm.">
-                            <img src="assets/images/toyota-yaris.jpg" alt="Toyota Yaris">
-                            <h3>Toyota Yaris</h3>
-                            <p class="price">684.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="3.0L V6" data-desc="SUV 7 chỗ sang trọng, rộng rãi và mạnh mẽ.">
+                            <img src="../../assets/images/audi-q7.jpg" alt="Audi Q7">
+                            <h3>Audi Q7</h3>
+                            <p class="price">3.300.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Corolla -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (CVT)" data-engine="1.8L" data-desc="Sedan hạng C cân bằng giữa hiệu suất và tiết kiệm.">
-                            <img src="assets/images/toyota-corolla.jpg" alt="Toyota Corolla">
-                            <h3>Toyota Corolla</h3>
-                            <p class="price">800.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="4" data-transmission="Tự động (AT)" data-engine="4.0L V8" data-desc="Dòng RS hiệu suất cao, thiết kế thể thao cực kỳ ấn tượng.">
+                            <img src="../../assets/images/audi-rs.jpg" alt="Audi RS">
+                            <h3>Audi RS</h3>
+                            <p class="price">4.750.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Raize -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (CVT)" data-engine="1.0L Turbo" data-desc="SUV cỡ nhỏ cơ động, tiết kiệm nhiên liệu.">
-                            <img src="assets/images/toyota-raize.jpg" alt="Toyota Raize">
-                            <h3>Toyota Raize</h3>
-                            <p class="price">510.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="4" data-transmission="Tự động (AT)" data-engine="4.0L V8" data-desc="Sportback hiệu suất cao, sang trọng và cá tính.">
+                            <img src="../../assets/images/audi-rs7.jpg" alt="Audi RS7">
+                            <h3>Audi RS7</h3>
+                            <p class="price">2.300.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Alphard -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Hybrid" data-seats="7" data-transmission="e-CVT" data-engine="2.5L Hybrid" data-desc="MPV hạng sang, tiện nghi cao cấp, vận hành êm ái.">
-                            <img src="assets/images/toyota-alphard.jpg" alt="Toyota Alphard">
-                            <h3>Toyota Alphard</h3>
-                            <p class="price">4.370.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="4" data-transmission="Tự động (AT)" data-engine="3.0L V6" data-desc="Coupe thể thao tinh tế, khả năng vận hành ấn tượng.">
+                            <img src="../../assets/images/audi-s5.jpg" alt="Audi S5">
+                            <h3>Audi S5</h3>
+                            <p class="price">2.670.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <!-- Toyota Hilux -->
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Dầu" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.4L Diesel" data-desc="Bán tải mạnh mẽ, bền bỉ, chở hàng tốt.">
-                            <img src="assets/images/toyota-hilux.jpg" alt="Toyota Hilux">
-                            <h3>Toyota Hilux</h3>
-                            <p class="price">706.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="4.0L V8" data-desc="Sedan hiệu suất cao đầu bảng, sang trọng và mạnh mẽ.">
+                            <img src="../../assets/images/audi-s8.jpg" alt="Audi S8">
+                            <h3>Audi S8</h3>
+                            <p class="price">3.100.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
@@ -235,7 +221,6 @@
         </section>
     </main>
 
-    <!-- Footer -->
     <footer id="contact" style="margin-top: 4rem; padding: 3rem 5%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-top: 1px solid rgba(255, 255, 255, 0.2);">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; color: #fff;">
             <div>
@@ -251,13 +236,13 @@
             <div>
                 <h3 style="margin-bottom: 1rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Theo dõi chúng tôi</h3>
                 <div style="display: flex; gap: 1rem; font-size: 1.5rem;">
-                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-facebook"></i></a>
-                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-instagram"></i></a>
-                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-youtube"></i></a>
+                    <a href="#" style="color: #fff;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: #fff;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: #fff;"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
         </div>
-        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #fff;">
             <p>&copy; 2024 3 Boys Auto. All rights reserved.</p>
         </div>
     </footer>
@@ -274,7 +259,8 @@
         </div>
     </div>
 
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/brand-page.js"></script>
+    <script src="../../assets/js/main.js"></script>
+    <script src="../../assets/js/brand-page.js"></script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-// Toast notification (tự ẩn sau 2s)
+﻿// Toast notification (tự ẩn sau 2s)
 function showToast(message, redirectUrl) {
   var t = document.createElement("div");
   t.style.cssText =
@@ -90,10 +90,10 @@ function checkLoginAndGoToCart() {
 
   if (!isUserLoggedIn && !isAdminLoggedIn) {
     alert("Vui lòng đăng nhập để xem giỏ hàng!");
-    window.location.href = "login.html";
+    window.location.href = "../user/login.html";
     return false;
   }
-  window.location.href = "cart.html";
+  window.location.href = "../user/cart.html";
   return false;
 }
 
@@ -164,3 +164,4 @@ function changePage(direction) {
 
 // Expose functions to global scope
 window.changePage = changePage;
+

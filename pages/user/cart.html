@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Giỏ hàng</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
   <style>
     .cart-container {
       max-width: 900px;
@@ -109,7 +109,7 @@
       </tbody>
     </table>
     <div class="checkout-bar">
-      <a href="index.html" class="back-link">← Tiếp tục mua sắm</a>
+      <a href="../../index.html" class="back-link">← Tiếp tục mua sắm</a>
       <button id="ordersBtn" onclick="window.location.href='orders.html'; return false;" style="background:#007bff;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;">Xem đơn hàng đã mua</button>
       <div style="display:flex;align-items:center;gap:16px;">
         <div class="total" id="cart-total" style="font-size:1.3rem;color:#333;">Tổng: 0 VNĐ</div>
@@ -256,7 +256,7 @@
     </form>
   </div>
 
-  <script src="assets/js/main.js"></script>
+  <script src="../../assets/js/main.js"></script>
   <script>
     // Biến kiểm tra đã khởi tạo xe mẫu chưa
     let sampleCarsInitialized = false;
@@ -378,7 +378,7 @@
             
             if (cart.length === 0) {
               alert('Giỏ hàng trống!');
-              window.location.href = 'index.html';
+              window.location.href = '../../index.html';
               return false;
             }
             

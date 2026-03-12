@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -12,7 +12,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="../../assets/css/style.css" />
   </head>
   <body>
     <div class="login-container">
@@ -121,7 +121,7 @@
         </div>
 
         <div class="back-to-site">
-          <a href="index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+          <a href="../../index.html"><i class="fas fa-home"></i> Về trang chủ</a>
         </div>
       </div>
     </div>
@@ -130,7 +130,7 @@
     <div class="admin-login-box">
       <div
         class="admin-toggle"
-        onclick="window.location.href = 'admin-login.html'"
+        onclick="window.location.href = '../admin/admin-login.html'"
       >
         <i class="fas fa-user-shield"></i>
         <span>Admin</span>
@@ -192,7 +192,7 @@
             localStorage.setItem("userLoggedIn", "true");
             localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
-            showToast("Đăng nhập thành công: " + email, "index.html");
+            showToast("Đăng nhập thành công: " + email, "../../index.html");
           } else {
             alert("Vui lòng nhập đầy đủ thông tin đăng nhập");
           }
@@ -236,7 +236,7 @@
             localStorage.setItem("userLoggedIn", "true");
             localStorage.setItem("userInfo", JSON.stringify(userInfo));
             localStorage.setItem("userEmail", user.email);
-            showToast("Đăng nhập thành công: " + userInfo.name, "index.html");
+            showToast("Đăng nhập thành công: " + userInfo.name, "../../index.html");
             return;
           }
 
@@ -267,12 +267,12 @@
           localStorage.setItem("userLoggedIn", "true");
           localStorage.setItem("userInfo", JSON.stringify(simulatedUser));
           localStorage.setItem("userEmail", email);
-          showToast("Đăng nhập thành công!", "index.html");
+          showToast("Đăng nhập thành công!", "../../index.html");
         });
 
       // Kiểm tra nếu đã đăng nhập
       if (localStorage.getItem("userLoggedIn") === "true") {
-        window.location.href = "index.html";
+        window.location.href = "../../index.html";
       }
 
       // Đảm bảo form luôn trống khi load trang
@@ -350,3 +350,4 @@
     </script>
   </body>
 </html>
+

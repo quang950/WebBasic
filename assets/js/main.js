@@ -3,6 +3,9 @@
 // Tất cả tính năng khác đã bị tắt/chuyển thành static HTML
 // ========================================
 
+// Dynamic base path (works at root and inside pages/ subfolders)
+const _basePath = window.location.pathname.replace(/\\/g, '/').includes('/pages/') ? '../../' : '';
+
 document.addEventListener('DOMContentLoaded', () => {
     // Seed giỏ hàng với 1 xe mặc định (để hiển thị)
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -34,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isAdmin) {
             if (actions && !actions.querySelector('.admin-return-btn')) {
                 const btn = document.createElement('a');
-                btn.href = 'admin-themsanpham.html';
+                btn.href = _basePath + 'pages/admin/admin-themsanpham.html';
                 btn.className = 'admin-return-btn blob-btn login-btn';
                 btn.innerHTML = '<span class="blob-btn__inner"><span class="blob-btn__blobs"><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span></span></span>Quay lại Admin';
                 actions.insertBefore(btn, actions.firstChild);
@@ -263,7 +266,7 @@ function closeLoginRequiredModal() {
 
 function goToLogin() {
     closeLoginRequiredModal();
-    window.location.href = 'login.html';
+    window.location.href = _basePath + 'pages/user/login.html';
 }
 
 // Kiểm tra đăng nhập trước khi vào giỏ hàng
@@ -272,7 +275,7 @@ function checkLoginAndGoToCart() {
     if (!isLoggedIn) {
         showLoginRequiredModal();
     } else {
-        window.location.href = 'cart.html';
+        window.location.href = _basePath + 'pages/user/cart.html';
     }
 }
 
@@ -359,3 +362,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 window.showCarDetails = showCarDetails;
+
