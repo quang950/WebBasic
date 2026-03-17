@@ -1,50 +1,74 @@
 # Welcome to 3 Boys Auto 🚗
 
-Website bán xe ô tô trực tuyến 
+Website bán xe ô tô trực tuyến
 
 ## Cấu trúc dự án
 
 ```
 WebBasic/
-├── assets/                  # Tài nguyên tĩnh
-│   ├── css/
-│   │   ├── style.css        # CSS chính (user & brand pages)
-│   │   └── admin-style-new.css  # CSS trang admin
-│   ├── js/
-│   │   ├── main.js          # Logic chính (login, cart, navbar)
-│   │   ├── brand-page.js    # Logic trang thương hiệu xe
-│   │   ├── search-results.js# Logic trang kết quả tìm kiếm
-│   │   └── admin.js         # Logic trang quản trị
-│   └── images/              # Hình ảnh xe, logo thương hiệu
-│       └── images-index/    # Hình nền trang chủ
-├── pages/
-│   ├── admin/               # Trang quản trị
-│   │   ├── admin-login.html
-│   │   ├── admin-categories.html
-│   │   ├── admin-add-category.html
-│   │   └── admin-themsanpham.html
-│   ├── brands/              # Trang từng hãng xe
-│   │   ├── toyota.html
-│   │   ├── mercedes.html
-│   │   ├── bmw.html
-│   │   ├── audi.html
-│   │   ├── lexus.html
-│   │   ├── honda.html
-│   │   ├── hyundai.html
-│   │   ├── kia.html
-│   │   └── vinfast.html
-│   └── user/                # Trang người dùng
-│       ├── login.html
-│       ├── register.html
-│       ├── profile.html
-│       ├── cart.html
-│       ├── orders.html
-│       ├── invoice.html
-│       ├── order-confirmation.html
-│       └── search-results.html
-├── docs/                    # Tài liệu hướng dẫn
-├── index.html               # Trang chủ ⭐
-├── .gitignore
+├── BackEnd/                 # Mã nguồn phía Server (PHP)
+│   ├── api/                 # Tầng ENTRY POINT (FE gọi vào đây)
+│   │   ├── cart.php
+│   │   ├── check_session.php
+│   │   ├── login.php
+│   │   ├── logout.php
+│   │   ├── product_detail.php
+│   │   ├── products.php
+│   │   ├── register.php
+│   │   └── search.php
+│   ├── config/              # Cấu hình hệ thống (Database, v.v.)
+│   │   └── db_connect.php
+│   ├── controllers/         # Tầng xử lý logic
+│   │   ├── CartController.php
+│   │   ├── ProductController.php
+│   │   └── UserController.php
+│   └── models/              # Tầng tương tác database
+│       ├── CartModel.php
+│       ├── ProductModel.php
+│       └── UserModel.php
+├── DataBase/                # Cơ sở dữ liệu
+│   └── car_shop.sql         # File export database
+├── FrontEnd/                # Giao diện người dùng
+│   ├── assets/              # Tài nguyên tĩnh
+│   │   ├── css/
+│   │   │   ├── admin-style-new.css  # CSS trang admin
+│   │   │   └── style.css            # CSS chính
+│   │   ├── images/          # Hình ảnh xe, logo thương hiệu
+│   │   │   └── images-index/
+│   │   └── js/
+│   │       ├── admin.js             # Logic trang quản trị
+│   │       ├── brand-page.js        # Logic trang thương hiệu
+│   │       ├── main.js              # Logic chính
+│   │       └── search-results.js    # Logic trang tìm kiếm
+│   ├── detail/              # Trang chi tiết sản phẩm
+│   ├── docs/                # Tài liệu hướng dẫn
+│   ├── pages/
+│   │   ├── admin/           # Trang quản trị
+│   │   │   ├── admin-add-category.html
+│   │   │   ├── admin-categories.html
+│   │   │   ├── admin-login.html
+│   │   │   └── admin-themsanpham.html
+│   │   ├── brands/          # Trang theo hãng xe
+│   │   │   ├── audi.html
+│   │   │   ├── bmw.html
+│   │   │   ├── honda.html
+│   │   │   ├── hyundai.html
+│   │   │   ├── kia.html
+│   │   │   ├── lexus.html
+│   │   │   ├── mercedes.html
+│   │   │   ├── toyota.html
+│   │   │   └── vinfast.html
+│   │   └── user/            # Trang tài khoản/mua sắm
+│   │       ├── cart.html
+│   │       ├── invoice.html
+│   │       ├── login.html
+│   │       ├── order-confirmation.html
+│   │       ├── orders.html
+│   │       ├── profile.html
+│   │       ├── register.html
+│   │       └── search-results.html
+│   ├── index.html           # Trang chủ ⭐
+│   └── .gitignore
 └── README.md
 ```
 
