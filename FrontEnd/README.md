@@ -1,6 +1,6 @@
 # 3 Boys Auto 🚗
 
-Website bán xe ô tô trực tuyến – dự án học tập Web cơ bản (HTML, CSS, JavaScript thuần).
+Website bán xe ô tô trực tuyến 
 
 ## Cấu trúc dự án
 
