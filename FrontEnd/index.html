@@ -61,108 +61,282 @@
             id="searchBarWrapper"
             style="
               display: none;
-              position: absolute;
-              left: 0;
-              top: 100%;
-              width: 100%;
-              z-index: 999;
+              position: fixed;
+              inset: 0;
+              z-index: 2000;
+              background: rgba(10, 16, 32, 0.55);
+              backdrop-filter: blur(2px);
+              align-items: center;
+              justify-content: center;
+              padding: 16px;
             "
           >
             <div
               class="product-search-bar"
               style="
-                max-width: 500px;
-                margin: 0 auto;
-                padding: 18px 24px;
+                  width: min(760px, 96vw);
+                  padding: 18px 20px;
                 background: #fff;
                 border-radius: 10px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-                display: flex;
-                gap: 1rem;
-                align-items: center;
+                box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+                  display: block;
               "
             >
-              <input
-                type="text"
-                id="searchName"
-                placeholder="Nhập tên xe cần tìm..."
-                style="
-                  flex: 1;
-                  padding: 10px 12px;
-                  border-radius: 6px;
-                  border: 1px solid #ccc;
-                  font-size: 0.95rem;
-                "
-              />
-              <button
-                id="searchBtn"
-                style="
-                  padding: 10px 24px;
-                  background: #007bff;
-                  color: #fff;
-                  border: none;
-                  border-radius: 6px;
-                  font-weight: 600;
-                  cursor: pointer;
-                  white-space: nowrap;
-                "
-              >
-                <i class="fas fa-search"></i> Tìm kiếm
-              </button>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <strong style="font-size: 1.05rem; color: #1b1f2a"
+                    >Tìm kiếm nâng cao</strong
+                  >
+                </div>
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 10px;
+                  "
+                >
+                  <input
+                    type="text"
+                    id="searchName"
+                    placeholder="Tên sản phẩm (ví dụ: Camry)"
+                    style="
+                      padding: 10px 12px;
+                      border-radius: 6px;
+                      border: 1px solid #ccc;
+                      font-size: 0.95rem;
+                      width: 100%;
+                    "
+                  />
+
+                  <select
+                    id="searchCategory"
+                    style="
+                      padding: 10px 12px;
+                      border-radius: 6px;
+                      border: 1px solid #ccc;
+                      font-size: 0.95rem;
+                      width: 100%;
+                      background: #fff;
+                    "
+                  >
+                    <option value="">Tất cả phân loại</option>
+                    <option value="toyota">Toyota</option>
+                    <option value="mercedes">Mercedes</option>
+                    <option value="bmw">BMW</option>
+                    <option value="audi">Audi</option>
+                    <option value="lexus">Lexus</option>
+                    <option value="honda">Honda</option>
+                    <option value="hyundai">Hyundai</option>
+                    <option value="kia">KIA</option>
+                    <option value="vinfast">Vinfast</option>
+                  </select>
+
+                  <select
+                    id="searchModelType"
+                    style="
+                      padding: 10px 12px;
+                      border-radius: 6px;
+                      border: 1px solid #ccc;
+                      font-size: 0.95rem;
+                      width: 100%;
+                      background: #fff;
+                      grid-column: 1 / -1;
+                    "
+                  >
+                    <option value="">Tất cả dòng xe</option>
+                    <option value="suv">SUV</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="mpv">MPV</option>
+                    <option value="hatchback">Hatchback</option>
+                    <option value="coupe">Coupe</option>
+                    <option value="crossover">Crossover</option>
+                    <option value="roadster">Roadster</option>
+                    <option value="ban tai">Bán tải</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="dien">Xe điện</option>
+                  </select>
+
+                  <input
+                    type="number"
+                    id="searchPriceFrom"
+                    min="0"
+                    placeholder="Giá từ"
+                    style="
+                      padding: 10px 12px;
+                      border-radius: 6px;
+                      border: 1px solid #ccc;
+                      font-size: 0.95rem;
+                      width: 100%;
+                    "
+                  />
+
+                  <input
+                    type="number"
+                    id="searchPriceTo"
+                    min="0"
+                    placeholder="Giá đến"
+                    style="
+                      padding: 10px 12px;
+                      border-radius: 6px;
+                      border: 1px solid #ccc;
+                      font-size: 0.95rem;
+                      width: 100%;
+                    "
+                  />
+                </div>
+
+                <div
+                  style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px"
+                >
+                  <button
+                    id="searchResetBtn"
+                    style="
+                      padding: 10px 16px;
+                      background: #eef2ff;
+                      color: #1f2a44;
+                      border: 1px solid #d3dbf6;
+                      border-radius: 6px;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                  >
+                    Đặt lại
+                  </button>
+                  <button
+                    id="searchBtn"
+                    style="
+                      padding: 10px 18px;
+                      background: #007bff;
+                      color: #fff;
+                      border: none;
+                      border-radius: 6px;
+                      font-weight: 600;
+                      cursor: pointer;
+                      white-space: nowrap;
+                    "
+                  >
+                    <i class="fas fa-search"></i> Tìm kiếm
+                  </button>
+                </div>
             </div>
           </div>
           <script>
-            // Hiện/ẩn bảng tìm kiếm ngay dưới nút khi bấm
+            // Hiện/ẩn popup tìm kiếm ở giữa màn hình khi bấm nút tìm kiếm trên navbar
             document.addEventListener("DOMContentLoaded", function () {
               var filterBtn = document.getElementById("filterToggleBtn");
               var searchBarWrapper =
                 document.getElementById("searchBarWrapper");
+              var searchInput = document.getElementById("searchName");
+
+              function closeSearchPopup() {
+                searchBarWrapper.style.display = "none";
+              }
+
+              function openSearchPopup() {
+                searchBarWrapper.style.display = "flex";
+                setTimeout(function () {
+                  if (searchInput) searchInput.focus();
+                }, 0);
+              }
+
               if (filterBtn && searchBarWrapper) {
                 filterBtn.addEventListener("click", function (e) {
                   e.stopPropagation();
                   if (searchBarWrapper.style.display === "none") {
-                    searchBarWrapper.style.display = "block";
-                    searchBarWrapper.style.animation = "slideDown 0.35s";
+                    openSearchPopup();
                   } else {
-                    searchBarWrapper.style.display = "none";
+                    closeSearchPopup();
                   }
                 });
-                // Ẩn khi click ra ngoài
-                document.addEventListener("click", function (e) {
-                  if (
-                    !searchBarWrapper.contains(e.target) &&
-                    e.target !== filterBtn
-                  ) {
-                    searchBarWrapper.style.display = "none";
+
+                // Đóng khi click nền tối (ngoài khung)
+                searchBarWrapper.addEventListener("click", function (e) {
+                  if (e.target === searchBarWrapper) {
+                    closeSearchPopup();
+                  }
+                });
+
+                // Đóng khi nhấn Esc
+                document.addEventListener("keydown", function (e) {
+                  if (e.key === "Escape") {
+                    closeSearchPopup();
                   }
                 });
               }
 
-              // Xử lý nút tìm kiếm - chuyển sang trang search-results.html
+              // Xử lý nút tìm kiếm trên navbar - lọc trực tiếp tại trang chủ
               var searchBtn = document.getElementById("searchBtn");
+              var searchResetBtn = document.getElementById("searchResetBtn");
+              var searchCategory = document.getElementById("searchCategory");
+              var searchModelType = document.getElementById("searchModelType");
+              var searchPriceFrom = document.getElementById("searchPriceFrom");
+              var searchPriceTo = document.getElementById("searchPriceTo");
+
               if (searchBtn) {
                 searchBtn.addEventListener("click", function () {
                   var searchName = document
                     .getElementById("searchName")
                     .value.trim();
+                  var category = searchCategory ? searchCategory.value : "";
+                  var modelType = searchModelType ? searchModelType.value : "";
+                  var priceFrom = searchPriceFrom
+                    ? searchPriceFrom.value.trim()
+                    : "";
+                  var priceTo = searchPriceTo ? searchPriceTo.value.trim() : "";
 
-                  // Tạo URL với tham số tìm kiếm tên
-                  var params = new URLSearchParams();
-                  if (searchName) params.append("name", searchName);
+                  if (typeof window.applyHomeSearch === "function") {
+                    window.applyHomeSearch({
+                      keyword: searchName,
+                      make: category,
+                      model: modelType,
+                      priceFrom: priceFrom,
+                      priceTo: priceTo,
+                      page: 1,
+                    });
+                  }
 
-                  // Chuyển sang trang kết quả tìm kiếm
-                  window.location.href =
-                    "pages/user/search-results.html?" + params.toString();
+                  closeSearchPopup();
                 });
 
-                // Cho phép Enter để tìm kiếm
-                document
-                  .getElementById("searchName")
-                  .addEventListener("keypress", function (e) {
-                    if (e.key === "Enter") {
-                      searchBtn.click();
-                    }
-                  });
+                // Cho phép Enter để tìm kiếm khi đang nhập trong popup
+                searchBarWrapper.addEventListener("keydown", function (e) {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    searchBtn.click();
+                  }
+                });
+              }
+
+              if (searchResetBtn) {
+                searchResetBtn.addEventListener("click", function () {
+                  var searchNameInput = document.getElementById("searchName");
+                  if (searchNameInput) searchNameInput.value = "";
+                  if (searchCategory) searchCategory.value = "";
+                  if (searchModelType) searchModelType.value = "";
+                  if (searchPriceFrom) searchPriceFrom.value = "";
+                  if (searchPriceTo) searchPriceTo.value = "";
+
+                  if (typeof window.applyHomeSearch === "function") {
+                    window.applyHomeSearch({
+                      keyword: "",
+                      make: "",
+                      model: "",
+                      priceFrom: "",
+                      priceTo: "",
+                      page: 1,
+                    });
+                  }
+
+                  closeSearchPopup();
+                });
               }
             });
           </script>
@@ -197,7 +371,6 @@
               class="user-name"
               id="userName"
               style="cursor: pointer"
-              onclick="window.location.href = 'pages/user/profile.html'"
             ></span>
             <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
           </div>
@@ -368,42 +541,6 @@
           </div>
         </section>
 
-        <!-- Search Inventory Bar -->
-        <div class="search-inventory-bar">
-          <div class="si-inner">
-            <div class="si-title"><i class="fas fa-car"></i> Tìm Kiếm Xe</div>
-            <select class="si-select" id="si-condition">
-              <option value="">Tình Trạng Xe</option>
-              <option value="new">Xe Mới</option>
-              <option value="used">Xe Cũ</option>
-            </select>
-            <select class="si-select" id="si-make">
-              <option value="">Hãng Xe</option>
-              <option value="toyota">Toyota</option>
-              <option value="mercedes">Mercedes</option>
-              <option value="bmw">BMW</option>
-              <option value="audi">Audi</option>
-              <option value="lexus">Lexus</option>
-              <option value="honda">Honda</option>
-              <option value="hyundai">Hyundai</option>
-              <option value="kia">KIA</option>
-              <option value="vinfast">Vinfast</option>
-            </select>
-            <select class="si-select" id="si-model">
-              <option value="">Dòng Xe</option>
-            </select>
-            <button class="si-search-btn" onclick="searchInventory()">
-              <i class="fas fa-search"></i> TÌM KIẾM
-            </button>
-            <button
-              class="si-reset-btn"
-              onclick="resetInventorySearch()"
-              title="Đặt lại"
-            >
-              <i class="fas fa-redo"></i>
-            </button>
-          </div>
-        </div>
       </div>
       <!-- end hero-full-wrapper -->
 
@@ -3050,6 +3187,215 @@
       </div>
     </footer>
 
+    <style>
+      #accountModal {
+        backdrop-filter: blur(4px);
+      }
+
+      #accountModal .account-panel {
+        width: min(560px, 94vw);
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid rgba(11, 116, 222, 0.15);
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.38);
+        overflow: hidden;
+        animation: accountModalIn 0.22s ease;
+      }
+
+      #accountModal .account-header {
+        padding: 15px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(120deg, #0b74de 0%, #1d4ed8 100%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      #accountModal .account-title {
+        font-size: 1.06rem;
+        color: #fff;
+        letter-spacing: 0.2px;
+      }
+
+      #accountModal .close-account-btn {
+        border: none;
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      #accountModal #accountForm {
+        padding: 18px;
+      }
+
+      #accountModal .account-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      #accountModal .account-input {
+        padding: 11px 12px;
+        border: 1px solid #cfd6e4;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      #accountModal .account-input:focus {
+        outline: none;
+        border-color: #0b74de;
+        box-shadow: 0 0 0 3px rgba(11, 116, 222, 0.18);
+      }
+
+      #accountModal .account-input.readonly {
+        background: #f5f7fb;
+        color: #667;
+      }
+
+      #accountModal .account-input.full {
+        grid-column: 1 / -1;
+      }
+
+      #accountModal .account-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      #accountModal .btn-secondary,
+      #accountModal .btn-primary {
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      #accountModal .btn-secondary {
+        border: 1px solid #d0d7e7;
+        background: #f5f7fb;
+        color: #2a3a59;
+      }
+
+      #accountModal .btn-primary {
+        border: none;
+        background: linear-gradient(120deg, #0b74de 0%, #1d4ed8 100%);
+        color: #fff;
+      }
+
+      #accountModal .btn-secondary:hover,
+      #accountModal .btn-primary:hover,
+      #accountModal .close-account-btn:hover {
+        filter: brightness(0.96);
+      }
+
+      @keyframes accountModalIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.99);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+    </style>
+
+    <div
+      id="accountModal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        background: rgba(8, 12, 24, 0.55);
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      "
+    >
+      <div class="account-panel">
+        <div class="account-header">
+          <strong class="account-title"
+            >Thông tin tài khoản</strong
+          >
+          <button
+            id="closeAccountModalBtn"
+            type="button"
+            class="close-account-btn"
+          >
+            &times;
+          </button>
+        </div>
+
+        <form id="accountForm">
+          <div class="account-grid">
+            <input
+              id="accountFirstName"
+              type="text"
+              placeholder="Họ"
+              required
+              class="account-input"
+            />
+            <input
+              id="accountLastName"
+              type="text"
+              placeholder="Tên"
+              required
+              class="account-input"
+            />
+            <input
+              id="accountEmailReadonly"
+              type="email"
+              placeholder="Email"
+              readonly
+              class="account-input readonly"
+            />
+            <input
+              id="accountPhone"
+              type="text"
+              placeholder="Số điện thoại"
+              class="account-input"
+            />
+            <input
+              id="accountProvince"
+              type="text"
+              placeholder="Tỉnh/Thành phố"
+              class="account-input"
+            />
+            <input
+              id="accountAddress"
+              type="text"
+              placeholder="Địa chỉ giao hàng"
+              class="account-input full"
+            />
+          </div>
+
+          <div class="account-actions">
+            <button
+              type="button"
+              id="cancelAccountBtn"
+              class="btn-secondary"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              class="btn-primary"
+            >
+              Lưu thay đổi
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal chi tiết xe -->
     <div id="carModal" class="modal">
       <div class="modal-content">
@@ -3139,136 +3485,271 @@
         startAuto();
       })();
 
-      // ===== SEARCH INVENTORY =====
-      var siModels = {
-        toyota: [
-          "Camry",
-          "Vios",
-          "Fortuner",
-          "Cross",
-          "Innova",
-          "Yaris",
-          "Corolla",
-          "Raize",
-          "Alphard",
-          "Hilux",
-        ],
-        mercedes: [
-          "C200",
-          "E200",
-          "GLC200",
-          "GLC300",
-          "GLE450",
-          "Maybach S450",
-          "Maybach S680",
-        ],
-        bmw: [
-          "320i",
-          "330i",
-          "430i",
-          "520i",
-          "530i",
-          "730Li",
-          "X5",
-          "X7",
-          "M8",
-          "Z4",
-        ],
-        audi: ["A4", "A6", "A8", "Q3", "Q5", "Q7", "RS7", "S5", "S8"],
-        lexus: [
-          "ES250",
-          "NX350h",
-          "RX350",
-          "RX500h",
-          "GX550",
-          "LX600",
-          "LS500",
-          "LM500h",
-          "LC500",
-          "UX",
-        ],
-        honda: [
-          "City",
-          "Civic",
-          "CR-V",
-          "HR-V",
-          "Accord",
-          "Odyssey",
-          "BR-V",
-          "Jazz",
-          "Pilot",
-          "NSX",
-        ],
-        hyundai: [
-          "Accent",
-          "Elantra",
-          "Creta",
-          "Tucson",
-          "Santa Fe",
-          "Palisade",
-          "Sonata",
-          "Custin",
-          "Grand",
-          "Stargazer",
-        ],
-        kia: [
-          "Morning",
-          "Soluto",
-          "K3",
-          "K5",
-          "Cerato",
-          "Carens",
-          "Sonet",
-          "Sportage",
-          "Sorento",
-          "Carnival",
-        ],
-        vinfast: [
-          "VF3",
-          "VF5",
-          "VF5 Plus",
-          "VF6",
-          "VF7",
-          "VF8",
-          "VF9",
-          "VFe34",
-          "Lux A2.0",
-          "President",
-        ],
+      var homeSearchState = {
+        keyword: "",
+        make: "",
+        model: "",
+        priceFrom: "",
+        priceTo: "",
+        page: 1,
+        pageSize: 12,
       };
 
-      document
-        .getElementById("si-make")
-        .addEventListener("change", function () {
-          var make = this.value;
-          var modelSel = document.getElementById("si-model");
-          modelSel.innerHTML = '<option value="">Dòng Xe</option>';
-          if (siModels[make]) {
-            siModels[make].forEach(function (m) {
-              var opt = document.createElement("option");
-              opt.value = m.toLowerCase().replace(/\s/g, "-");
-              opt.textContent = m;
-              modelSel.appendChild(opt);
-            });
+      function normalizeText(value) {
+        return String(value || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function getBrandKeyFromCard(card) {
+        var container = card.closest(".brand-container");
+        if (!container || !container.id) return "";
+        return normalizeText(container.id);
+      }
+
+      function getCarTypeText(card) {
+        var name = normalizeText(card.querySelector("h3")?.textContent || "");
+        var desc = normalizeText(card.getAttribute("data-desc") || "");
+        return (name + " " + desc).trim();
+      }
+
+      function ensureHomeSearchMessageNode() {
+        var productsSection = document.getElementById("products");
+        if (!productsSection) return null;
+
+        var existing = document.getElementById("home-search-message");
+        if (existing) return existing;
+
+        var message = document.createElement("div");
+        message.id = "home-search-message";
+        message.style.display = "none";
+        message.style.margin = "12px auto 20px";
+        message.style.maxWidth = "780px";
+        message.style.padding = "14px 18px";
+        message.style.textAlign = "center";
+        message.style.borderRadius = "10px";
+        message.style.background = "rgba(255,255,255,0.08)";
+        message.style.border = "1px solid rgba(255,255,255,0.22)";
+        message.style.color = "#fff";
+        message.style.fontWeight = "600";
+
+        var sectionTitle = productsSection.querySelector(".section-title");
+        if (sectionTitle && sectionTitle.nextSibling) {
+          sectionTitle.parentNode.insertBefore(message, sectionTitle.nextSibling);
+        } else {
+          productsSection.insertBefore(message, productsSection.firstChild);
+        }
+        return message;
+      }
+
+      function setHomeSearchMessage(text) {
+        var node = ensureHomeSearchMessageNode();
+        if (!node) return;
+        if (text) {
+          node.textContent = text;
+          node.style.display = "block";
+        } else {
+          node.textContent = "";
+          node.style.display = "none";
+        }
+      }
+
+      function ensureHomeSearchPaginationNode() {
+        var productsSection = document.getElementById("products");
+        if (!productsSection) return null;
+
+        var existing = document.getElementById("home-search-pagination");
+        if (existing) return existing;
+
+        var wrap = document.createElement("div");
+        wrap.id = "home-search-pagination";
+        wrap.style.display = "none";
+        wrap.style.margin = "0 auto 22px";
+        wrap.style.maxWidth = "420px";
+        wrap.style.padding = "10px 14px";
+        wrap.style.borderRadius = "10px";
+        wrap.style.background = "rgba(255,255,255,0.08)";
+        wrap.style.border = "1px solid rgba(255,255,255,0.22)";
+        wrap.style.color = "#fff";
+        wrap.style.display = "none";
+        wrap.style.alignItems = "center";
+        wrap.style.justifyContent = "center";
+        wrap.style.gap = "10px";
+
+        wrap.innerHTML =
+          '<button id="home-search-prev" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;">Trước</button>' +
+          '<span id="home-search-page-info" style="font-weight:600;min-width:120px;text-align:center;">Trang 1/1</span>' +
+          '<button id="home-search-next" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;">Sau</button>';
+
+        var sectionTitle = productsSection.querySelector(".section-title");
+        var messageNode = document.getElementById("home-search-message") || ensureHomeSearchMessageNode();
+        if (messageNode && messageNode.parentNode) {
+          messageNode.parentNode.insertBefore(wrap, messageNode.nextSibling);
+        } else if (sectionTitle && sectionTitle.nextSibling) {
+          sectionTitle.parentNode.insertBefore(wrap, sectionTitle.nextSibling);
+        } else {
+          productsSection.insertBefore(wrap, productsSection.firstChild);
+        }
+
+        var prevBtn = wrap.querySelector("#home-search-prev");
+        var nextBtn = wrap.querySelector("#home-search-next");
+        prevBtn.addEventListener("click", function () {
+          if (homeSearchState.page > 1) {
+            window.applyHomeSearch({ page: homeSearchState.page - 1 }, false);
           }
         });
+        nextBtn.addEventListener("click", function () {
+          window.applyHomeSearch({ page: homeSearchState.page + 1 }, false);
+        });
 
-      function searchInventory() {
-        var make = document.getElementById("si-make").value;
-        var model = document.getElementById("si-model").value;
-        var params = new URLSearchParams();
-        var term = model || make;
-        if (term) params.append("name", term);
-        window.location.href =
-          "pages/user/search-results.html?" + params.toString();
+        return wrap;
       }
 
-      function resetInventorySearch() {
-        document.getElementById("si-condition").value = "";
-        document.getElementById("si-make").value = "";
-        document.getElementById("si-model").innerHTML =
-          '<option value="">Dòng Xe</option>';
+      function parsePriceFromCard(card) {
+        var text = card.querySelector(".price")?.textContent || "";
+        var digits = text.replace(/[^0-9]/g, "");
+        return digits ? Number(digits) : 0;
       }
+
+      function updateHomeSearchPagination(totalItems) {
+        var wrap = ensureHomeSearchPaginationNode();
+        if (!wrap) return;
+
+        var totalPages = Math.max(1, Math.ceil(totalItems / homeSearchState.pageSize));
+        if (homeSearchState.page > totalPages) homeSearchState.page = totalPages;
+
+        var isActiveFilter =
+          !!homeSearchState.keyword ||
+          !!homeSearchState.make ||
+          !!homeSearchState.model ||
+          !!homeSearchState.priceFrom ||
+          !!homeSearchState.priceTo;
+
+        if (!isActiveFilter || totalItems === 0) {
+          wrap.style.display = "none";
+          return;
+        }
+
+        wrap.style.display = "flex";
+        wrap.querySelector("#home-search-page-info").textContent =
+          "Trang " + homeSearchState.page + "/" + totalPages;
+
+        var prevBtn = wrap.querySelector("#home-search-prev");
+        var nextBtn = wrap.querySelector("#home-search-next");
+        prevBtn.disabled = homeSearchState.page <= 1;
+        nextBtn.disabled = homeSearchState.page >= totalPages;
+        prevBtn.style.opacity = prevBtn.disabled ? "0.5" : "1";
+        nextBtn.style.opacity = nextBtn.disabled ? "0.5" : "1";
+      }
+
+      function applyHomeSearch(criteria, shouldScroll) {
+        var filters = criteria || {};
+        var doScroll = shouldScroll !== false;
+
+        if (Object.prototype.hasOwnProperty.call(filters, "keyword")) {
+          homeSearchState.keyword = filters.keyword || "";
+        }
+        if (Object.prototype.hasOwnProperty.call(filters, "make")) {
+          homeSearchState.make = filters.make || "";
+        }
+        if (Object.prototype.hasOwnProperty.call(filters, "model")) {
+          homeSearchState.model = filters.model || "";
+        }
+        if (Object.prototype.hasOwnProperty.call(filters, "priceFrom")) {
+          homeSearchState.priceFrom = filters.priceFrom || "";
+        }
+        if (Object.prototype.hasOwnProperty.call(filters, "priceTo")) {
+          homeSearchState.priceTo = filters.priceTo || "";
+        }
+        if (Object.prototype.hasOwnProperty.call(filters, "page")) {
+          homeSearchState.page = Math.max(1, Number(filters.page) || 1);
+        }
+
+        var keyword = normalizeText(homeSearchState.keyword || "");
+        var make = normalizeText(homeSearchState.make || "");
+        var modelType = normalizeText((homeSearchState.model || "").replace(/-/g, " "));
+        var minPrice = Number(homeSearchState.priceFrom || 0);
+        var maxPrice = Number(homeSearchState.priceTo || 0);
+        var useMin = !!homeSearchState.priceFrom;
+        var useMax = !!homeSearchState.priceTo;
+
+        var cards = Array.from(document.querySelectorAll("#products .car-card"));
+        if (!cards.length) return;
+
+        var matchedCards = [];
+
+        cards.forEach(function (card) {
+          var cardName = normalizeText(card.querySelector("h3")?.textContent || "");
+          var cardBrand = getBrandKeyFromCard(card);
+          var cardTypeText = getCarTypeText(card);
+          var cardPrice = parsePriceFromCard(card);
+
+          var matchesBrand = !make || cardBrand === make;
+          var matchesName = !keyword || cardName.includes(keyword);
+          var matchesModelType = !modelType || cardTypeText.includes(modelType);
+          var matchesMinPrice = !useMin || cardPrice >= minPrice;
+          var matchesMaxPrice = !useMax || cardPrice <= maxPrice;
+
+          var isMatch =
+            matchesBrand &&
+            matchesName &&
+            matchesModelType &&
+            matchesMinPrice &&
+            matchesMaxPrice;
+          if (isMatch) {
+            matchedCards.push(card);
+          }
+
+          card.style.display = "none";
+        });
+
+        var totalItems = matchedCards.length;
+        var totalPages = Math.max(1, Math.ceil(totalItems / homeSearchState.pageSize));
+        if (homeSearchState.page > totalPages) homeSearchState.page = totalPages;
+
+        var from = (homeSearchState.page - 1) * homeSearchState.pageSize;
+        var to = from + homeSearchState.pageSize;
+        matchedCards.slice(from, to).forEach(function (card) {
+          card.style.display = "";
+        });
+
+        var brandBlocks = Array.from(document.querySelectorAll("#products .brand-container"));
+        var visibleCount = 0;
+        brandBlocks.forEach(function (block) {
+          var visibleCards = block.querySelectorAll(".car-card:not([style*='display: none'])").length;
+          block.style.display = visibleCards > 0 ? "" : "none";
+          visibleCount += visibleCards;
+        });
+
+        updateHomeSearchPagination(totalItems);
+
+        if (make || keyword || modelType || useMin || useMax) {
+          setHomeSearchMessage(
+            totalItems > 0
+              ? "Tìm thấy " + totalItems + " xe phù hợp"
+              : "Không tìm thấy xe phù hợp với tiêu chí hiện tại"
+          );
+        } else {
+          cards.forEach(function (card) {
+            card.style.display = "";
+          });
+          brandBlocks.forEach(function (block) {
+            block.style.display = "";
+          });
+          setHomeSearchMessage("");
+          updateHomeSearchPagination(0);
+        }
+
+        var productsSection = document.getElementById("products");
+        if (productsSection && doScroll) {
+          productsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      window.applyHomeSearch = applyHomeSearch;
       function showToast(message, redirectUrl) {
         var t = document.createElement("div");
         t.style.cssText =
@@ -3285,6 +3766,123 @@
             if (redirectUrl) window.location.href = redirectUrl;
           }, 300);
         }, 2000);
+      }
+
+      async function resolveApiBaseForIndex() {
+        if (window.location.port === "5500") {
+          return (
+            window.location.protocol +
+            "//" +
+            window.location.hostname +
+            ":8000/BackEnd/api"
+          );
+        }
+
+        const origin = window.location.origin;
+        const candidates = [
+          origin + "/WebBasic/BackEnd/api",
+          origin + "/BackEnd/api",
+          "http://localhost:8000/BackEnd/api",
+          "http://127.0.0.1:8000/BackEnd/api",
+          "http://localhost/WebBasic/BackEnd/api",
+        ];
+
+        for (const base of candidates) {
+          try {
+            const resp = await fetch(base + "/test.php", { method: "GET" });
+            const text = await resp.text();
+            if (resp.ok && text && text.includes('"test"')) {
+              return base;
+            }
+          } catch (e) {
+            // try next
+          }
+        }
+
+        throw new Error("Không tìm thấy PHP API để cập nhật tài khoản.");
+      }
+
+      function openAccountModal() {
+        const modal = document.getElementById("accountModal");
+        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+
+        document.getElementById("accountFirstName").value = userInfo.firstName || "";
+        document.getElementById("accountLastName").value = userInfo.lastName || "";
+        document.getElementById("accountEmailReadonly").value = userInfo.email || "";
+        document.getElementById("accountPhone").value = userInfo.phone || "";
+        document.getElementById("accountProvince").value = userInfo.province || "";
+        document.getElementById("accountAddress").value = userInfo.address || "";
+
+        modal.style.display = "flex";
+      }
+
+      function closeAccountModal() {
+        const modal = document.getElementById("accountModal");
+        if (modal) modal.style.display = "none";
+      }
+
+      async function saveAccountFromModal(e) {
+        e.preventDefault();
+        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+
+        if (!userInfo.id) {
+          showToast("Không xác định được tài khoản đang đăng nhập");
+          return;
+        }
+
+        const firstName = document.getElementById("accountFirstName").value.trim();
+        const lastName = document.getElementById("accountLastName").value.trim();
+        const phone = document.getElementById("accountPhone").value.trim();
+        const province = document.getElementById("accountProvince").value.trim();
+        const address = document.getElementById("accountAddress").value.trim();
+        const emailValue =
+          (document.getElementById("accountEmailReadonly")?.value || "").trim() ||
+          (userInfo.email || "").trim();
+
+        if (!firstName || !lastName) {
+          showToast("Họ và tên không được để trống");
+          return;
+        }
+
+        try {
+          const apiBase = await resolveApiBaseForIndex();
+          const response = await fetch(apiBase + "/update_user.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: userInfo.id,
+              email: emailValue,
+              firstName: firstName,
+              lastName: lastName,
+              phone: phone,
+              province: province,
+              address: address,
+            }),
+          });
+
+          const rawText = await response.text();
+          const result = rawText ? JSON.parse(rawText) : null;
+          if (!result || !result.success) {
+            throw new Error((result && result.message) || "Cập nhật thất bại");
+          }
+
+          const nextUserInfo = {
+            ...userInfo,
+            firstName,
+            lastName,
+            name: firstName + " " + lastName,
+            phone,
+            province,
+            address,
+          };
+          localStorage.setItem("userInfo", JSON.stringify(nextUserInfo));
+          document.getElementById("userName").textContent = nextUserInfo.name;
+
+          closeAccountModal();
+          showToast("Đã cập nhật thông tin tài khoản");
+        } catch (err) {
+          showToast("Lỗi cập nhật: " + err.message);
+        }
       }
 
       // Kiểm tra trạng thái đăng nhập và hiển thị thông tin user/admin
@@ -3358,6 +3956,39 @@
       // Gọi function kiểm tra khi trang load
       document.addEventListener("DOMContentLoaded", function () {
         checkUserLoginStatus();
+
+        const userNameNode = document.getElementById("userName");
+        const accountModal = document.getElementById("accountModal");
+        const accountForm = document.getElementById("accountForm");
+
+        if (userNameNode) {
+          userNameNode.addEventListener("click", function () {
+            if (localStorage.getItem("adminLoggedIn") === "true") {
+              return;
+            }
+            openAccountModal();
+          });
+        }
+
+        if (accountForm) {
+          accountForm.addEventListener("submit", saveAccountFromModal);
+        }
+
+        const closeAccountBtn = document.getElementById("closeAccountModalBtn");
+        const cancelAccountBtn = document.getElementById("cancelAccountBtn");
+        if (closeAccountBtn) {
+          closeAccountBtn.addEventListener("click", closeAccountModal);
+        }
+        if (cancelAccountBtn) {
+          cancelAccountBtn.addEventListener("click", closeAccountModal);
+        }
+        if (accountModal) {
+          accountModal.addEventListener("click", function (e) {
+            if (e.target === accountModal) {
+              closeAccountModal();
+            }
+          });
+        }
 
         // Slider arrows functionality - chuyển trang giữa 5 xe đầu và 5 xe cuối
         document.querySelectorAll(".slider-arrow.next").forEach((arrow) => {

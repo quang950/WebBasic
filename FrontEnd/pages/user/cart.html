@@ -258,45 +258,7 @@
 
   <script src="../../assets/js/main.js"></script>
   <script>
-    // Biến kiểm tra đã khởi tạo xe mẫu chưa
-    let sampleCarsInitialized = false;
-    
     document.addEventListener('DOMContentLoaded', function() {
-      // Chỉ thêm 2 xe mẫu vào giỏ hàng 1 lần duy nhất
-      if (!sampleCarsInitialized) {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        
-        // Danh sách 2 xe mẫu
-        const sampleCars = [
-          {
-            name: 'Lexus RX 350',
-            brand: 'Lexus',
-            price: 3120000000,
-            img: 'assets/images/lexus-rx.jpg',
-            quantity: 1
-          },
-          {
-            name: 'Kia Sorento 2024',
-            brand: 'Kia',
-            price: 1069000000,
-            img: 'assets/images/kia-sorento.jpg',
-            quantity: 2
-          }
-        ];
-        
-        // Thêm xe mẫu nếu chưa có trong giỏ
-        sampleCars.forEach(car => {
-          const existingIndex = cart.findIndex(item => item.name === car.name);
-          if (existingIndex < 0) {
-            cart.push(car);
-          }
-        });
-        
-        // Lưu lại vào localStorage
-        localStorage.setItem('cart', JSON.stringify(cart));
-        sampleCarsInitialized = true;
-      }
-      
       // Load giỏ hàng từ main.js
       loadCart();
       
@@ -411,35 +373,22 @@
       
       // Load địa chỉ từ tài khoản người dùng
       function loadAccountAddress() {
-        const userEmail = localStorage.getItem('userEmail');
-        if (!userEmail) {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        if (!userInfo || !userInfo.email) {
           console.log('Chưa đăng nhập');
           return;
         }
-        
-        // Lấy thông tin user từ localStorage
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const currentUser = users.find(u => u.email === userEmail);
-        
-        if (currentUser) {
-          // Fill thông tin từ tài khoản
-          document.getElementById('accountName').value = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'N/A';
-          document.getElementById('accountPhone').value = currentUser.phone || 'N/A';
-          document.getElementById('accountEmail').value = currentUser.email || 'N/A';
-          document.getElementById('accountStreet').value = currentUser.street || 'N/A';
-          document.getElementById('accountWard').value = currentUser.ward || 'N/A';
-          document.getElementById('accountDistrict').value = currentUser.district || 'N/A';
-          document.getElementById('accountProvince').value = currentUser.province || 'N/A';
-        } else {
-          // Dữ liệu mẫu nếu không tìm thấy user
-          document.getElementById('accountName').value = 'Nguyễn Văn A';
-          document.getElementById('accountPhone').value = '0901234567';
-          document.getElementById('accountEmail').value = userEmail;
-          document.getElementById('accountStreet').value = '123 Nguyễn Văn Linh';
-          document.getElementById('accountWard').value = 'Phường Tân Thuận Đông';
-          document.getElementById('accountDistrict').value = 'Quận 7';
-          document.getElementById('accountProvince').value = 'TP. Hồ Chí Minh';
-        }
+
+        const fullName = userInfo.name || `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim();
+        const addressParts = String(userInfo.address || '').split(',').map(v => v.trim());
+
+        document.getElementById('accountName').value = fullName || 'N/A';
+        document.getElementById('accountPhone').value = userInfo.phone || 'N/A';
+        document.getElementById('accountEmail').value = userInfo.email || 'N/A';
+        document.getElementById('accountStreet').value = addressParts[0] || 'N/A';
+        document.getElementById('accountWard').value = addressParts[1] || 'N/A';
+        document.getElementById('accountDistrict').value = addressParts[2] || 'N/A';
+        document.getElementById('accountProvince').value = addressParts[3] || userInfo.province || 'N/A';
       }
       
       // Gọi hàm load địa chỉ khi trang load

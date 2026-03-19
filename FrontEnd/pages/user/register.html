@@ -113,6 +113,21 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label for="district"><i class="fas fa-building"></i> Quận/Huyện</label>
+                    <input type="text" id="district" name="district" placeholder="Nhập quận/huyện" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ward"><i class="fas fa-city"></i> Phường/Xã</label>
+                    <input type="text" id="ward" name="ward" placeholder="Nhập phường/xã" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="addressDetail"><i class="fas fa-home"></i> Địa chỉ giao hàng</label>
+                    <input type="text" id="addressDetail" name="addressDetail" placeholder="Số nhà, tên đường" required>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="password"><i class="fas fa-lock"></i> Mật khẩu</label>
@@ -210,25 +225,93 @@
     </div>
 
     <script>
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container') || (() => {
+                const c = document.createElement('div');
+                c.id = 'toast-container';
+                document.body.appendChild(c);
+                return c;
+            })();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 5px;
+                z-index: 9999;
+                font-weight: 500;
+                animation: slideDown 0.3s ease-in;
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        let _cachedApiBase = null;
+
+        async function resolveApiBase() {
+            if (_cachedApiBase) return _cachedApiBase;
+
+            if (window.location.port === '5500') {
+                _cachedApiBase = `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`;
+                return _cachedApiBase;
+            }
+
+            const origin = window.location.origin;
+            const candidates = [
+                `${origin}/WebBasic/BackEnd/api`,
+                `${origin}/BackEnd/api`,
+                'http://localhost:8000/BackEnd/api',
+                'http://127.0.0.1:8000/BackEnd/api',
+                'http://localhost/WebBasic/BackEnd/api'
+            ];
+
+            for (const base of candidates) {
+                try {
+                    const resp = await fetch(`${base}/test.php`, { method: 'GET' });
+                    const text = await resp.text();
+                    if (resp.ok && text && text.includes('"test"')) {
+                        _cachedApiBase = base;
+                        return base;
+                    }
+                } catch (e) {
+                    // Try next candidate
+                }
+            }
+
+            throw new Error('Không tìm thấy PHP API. Nếu bạn đang dùng Live Server, hãy chạy: php -S localhost:8000 trong thư mục WebBasic.');
+        }
+
         // Xử lý form đăng ký
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
             if (password !== confirmPassword) {
-                alert('Mật khẩu xác nhận không khớp!');
+                showToast('Mật khẩu xác nhận không khớp!', 'error');
                 return;
             }
             
             const agreeTerms = document.getElementById('agreeTerms').checked;
             if (!agreeTerms) {
-                alert('Bạn phải đồng ý với điều khoản sử dụng!');
+                showToast('Bạn phải đồng ý với điều khoản sử dụng!', 'error');
                 return;
             }
             
             // Thu thập dữ liệu form
+            const provinceSelect = document.getElementById('province');
+            const provinceLabel = provinceSelect.options[provinceSelect.selectedIndex]?.text || '';
             const formData = {
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
@@ -236,24 +319,52 @@
                 phone: document.getElementById('phone').value,
                 birthDate: document.getElementById('birthDate').value,
                 province: document.getElementById('province').value,
+                district: document.getElementById('district').value,
+                ward: document.getElementById('ward').value,
+                address: `${document.getElementById('addressDetail').value}, ${document.getElementById('ward').value}, ${document.getElementById('district').value}, ${provinceLabel}`,
                 password: password,
                 subscribeNewsletter: document.getElementById('subscribeNewsletter').checked
             };
             
-            // Lưu vào localStorage (trong thực tế sẽ gửi lên server)
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            
-            // Kiểm tra email đã tồn tại
-            if (users.find(user => user.email === formData.email)) {
-                alert('Email này đã được đăng ký!');
-                return;
+            // Gửi request đến API
+            try {
+                showToast('Đang đăng ký...', 'info');
+                const apiBase = await resolveApiBase();
+                const apiUrl = `${apiBase}/register.php`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const rawText = await response.text();
+                let result;
+                try {
+                    result = rawText ? JSON.parse(rawText) : null;
+                } catch (parseErr) {
+                    throw new Error(`API không trả JSON hợp lệ. URL: ${apiUrl}. Status: ${response.status}. Body: ${rawText.slice(0, 200)}`);
+                }
+                if (!result) {
+                    throw new Error(`API trả về rỗng. URL: ${apiUrl}. Status: ${response.status}`);
+                }
+                
+                if (result.success) {
+                    showToast('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showToast(result.message || 'Đăng ký thất bại', 'error');
+                    if (result.errors) {
+                        result.errors.forEach(err => console.error(err));
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Lỗi kết nối: ' + error.message, 'error');
             }
-            
-            users.push(formData);
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            alert('Đăng ký thành công! Bạn sẽ được chuyển đến trang đăng nhập.');
-            window.location.href = 'login.html';
         });
         
         // Hiển thị modal

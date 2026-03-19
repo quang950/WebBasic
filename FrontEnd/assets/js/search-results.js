@@ -1,407 +1,302 @@
-﻿// search-results.js - Xử lý hiển thị kết quả tìm kiếm với phân trang
+// search-results.js - API-driven search and pagination
 
-// Dữ liệu xe Toyota (lấy từ trang toyota.html - prototype mode)
-const sampleCars = [
-  {
-    name: "Toyota Camry",
-    brand: "Toyota",
-    price: 1235000000,
-    image: "../../assets/images/toyota-camry.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "5",
-    transmission: "Tự động (AT)",
-    engine: "2.5L",
-    desc: "Sedan hạng D êm ái, tiện nghi, tiết kiệm.",
+const state = {
+  items: [],
+  currentPage: 1,
+  totalPages: 1,
+  totalItems: 0,
+  limit: 6,
+  filters: {
+    name: "",
+    category: "",
+    priceFrom: "",
+    priceTo: "",
   },
-  {
-    name: "Toyota Vios",
-    brand: "Toyota",
-    price: 592000000,
-    image: "../../assets/images/toyota-vios.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "5",
-    transmission: "Tự động (CVT)",
-    engine: "1.5L",
-    desc: "Sedan đô thị bền bỉ, tiết kiệm nhiên liệu.",
-  },
-  {
-    name: "Toyota Fortuner",
-    brand: "Toyota",
-    price: 1350000000,
-    image: "../../assets/images/toyota-fortuner.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Dầu",
-    seats: "7",
-    transmission: "Tự động (AT)",
-    engine: "2.8L Diesel",
-    desc: "SUV 7 chỗ gầm cao, mạnh mẽ và đa dụng.",
-  },
-  {
-    name: "Toyota Cross",
-    brand: "Toyota",
-    price: 820000000,
-    image: "../../assets/images/toyota-cross.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "5",
-    transmission: "Tự động (CVT)",
-    engine: "1.8L",
-    desc: "Crossover đô thị, vận hành mượt và tiết kiệm.",
-  },
-  {
-    name: "Toyota Innova",
-    brand: "Toyota",
-    price: 755000000,
-    image: "../../assets/images/toyota-innova.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "7",
-    transmission: "Tự động (AT)",
-    engine: "2.0L",
-    desc: "MPV 7 chỗ rộng rãi, phù hợp gia đình.",
-  },
-  {
-    name: "Toyota Yaris",
-    brand: "Toyota",
-    price: 684000000,
-    image: "../../assets/images/toyota-yaris.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "5",
-    transmission: "Tự động (CVT)",
-    engine: "1.5L",
-    desc: "Hatchback linh hoạt, dễ lái, tiết kiệm.",
-  },
-  {
-    name: "Toyota Corolla",
-    brand: "Toyota",
-    price: 800000000,
-    image: "../../assets/images/toyota-corolla.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "5",
-    transmission: "Tự động (CVT)",
-    engine: "1.8L",
-    desc: "Sedan hạng C cân bằng giữa hiệu suất và tiết kiệm.",
-  },
-  {
-    name: "Toyota Raize",
-    brand: "Toyota",
-    price: 510000000,
-    image: "../../assets/images/toyota-raize.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Xăng",
-    seats: "5",
-    transmission: "Tự động (CVT)",
-    engine: "1.0L Turbo",
-    desc: "SUV cỡ nhỏ cơ động, tiết kiệm nhiên liệu.",
-  },
-  {
-    name: "Toyota Alphard",
-    brand: "Toyota",
-    price: 4370000000,
-    image: "../../assets/images/toyota-alphard.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Hybrid",
-    seats: "7",
-    transmission: "e-CVT",
-    engine: "2.5L Hybrid",
-    desc: "MPV hạng sang, tiện nghi cao cấp, vận hành êm ái.",
-  },
-  {
-    name: "Toyota Hilux",
-    brand: "Toyota",
-    price: 706000000,
-    image: "../../assets/images/toyota-hilux.jpg",
-    origin: "Nhật Bản",
-    year: 2025,
-    fuel: "Dầu",
-    seats: "5",
-    transmission: "Tự động (AT)",
-    engine: "2.4L Diesel",
-    desc: "Bán tải mạnh mẽ, bền bỉ, chở hàng tốt.",
-  },
-];
+  apiBase: null,
+};
 
-// Biến phân trang
-let currentPage = 1;
-const itemsPerPage = 6; // Hiển thị 6 xe mỗi trang
-let filteredCars = [];
-let searchParams = {};
-
-// Khởi tạo khi trang load
-document.addEventListener("DOMContentLoaded", function () {
-  // Lấy thông tin tìm kiếm từ URL
-  const urlParams = new URLSearchParams(window.location.search);
-  searchParams = {
-    name: urlParams.get("name") || "",
-    brand: urlParams.get("brand") || "",
-    priceFrom: urlParams.get("priceFrom") || "",
-    priceTo: urlParams.get("priceTo") || "",
-  };
-
-  // Luôn hiển thị tất cả xe (không lọc - prototype mode)
-  filteredCars = sampleCars;
-
-  // Cập nhật tiêu đề
-  updateSearchSummary();
-
-  // Hiển thị trang đầu tiên
-  displayPage(1);
-
-  // Gắn sự kiện cho nút phân trang
-  document.getElementById("prevPageBtn").addEventListener("click", function () {
-    if (currentPage > 1) {
-      displayPage(currentPage - 1);
-    }
-  });
-
-  document.getElementById("nextPageBtn").addEventListener("click", function () {
-    const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
-    if (currentPage < totalPages) {
-      displayPage(currentPage + 1);
-    }
-  });
-
-  // Gắn sự kiện cho nút Lọc
-  document
-    .getElementById("applyFilterBtn")
-    .addEventListener("click", function () {
-      applyFilter();
-    });
-
-  // Gắn sự kiện cho nút Quay lại
-  document
-    .getElementById("resetFilterBtn")
-    .addEventListener("click", function () {
-      resetFilter();
-    });
-
-  // Cho phép Enter để lọc
-  document
-    .getElementById("filterPriceFrom")
-    .addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        applyFilter();
-      }
-    });
-  document
-    .getElementById("filterPriceTo")
-    .addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        applyFilter();
-      }
-    });
+document.addEventListener("DOMContentLoaded", async () => {
+  bindEvents();
+  hydrateFiltersFromUrl();
+  setFilterInputs();
+  await fetchAndRender(1);
 });
 
-// Hàm tìm kiếm (đã bị vô hiệu hóa - prototype mode: luôn hiển thị tất cả xe)
-function performSearch() {
-  // Prototype mode: không lọc, luôn hiển thị tất cả xe mẫu
-  filteredCars = sampleCars;
+function bindEvents() {
+  document.getElementById("prevPageBtn").addEventListener("click", () => {
+    if (state.currentPage > 1) {
+      fetchAndRender(state.currentPage - 1);
+    }
+  });
 
-  // Cập nhật tiêu đề tìm kiếm
-  updateSearchSummary();
+  document.getElementById("nextPageBtn").addEventListener("click", () => {
+    if (state.currentPage < state.totalPages) {
+      fetchAndRender(state.currentPage + 1);
+    }
+  });
+
+  document.getElementById("applyFilterBtn").addEventListener("click", () => {
+    state.filters.category = document.getElementById("filterBrand").value.trim();
+    state.filters.priceFrom = document.getElementById("filterPriceFrom").value.trim();
+    state.filters.priceTo = document.getElementById("filterPriceTo").value.trim();
+    updateUrlQuery();
+    fetchAndRender(1);
+  });
+
+  document.getElementById("resetFilterBtn").addEventListener("click", () => {
+    state.filters = { ...state.filters, category: "", priceFrom: "", priceTo: "" };
+    setFilterInputs();
+    updateUrlQuery();
+    fetchAndRender(1);
+  });
+
+  ["filterPriceFrom", "filterPriceTo"].forEach((id) => {
+    document.getElementById(id).addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        document.getElementById("applyFilterBtn").click();
+      }
+    });
+  });
 }
 
-// Cập nhật thông tin tóm tắt tìm kiếm (vô hiệu hóa - không hiển thị gì)
-function updateSearchSummary() {
-  // Không hiển thị thông tin tìm kiếm
+function hydrateFiltersFromUrl() {
+  const query = new URLSearchParams(window.location.search);
+  state.filters.name = query.get("name") || "";
+  state.filters.category = query.get("category") || query.get("brand") || "";
+  state.filters.priceFrom = query.get("priceFrom") || query.get("minPrice") || "";
+  state.filters.priceTo = query.get("priceTo") || query.get("maxPrice") || "";
 }
 
-// Hàm áp dụng bộ lọc - hiển thị 4 xe Toyota bất kỳ
-function applyFilter() {
-  // Lấy 4 xe Toyota đầu tiên từ danh sách
-  filteredCars = sampleCars
-    .filter((car) => car.name.includes("Toyota"))
-    .slice(0, 4);
+function setFilterInputs() {
+  document.getElementById("filterBrand").value = state.filters.category;
+  document.getElementById("filterPriceFrom").value = state.filters.priceFrom;
+  document.getElementById("filterPriceTo").value = state.filters.priceTo;
+}
 
-  // Nếu không đủ 4 xe Toyota, lấy thêm từ danh sách chung
-  if (filteredCars.length < 4) {
-    const remaining = sampleCars
-      .filter((car) => !car.name.includes("Toyota"))
-      .slice(0, 4 - filteredCars.length);
-    filteredCars = [...filteredCars, ...remaining];
+function updateUrlQuery() {
+  const params = new URLSearchParams();
+  if (state.filters.name) params.set("name", state.filters.name);
+  if (state.filters.category) params.set("category", state.filters.category);
+  if (state.filters.priceFrom) params.set("priceFrom", state.filters.priceFrom);
+  if (state.filters.priceTo) params.set("priceTo", state.filters.priceTo);
+
+  const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+  window.history.replaceState({}, "", newUrl);
+}
+
+async function resolveApiBase() {
+  if (state.apiBase) return state.apiBase;
+
+  const origin = window.location.origin;
+  const candidates = [
+    `${origin}/WebBasic/BackEnd/api`,
+    `${origin}/BackEnd/api`,
+    `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`,
+    "http://localhost:8000/BackEnd/api",
+    "http://127.0.0.1:8000/BackEnd/api",
+  ];
+
+  for (const base of candidates) {
+    try {
+      const response = await fetch(`${base}/test.php`);
+      const text = await response.text();
+      if (response.ok && text.includes('"test"')) {
+        state.apiBase = base;
+        return base;
+      }
+    } catch (_err) {
+      // Continue trying next base URL
+    }
   }
 
-  // Hiển thị nút Quay lại
-  document.getElementById("resetFilterBtn").style.display = "block";
-
-  // Hiển thị từ trang đầu tiên
-  displayPage(1);
+  throw new Error("Khong tim thay API backend. Hay chay PHP server tren cong 8000.");
 }
 
-// Hàm quay lại kết quả ban đầu
-function resetFilter() {
-  // Reset về tất cả xe
-  filteredCars = sampleCars;
+function buildSearchParams(page) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(state.limit));
 
-  // Xóa giá trị trong các ô lọc
-  document.getElementById("filterBrand").value = "";
-  document.getElementById("filterPriceFrom").value = "";
-  document.getElementById("filterPriceTo").value = "";
+  if (state.filters.name) params.set("name", state.filters.name);
+  if (state.filters.category) params.set("category", state.filters.category);
+  if (state.filters.priceFrom) params.set("priceFrom", state.filters.priceFrom);
+  if (state.filters.priceTo) params.set("priceTo", state.filters.priceTo);
 
-  // Ẩn nút Quay lại
-  document.getElementById("resetFilterBtn").style.display = "none";
-
-  // Hiển thị từ trang đầu tiên
-  displayPage(1);
+  return params;
 }
 
-// Hiển thị trang
-function displayPage(pageNumber) {
-  currentPage = pageNumber;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const carsToDisplay = filteredCars.slice(startIndex, endIndex);
+async function fetchAndRender(page) {
+  try {
+    const apiBase = await resolveApiBase();
+    const hasAdvancedFilter =
+      !!state.filters.name || !!state.filters.category || !!state.filters.priceFrom || !!state.filters.priceTo;
 
-  // Hiển thị xe
+    const endpoint = hasAdvancedFilter ? "search.php" : "products.php";
+    const params = buildSearchParams(page);
+    const url = `${apiBase}/${endpoint}?${params.toString()}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Khong lay duoc du lieu san pham");
+    }
+
+    state.items = Array.isArray(data.data) ? data.data : [];
+    state.currentPage = data.pagination?.page || page;
+    state.totalPages = data.pagination?.totalPages || 1;
+    state.totalItems = data.pagination?.totalItems || 0;
+
+    renderSearchSummary();
+    renderProducts();
+    renderPagination();
+  } catch (err) {
+    renderError(err.message || "Da xay ra loi khi tim kiem san pham");
+  }
+}
+
+function renderSearchSummary() {
+  const title = document.getElementById("searchTitle");
+  const chips = [];
+  if (state.filters.name) chips.push(`Ten: ${state.filters.name}`);
+  if (state.filters.category) chips.push(`Loai: ${state.filters.category}`);
+  if (state.filters.priceFrom) chips.push(`Tu: ${formatPrice(Number(state.filters.priceFrom))} VND`);
+  if (state.filters.priceTo) chips.push(`Den: ${formatPrice(Number(state.filters.priceTo))} VND`);
+
+  title.textContent = chips.length > 0 ? `KET QUA: ${chips.join(" | ")}` : "TAT CA SAN PHAM";
+
+  document.getElementById("resetFilterBtn").style.display = chips.length > 0 ? "block" : "none";
+}
+
+function renderProducts() {
   const container = document.getElementById("searchResultsContainer");
 
-  if (carsToDisplay.length === 0) {
+  if (state.items.length === 0) {
     container.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #fff;">
-                <i class="fas fa-car" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Không tìm thấy xe phù hợp</h3>
-                <p style="opacity: 0.8;">Vui lòng thử lại với tiêu chí tìm kiếm khác</p>
-            </div>
-        `;
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #fff;">
+        <i class="fas fa-car" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Khong tim thay san pham phu hop</h3>
+        <p style="opacity: 0.8;">Vui long thu lai voi tieu chi khac</p>
+      </div>
+    `;
     document.getElementById("paginationControls").style.display = "none";
     return;
   }
 
-  container.innerHTML = carsToDisplay
+  container.innerHTML = state.items
     .map(
-      (car) => `
-        <div class="car-card" data-origin="${car.origin}" data-year="${car.year}" data-fuel="${car.fuel}" 
-             data-seats="${car.seats}" data-transmission="${car.transmission}" data-engine="${car.engine}" 
-             data-desc="${car.desc}">
-            <img src="${car.image}" alt="${car.name}" onerror="this.src='../../assets/images/default-car.jpg'">
-            <h3>${car.name}</h3>
-            <p class="price">${formatPrice(car.price)} VNĐ</p>
-            <div class="button-container">
-                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                <a href="#" class="view-details">Chi tiết</a>
-            </div>
+      (item) => `
+      <div class="car-card" data-id="${item.id}">
+        <img src="${item.image_url || '../../assets/images/default-car.jpg'}" alt="${escapeHtml(item.name)}" onerror="this.src='../../assets/images/default-car.jpg'">
+        <h3>${escapeHtml(item.name)}</h3>
+        <p style="color:#ddd; margin:0.3rem 0;">Loai: ${escapeHtml(item.category || "Chua phan loai")}</p>
+        <p class="price">${formatPrice(Number(item.price || 0))} VND</p>
+        <div class="button-container">
+          <button class="buy-btn" onclick="return false;" style="cursor:pointer; opacity:1;">Mua hang</button>
+          <a href="#" class="view-details" data-id="${item.id}">Chi tiet</a>
         </div>
-    `,
+      </div>
+      `,
     )
     .join("");
 
-  // Cập nhật phân trang
-  updatePagination();
-
-  // Gắn lại sự kiện cho nút chi tiết
   attachDetailEventListeners();
-
-  // Cuộn lên đầu kết quả
-  document.getElementById("products").scrollIntoView({ behavior: "smooth" });
 }
 
-// Cập nhật giao diện phân trang
-function updatePagination() {
-  const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
+function renderPagination() {
+  const controls = document.getElementById("paginationControls");
+  controls.style.display = "flex";
 
-  document.getElementById("currentPage").textContent = currentPage;
-  document.getElementById("totalPages").textContent = totalPages;
+  document.getElementById("currentPage").textContent = String(state.currentPage);
+  document.getElementById("totalPages").textContent = String(state.totalPages);
 
-  // Vô hiệu hóa/bật nút
   const prevBtn = document.getElementById("prevPageBtn");
   const nextBtn = document.getElementById("nextPageBtn");
 
-  if (currentPage === 1) {
-    prevBtn.style.opacity = "0.5";
-    prevBtn.style.cursor = "not-allowed";
-  } else {
-    prevBtn.style.opacity = "1";
-    prevBtn.style.cursor = "pointer";
-  }
+  prevBtn.disabled = state.currentPage <= 1;
+  nextBtn.disabled = state.currentPage >= state.totalPages;
 
-  if (currentPage === totalPages) {
-    nextBtn.style.opacity = "0.5";
-    nextBtn.style.cursor = "not-allowed";
-  } else {
-    nextBtn.style.opacity = "1";
-    nextBtn.style.cursor = "pointer";
-  }
-
-  // Hiển thị pagination controls
-  document.getElementById("paginationControls").style.display = "flex";
+  prevBtn.style.opacity = prevBtn.disabled ? "0.5" : "1";
+  prevBtn.style.cursor = prevBtn.disabled ? "not-allowed" : "pointer";
+  nextBtn.style.opacity = nextBtn.disabled ? "0.5" : "1";
+  nextBtn.style.cursor = nextBtn.disabled ? "not-allowed" : "pointer";
 }
 
-// Format giá tiền
-function formatPrice(price) {
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-// Gắn sự kiện cho nút "Chi tiết"
 function attachDetailEventListeners() {
-  const viewDetailsBtns = document.querySelectorAll(".view-details");
-  viewDetailsBtns.forEach((btn, index) => {
-    btn.addEventListener("click", function (e) {
+  document.querySelectorAll(".view-details").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
       e.preventDefault();
-      const card = this.closest(".car-card");
-      showCarDetails(card);
+      const productId = btn.getAttribute("data-id");
+      await showProductDetail(productId);
     });
   });
 }
 
-// Hiển thị modal chi tiết xe
-function showCarDetails(card) {
-  const modal = document.getElementById("carModal");
-  const modalImg = document.getElementById("modalImg");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalPrice = document.getElementById("modalPrice");
-  const modalDesc = document.getElementById("modalDesc");
+async function showProductDetail(productId) {
+  try {
+    const apiBase = await resolveApiBase();
+    const response = await fetch(`${apiBase}/product_detail.php?id=${encodeURIComponent(productId)}`);
+    const result = await response.json();
 
-  const img = card.querySelector("img");
-  const title = card.querySelector("h3");
-  const price = card.querySelector(".price");
+    if (!response.ok || !result.success || !result.data) {
+      throw new Error(result.message || "Khong lay duoc chi tiet san pham");
+    }
 
-  modalImg.src = img.src;
-  modalTitle.textContent = title.textContent;
-  modalPrice.textContent = "Giá: " + price.textContent;
+    const product = result.data;
+    const modal = document.getElementById("carModal");
+    const modalImg = document.getElementById("modalImg");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalPrice = document.getElementById("modalPrice");
+    const modalDesc = document.getElementById("modalDesc");
 
-  // Tạo mô tả chi tiết
-  const origin = card.getAttribute("data-origin");
-  const year = card.getAttribute("data-year");
-  const fuel = card.getAttribute("data-fuel");
-  const seats = card.getAttribute("data-seats");
-  const transmission = card.getAttribute("data-transmission");
-  const engine = card.getAttribute("data-engine");
-  const desc = card.getAttribute("data-desc");
+    modalImg.src = product.image_url || "../../assets/images/default-car.jpg";
+    modalTitle.textContent = product.name || "San pham";
+    modalPrice.textContent = `Gia: ${formatPrice(Number(product.price || 0))} VND`;
 
-  modalDesc.innerHTML = `
-        <p><strong>Xuất xứ:</strong> ${origin}</p>
-        <p><strong>Năm sản xuất:</strong> ${year}</p>
-        <p><strong>Nhiên liệu:</strong> ${fuel}</p>
-        <p><strong>Số chỗ ngồi:</strong> ${seats}</p>
-        <p><strong>Hộp số:</strong> ${transmission}</p>
-        <p><strong>Động cơ:</strong> ${engine}</p>
-        <p><strong>Mô tả:</strong> ${desc}</p>
+    modalDesc.innerHTML = `
+      <p><strong>Loai:</strong> ${escapeHtml(product.category || "Chua cap nhat")}</p>
+      <p><strong>Ton kho:</strong> ${Number(product.stock || 0)}</p>
+      <p><strong>Mo ta:</strong> ${escapeHtml(product.description || "Dang cap nhat")}</p>
     `;
 
-  modal.style.display = "block";
+    modal.style.display = "block";
 
-  // Đóng modal
-  const closeBtn = modal.querySelector(".close-btn");
-  closeBtn.onclick = function () {
-    modal.style.display = "none";
-  };
-
-  window.onclick = function (event) {
-    if (event.target == modal) {
+    const closeBtn = modal.querySelector(".close-btn");
+    closeBtn.onclick = () => {
       modal.style.display = "none";
-    }
-  };
+    };
+
+    window.onclick = (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+  } catch (err) {
+    renderError(err.message || "Khong the hien thi chi tiet san pham");
+  }
+}
+
+function renderError(message) {
+  const container = document.getElementById("searchResultsContainer");
+  container.innerHTML = `
+    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #fff;">
+      <h3>Loi</h3>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
+  document.getElementById("paginationControls").style.display = "none";
+}
+
+function formatPrice(value) {
+  const safe = Number.isFinite(value) ? value : 0;
+  return safe.toLocaleString("vi-VN");
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
