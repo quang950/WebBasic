@@ -23,7 +23,6 @@ class ProductModel {
 			return [];
 		}
 
-		// Remove UTF-8 BOM if present to avoid json_decode returning null.
 		$content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
 
 		$data = json_decode($content, true);

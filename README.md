@@ -9,19 +9,14 @@ WebBasic/
 ├── BackEnd/                 # Mã nguồn phía Server (PHP)
 │   ├── api/                 # Tầng ENTRY POINT (FE gọi vào đây)
 │   │   ├── cart.php
-│   │   ├── check_session.php
-│   │   ├── login.php
-│   │   ├── logout.php
 │   │   ├── product_detail.php
 │   │   ├── products.php
-│   │   ├── register.php
 │   │   └── search.php
 │   ├── config/              # Cấu hình hệ thống (Database, v.v.)
 │   │   └── db_connect.php
 │   ├── controllers/         # Tầng xử lý logic
 │   │   ├── CartController.php
-│   │   ├── ProductController.php
-│   │   └── UserController.php
+│   │   └── ProductController.php
 │   └── models/              # Tầng tương tác database
 │       ├── CartModel.php
 │       ├── ProductModel.php

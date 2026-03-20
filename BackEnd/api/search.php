@@ -1,5 +1,5 @@
 <?php
-// search.php - Tìm kiếm nâng cao theo tên + phân loại + khoảng giá
+// search.php - Tìm kiếm nâng cao theo tên + phân loại + khoảng giá.
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');

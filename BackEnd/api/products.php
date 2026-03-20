@@ -1,5 +1,5 @@
 <?php
-// products.php - Danh sách sản phẩm theo phân loại + phân trang
+// products.php - Danh sách sản phẩm theo phân loại + phân trang.
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
