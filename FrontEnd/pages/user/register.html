@@ -256,43 +256,21 @@
             }, 2000);
         }
 
-        let _cachedApiBase = null;
-
-        async function resolveApiBase() {
-            if (_cachedApiBase) return _cachedApiBase;
-
-            if (window.location.port === '5500') {
-                _cachedApiBase = `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`;
-                return _cachedApiBase;
+        function getStoredUsers() {
+            try {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                return Array.isArray(users) ? users : [];
+            } catch (e) {
+                return [];
             }
+        }
 
-            const origin = window.location.origin;
-            const candidates = [
-                `${origin}/WebBasic/BackEnd/api`,
-                `${origin}/BackEnd/api`,
-                'http://localhost:8000/BackEnd/api',
-                'http://127.0.0.1:8000/BackEnd/api',
-                'http://localhost/WebBasic/BackEnd/api'
-            ];
-
-            for (const base of candidates) {
-                try {
-                    const resp = await fetch(`${base}/test.php`, { method: 'GET' });
-                    const text = await resp.text();
-                    if (resp.ok && text && text.includes('"test"')) {
-                        _cachedApiBase = base;
-                        return base;
-                    }
-                } catch (e) {
-                    // Try next candidate
-                }
-            }
-
-            throw new Error('Không tìm thấy PHP API. Nếu bạn đang dùng Live Server, hãy chạy: php -S localhost:8000 trong thư mục WebBasic.');
+        function normalizeEmail(email) {
+            return String(email || '').trim().toLowerCase();
         }
 
         // Xử lý form đăng ký
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const password = document.getElementById('password').value;
@@ -312,10 +290,13 @@
             // Thu thập dữ liệu form
             const provinceSelect = document.getElementById('province');
             const provinceLabel = provinceSelect.options[provinceSelect.selectedIndex]?.text || '';
+            const email = document.getElementById('email').value.trim();
             const formData = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
+                id: `u_${Date.now()}`,
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                name: `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`.trim(),
+                email: normalizeEmail(email),
                 phone: document.getElementById('phone').value,
                 birthDate: document.getElementById('birthDate').value,
                 province: document.getElementById('province').value,
@@ -323,48 +304,25 @@
                 ward: document.getElementById('ward').value,
                 address: `${document.getElementById('addressDetail').value}, ${document.getElementById('ward').value}, ${document.getElementById('district').value}, ${provinceLabel}`,
                 password: password,
-                subscribeNewsletter: document.getElementById('subscribeNewsletter').checked
+                subscribeNewsletter: document.getElementById('subscribeNewsletter').checked,
+                isAdmin: false,
+                createdAt: new Date().toISOString()
             };
             
-            // Gửi request đến API
-            try {
-                showToast('Đang đăng ký...', 'info');
-                const apiBase = await resolveApiBase();
-                const apiUrl = `${apiBase}/register.php`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const rawText = await response.text();
-                let result;
-                try {
-                    result = rawText ? JSON.parse(rawText) : null;
-                } catch (parseErr) {
-                    throw new Error(`API không trả JSON hợp lệ. URL: ${apiUrl}. Status: ${response.status}. Body: ${rawText.slice(0, 200)}`);
-                }
-                if (!result) {
-                    throw new Error(`API trả về rỗng. URL: ${apiUrl}. Status: ${response.status}`);
-                }
-                
-                if (result.success) {
-                    showToast('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
-                } else {
-                    showToast(result.message || 'Đăng ký thất bại', 'error');
-                    if (result.errors) {
-                        result.errors.forEach(err => console.error(err));
-                    }
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('Lỗi kết nối: ' + error.message, 'error');
+            const users = getStoredUsers();
+            const emailExists = users.some((u) => normalizeEmail(u.email) === formData.email);
+            if (emailExists) {
+                showToast('Email đã tồn tại, vui lòng dùng email khác', 'error');
+                return;
             }
+
+            users.push(formData);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            showToast('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1200);
         });
         
         // Hiển thị modal

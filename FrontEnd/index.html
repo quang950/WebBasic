@@ -92,7 +92,7 @@
                   "
                 >
                   <strong style="font-size: 1.05rem; color: #1b1f2a"
-                    >Tìm kiếm nâng cao</strong
+                    >Tìm kiếm</strong
                   >
                 </div>
 
@@ -3768,40 +3768,6 @@
         }, 2000);
       }
 
-      async function resolveApiBaseForIndex() {
-        if (window.location.port === "5500") {
-          return (
-            window.location.protocol +
-            "//" +
-            window.location.hostname +
-            ":8000/BackEnd/api"
-          );
-        }
-
-        const origin = window.location.origin;
-        const candidates = [
-          origin + "/WebBasic/BackEnd/api",
-          origin + "/BackEnd/api",
-          "http://localhost:8000/BackEnd/api",
-          "http://127.0.0.1:8000/BackEnd/api",
-          "http://localhost/WebBasic/BackEnd/api",
-        ];
-
-        for (const base of candidates) {
-          try {
-            const resp = await fetch(base + "/test.php", { method: "GET" });
-            const text = await resp.text();
-            if (resp.ok && text && text.includes('"test"')) {
-              return base;
-            }
-          } catch (e) {
-            // try next
-          }
-        }
-
-        throw new Error("Không tìm thấy PHP API để cập nhật tài khoản.");
-      }
-
       function openAccountModal() {
         const modal = document.getElementById("accountModal");
         const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
@@ -3821,14 +3787,9 @@
         if (modal) modal.style.display = "none";
       }
 
-      async function saveAccountFromModal(e) {
+      function saveAccountFromModal(e) {
         e.preventDefault();
         const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-
-        if (!userInfo.id) {
-          showToast("Không xác định được tài khoản đang đăng nhập");
-          return;
-        }
 
         const firstName = document.getElementById("accountFirstName").value.trim();
         const lastName = document.getElementById("accountLastName").value.trim();
@@ -3844,45 +3805,65 @@
           return;
         }
 
-        try {
-          const apiBase = await resolveApiBaseForIndex();
-          const response = await fetch(apiBase + "/update_user.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: userInfo.id,
-              email: emailValue,
-              firstName: firstName,
-              lastName: lastName,
-              phone: phone,
-              province: province,
-              address: address,
-            }),
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        if (Array.isArray(users)) {
+          const userIdx = users.findIndex((u) => {
+            if (userInfo.id && u.id) return String(u.id) === String(userInfo.id);
+            return (
+              String(u.email || "").trim().toLowerCase() ===
+              String(emailValue || "").trim().toLowerCase()
+            );
           });
 
-          const rawText = await response.text();
-          const result = rawText ? JSON.parse(rawText) : null;
-          if (!result || !result.success) {
-            throw new Error((result && result.message) || "Cập nhật thất bại");
+          if (userIdx >= 0) {
+            users[userIdx] = {
+              ...users[userIdx],
+              firstName,
+              lastName,
+              first_name: firstName,
+              last_name: lastName,
+              name: firstName + " " + lastName,
+              phone,
+              province,
+              address,
+            };
+          } else if (emailValue) {
+            users.push({
+              id: userInfo.id || `u_${Date.now()}`,
+              email: emailValue,
+              firstName,
+              lastName,
+              first_name: firstName,
+              last_name: lastName,
+              name: firstName + " " + lastName,
+              phone,
+              province,
+              address,
+              password: "",
+              isAdmin: Boolean(userInfo.isAdmin),
+            });
           }
 
-          const nextUserInfo = {
-            ...userInfo,
-            firstName,
-            lastName,
-            name: firstName + " " + lastName,
-            phone,
-            province,
-            address,
-          };
-          localStorage.setItem("userInfo", JSON.stringify(nextUserInfo));
-          document.getElementById("userName").textContent = nextUserInfo.name;
-
-          closeAccountModal();
-          showToast("Đã cập nhật thông tin tài khoản");
-        } catch (err) {
-          showToast("Lỗi cập nhật: " + err.message);
+          localStorage.setItem("users", JSON.stringify(users));
         }
+
+        const nextUserInfo = {
+          ...userInfo,
+          id: userInfo.id || `u_${Date.now()}`,
+          email: emailValue,
+          firstName,
+          lastName,
+          name: firstName + " " + lastName,
+          phone,
+          province,
+          address,
+        };
+        localStorage.setItem("userInfo", JSON.stringify(nextUserInfo));
+        localStorage.setItem("userEmail", nextUserInfo.email || "");
+        document.getElementById("userName").textContent = nextUserInfo.name;
+
+        closeAccountModal();
+        showToast("Đã cập nhật thông tin tài khoản");
       }
 
       // Kiểm tra trạng thái đăng nhập và hiển thị thông tin user/admin

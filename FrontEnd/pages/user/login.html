@@ -234,48 +234,26 @@
         }, 2000);
       }
 
-      let _cachedApiBase = null;
-
-      async function resolveApiBase() {
-        if (_cachedApiBase) return _cachedApiBase;
-
-        if (window.location.port === '5500') {
-          _cachedApiBase = `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`;
-          return _cachedApiBase;
+      function getStoredUsers() {
+        try {
+          const users = JSON.parse(localStorage.getItem("users") || "[]");
+          return Array.isArray(users) ? users : [];
+        } catch (e) {
+          return [];
         }
+      }
 
-        const origin = window.location.origin;
-        const candidates = [
-          `${origin}/WebBasic/BackEnd/api`,
-          `${origin}/BackEnd/api`,
-          'http://localhost:8000/BackEnd/api',
-          'http://127.0.0.1:8000/BackEnd/api',
-          'http://localhost/WebBasic/BackEnd/api'
-        ];
-
-        for (const base of candidates) {
-          try {
-            const resp = await fetch(`${base}/test.php`, { method: 'GET' });
-            const text = await resp.text();
-            if (resp.ok && text && text.includes('"test"')) {
-              _cachedApiBase = base;
-              return base;
-            }
-          } catch (e) {
-            // Try next candidate
-          }
-        }
-
-        throw new Error("Không tìm thấy PHP API. Nếu bạn đang dùng Live Server, hãy chạy: php -S localhost:8000 trong thư mục WebBasic.");
+      function normalizeEmail(email) {
+        return String(email || "").trim().toLowerCase();
       }
 
       // Xử lý form đăng nhập thông thường
       document
         .getElementById("loginForm")
-        .addEventListener("submit", async function (e) {
+        .addEventListener("submit", function (e) {
           e.preventDefault();
 
-          const email = document.getElementById("email").value;
+          const email = document.getElementById("email").value.trim();
           const password = document.getElementById("password").value;
 
           if (!email || !password) {
@@ -283,63 +261,50 @@
             return;
           }
 
-          // Gửi request đến API
-          try {
-            showToast("Đang đăng nhập...", "info");
-            const apiBase = await resolveApiBase();
-            const apiUrl = `${apiBase}/login.php`;
-            const response = await fetch(apiUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ email, password })
-            });
+          const users = getStoredUsers();
+          const user = users.find(
+            (u) => normalizeEmail(u.email) === normalizeEmail(email),
+          );
 
-            const rawText = await response.text();
-            let result;
-            try {
-              result = rawText ? JSON.parse(rawText) : null;
-            } catch (parseErr) {
-              throw new Error(`API không trả JSON hợp lệ. URL: ${apiUrl}. Status: ${response.status}. Body: ${rawText.slice(0, 200)}`);
-            }
-            if (!result) {
-              throw new Error(`API trả về rỗng. URL: ${apiUrl}. Status: ${response.status}`);
-            }
-            
-            if (result.success) {
-              // Lưu thông tin user
-              const user = result.user;
-              const userInfo = {
-                id: user.id,
-                name: user.first_name + ' ' + user.last_name,
-                email: user.email,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                phone: user.phone || '',
-                province: user.province || '',
-                address: user.address || '',
-                isAdmin: user.is_admin,
-                loginTime: new Date().toISOString(),
-                loginType: "normal"
-              };
-              
-              localStorage.setItem("userLoggedIn", "true");
-              localStorage.setItem("userInfo", JSON.stringify(userInfo));
-              localStorage.setItem("userEmail", user.email);
-              
-              if (user.is_admin) {
-                localStorage.setItem("adminLoggedIn", "true");
-                showToast("Đăng nhập thành công!", "success", "../admin/admin-themsanpham.html");
-              } else {
-                showToast("Đăng nhập thành công!", "success", "../../index.html");
-              }
-            } else {
-              showToast(result.message || "Đăng nhập thất bại", "error");
-            }
-          } catch (error) {
-            console.error("Error:", error);
-            showToast("Lỗi kết nối: " + error.message, "error");
+          if (!user) {
+            showToast("Email chưa được đăng ký", "error");
+            return;
+          }
+
+          if (String(user.password || "") !== String(password)) {
+            showToast("Mật khẩu không đúng", "error");
+            return;
+          }
+
+          const firstName = user.firstName || user.first_name || "";
+          const lastName = user.lastName || user.last_name || "";
+          const fullName = `${firstName} ${lastName}`.trim() || user.name || email;
+          const isAdmin = Boolean(user.isAdmin || user.is_admin);
+
+          const userInfo = {
+            id: user.id || `u_${Date.now()}`,
+            name: fullName,
+            email: user.email,
+            firstName,
+            lastName,
+            phone: user.phone || "",
+            province: user.province || "",
+            address: user.address || "",
+            isAdmin,
+            loginTime: new Date().toISOString(),
+            loginType: "normal",
+          };
+
+          localStorage.setItem("userLoggedIn", "true");
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
+          localStorage.setItem("userEmail", userInfo.email);
+
+          if (isAdmin) {
+            localStorage.setItem("adminLoggedIn", "true");
+            showToast("Đăng nhập thành công!", "success", "../admin/admin-themsanpham.html");
+          } else {
+            localStorage.removeItem("adminLoggedIn");
+            showToast("Đăng nhập thành công!", "success", "../../index.html");
           }
         });
 
