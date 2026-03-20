@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -227,8 +227,8 @@
         <p><strong>Cảm ơn quý khách đã tin tưởng và lựa chọn 3 Boys Auto!</strong></p>
         <p>Mọi thắc mắc vui lòng liên hệ hotline: <strong>0799429767</strong></p>
         <div class="btn-group">
-          <a href="cart.html" class="btn btn-secondary">← Quay lại giỏ hàng</a>
-          <a href="../../index.html" class="btn btn-primary">Về trang chủ</a>
+          <a href="cart.php" class="btn btn-secondary">← Quay lại giỏ hàng</a>
+          <a href="../../index.php" class="btn btn-primary">Về trang chủ</a>
         </div>
       </div>
     </div>

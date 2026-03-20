@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -34,24 +34,24 @@
       </div>
       <nav class="navbar">
         <div class="logo">
-          <a href="index.html">3 Boys Auto</a>
+          <a href="index.php">3 Boys Auto</a>
         </div>
         <div class="nav-links">
-          <a href="index.html" class="active">Trang chủ</a>
+          <a href="index.php" class="active">Trang chủ</a>
           <div class="dropdown">
             <a href="#" class="dropdown-trigger"
               >Loại xe <i class="fas fa-chevron-down"></i
             ></a>
             <div class="dropdown-content">
-              <a href="pages/brands/toyota.html">Toyota</a>
-              <a href="pages/brands/mercedes.html">Mercedes</a>
-              <a href="pages/brands/bmw.html">BMW</a>
-              <a href="pages/brands/audi.html">Audi</a>
-              <a href="pages/brands/lexus.html">Lexus</a>
-              <a href="pages/brands/honda.html">Honda</a>
-              <a href="pages/brands/hyundai.html">Hyundai</a>
-              <a href="pages/brands/kia.html">KIA</a>
-              <a href="pages/brands/vinfast.html">Vinfast</a>
+              <a href="pages/brands/toyota.php">Toyota</a>
+              <a href="pages/brands/mercedes.php">Mercedes</a>
+              <a href="pages/brands/bmw.php">BMW</a>
+              <a href="pages/brands/audi.php">Audi</a>
+              <a href="pages/brands/lexus.php">Lexus</a>
+              <a href="pages/brands/honda.php">Honda</a>
+              <a href="pages/brands/hyundai.php">Hyundai</a>
+              <a href="pages/brands/kia.php">KIA</a>
+              <a href="pages/brands/vinfast.php">Vinfast</a>
             </div>
           </div>
           <button id="filterToggleBtn">
@@ -351,7 +351,7 @@
           </a>
           <div class="login-options" id="loginOptions">
             <a
-              href="pages/user/login.html"
+              href="pages/user/login.php"
               class="blob-btn login-btn"
               id="loginBtn"
             >
@@ -403,10 +403,10 @@
                   Giá từ <strong>Liên Hệ Để Biết Thêm</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/mercedes.html" class="btn-test"
+                  <a href="pages/brands/mercedes.php" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/mercedes.html" class="btn-more"
+                  <a href="pages/brands/mercedes.php" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -427,10 +427,10 @@
                   Giá từ <strong>1.350.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/toyota.html" class="btn-test"
+                  <a href="pages/brands/toyota.php" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/toyota.html" class="btn-more"
+                  <a href="pages/brands/toyota.php" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -456,10 +456,10 @@
                   Giá từ <strong>1.650.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/toyota.html" class="btn-test"
+                  <a href="pages/brands/toyota.php" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/toyota.html" class="btn-more"
+                  <a href="pages/brands/toyota.php" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -485,10 +485,10 @@
                   Giá từ <strong>5.249.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/mercedes.html" class="btn-test"
+                  <a href="pages/brands/mercedes.php" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/mercedes.html" class="btn-more"
+                  <a href="pages/brands/mercedes.php" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -514,10 +514,10 @@
                   Giá từ <strong>1.119.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/honda.html" class="btn-test"
+                  <a href="pages/brands/honda.php" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/honda.html" class="btn-more"
+                  <a href="pages/brands/honda.php" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>

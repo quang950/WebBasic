@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -68,7 +68,7 @@
           <button type="submit" class="login-btn">Đăng nhập</button>
         </form>
         <div class="register-link">
-          Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a>
+          Chưa có tài khoản? <a href="register.php">Đăng ký ngay</a>
         </div>
 
         <div class="divider">
@@ -121,7 +121,7 @@
         </div>
 
         <div class="back-to-site">
-          <a href="../../index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+          <a href="../../index.php"><i class="fas fa-home"></i> Về trang chủ</a>
         </div>
       </div>
     </div>
@@ -192,7 +192,7 @@
             localStorage.setItem("userLoggedIn", "true");
             localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
-            showToast("Đăng nhập thành công: " + email, "../../index.html");
+            showToast("Đăng nhập thành công: " + email, "../../index.php");
           } else {
             alert("Vui lòng nhập đầy đủ thông tin đăng nhập");
           }
@@ -301,16 +301,16 @@
 
           if (isAdmin) {
             localStorage.setItem("adminLoggedIn", "true");
-            showToast("Đăng nhập thành công!", "success", "../admin/admin-themsanpham.html");
+            showToast("Đăng nhập thành công!", "success", "../admin/admin-themsanpham.php");
           } else {
             localStorage.removeItem("adminLoggedIn");
-            showToast("Đăng nhập thành công!", "success", "../../index.html");
+            showToast("Đăng nhập thành công!", "success", "../../index.php");
           }
         });
 
       // Kiểm tra nếu đã đăng nhập
       if (localStorage.getItem("userLoggedIn") === "true") {
-        window.location.href = "../../index.html";
+        window.location.href = "../../index.php";
       }
 
       // Đảm bảo form luôn trống khi load trang

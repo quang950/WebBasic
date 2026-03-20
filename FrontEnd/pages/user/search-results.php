@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -11,21 +11,21 @@
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo"><a href="../../index.html">3 Boys Auto</a></div>
+            <div class="logo"><a href="../../index.php">3 Boys Auto</a></div>
             <div class="nav-links">
-                <a href="../../index.html">Trang chủ</a>
+                <a href="../../index.php">Trang chủ</a>
                 <div class="dropdown">
                     <a href="#" class="dropdown-trigger">Loại xe <i class="fas fa-chevron-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="toyota.html">Toyota</a>
-                        <a href="mercedes.html">Mercedes</a>
-                        <a href="bmw.html">BMW</a>
-                        <a href="audi.html">Audi</a>
-                        <a href="lexus.html">Lexus</a>
-                        <a href="honda.html">Honda</a>
-                        <a href="hyundai.html">Hyundai</a>
-                        <a href="kia.html">KIA</a>
-                        <a href="vinfast.html">Vinfast</a>
+                        <a href="toyota.php">Toyota</a>
+                        <a href="mercedes.php">Mercedes</a>
+                        <a href="bmw.php">BMW</a>
+                        <a href="audi.php">Audi</a>
+                        <a href="lexus.php">Lexus</a>
+                        <a href="honda.php">Honda</a>
+                        <a href="hyundai.php">Hyundai</a>
+                        <a href="kia.php">KIA</a>
+                        <a href="vinfast.php">Vinfast</a>
                     </div>
                 </div>
                 <a href="index.html#about">Giới thiệu</a>
@@ -38,7 +38,7 @@
                     <span class="cart-count">0</span>
                 </a>
                 <div class="login-options" id="loginOptions">
-                    <a href="login.html" class="blob-btn login-btn" id="loginBtn">
+                    <a href="login.php" class="blob-btn login-btn" id="loginBtn">
                         <span class="blob-btn__inner">
                             <span class="blob-btn__blobs">
                                 <span class="blob-btn__blob"></span>

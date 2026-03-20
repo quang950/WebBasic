@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // PROTOTYPE: Chỉ giữ login/logout logic
 // Tất cả tính năng khác đã bị tắt/chuyển thành static HTML
 // ========================================
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isAdmin) {
             if (actions && !actions.querySelector('.admin-return-btn')) {
                 const btn = document.createElement('a');
-                btn.href = _basePath + 'pages/admin/admin-themsanpham.html';
+                btn.href = _basePath + 'pages/admin/admin-themsanpham.php';
                 btn.className = 'admin-return-btn blob-btn login-btn';
                 btn.innerHTML = '<span class="blob-btn__inner"><span class="blob-btn__blobs"><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span></span></span>Quay lại Admin';
                 actions.insertBefore(btn, actions.firstChild);
@@ -249,7 +249,7 @@ function loadCartWithoutTotalUpdate() {
     updateCartCount();
 }
 
-// Hàm load giỏ hàng (dùng trong cart.html) - chỉ hiển thị, controls disabled
+// Hàm load giỏ hàng (dùng trong cart.php) - chỉ hiển thị, controls disabled
 function loadCart() {
     const tbody = document.getElementById('cart-body');
     const totalEl = document.getElementById('cart-total');
@@ -329,7 +329,7 @@ function closeLoginRequiredModal() {
 
 function goToLogin() {
     closeLoginRequiredModal();
-    window.location.href = _basePath + 'pages/user/login.html';
+    window.location.href = _basePath + 'pages/user/login.php';
 }
 
 // Kiểm tra đăng nhập trước khi vào giỏ hàng
@@ -338,7 +338,7 @@ function checkLoginAndGoToCart() {
     if (!isLoggedIn) {
         showLoginRequiredModal();
     } else {
-        window.location.href = _basePath + 'pages/user/cart.html';
+        window.location.href = _basePath + 'pages/user/cart.php';
     }
 }
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -161,7 +161,7 @@
             </form>
 
             <div class="login-link">
-                Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a>
+                Đã có tài khoản? <a href="login.php">Đăng nhập ngay</a>
             </div>
         </div>
     </div>

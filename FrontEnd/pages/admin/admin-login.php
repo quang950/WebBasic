@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -299,7 +299,7 @@
     <div class="portal-card">
       <!-- Header -->
       <div class="portal-header">
-        <a href="../user/login.html" class="back-btn" title="Quay lại">
+        <a href="../user/login.php" class="back-btn" title="Quay lại">
           <i class="fas fa-arrow-left"></i>
         </a>
         <h1>Admin Portal</h1>
@@ -478,13 +478,13 @@
 
           showToast(
             "Đăng nhập admin thành công: " + username,
-            "admin-themsanpham.html",
+            "admin-themsanpham.php",
           );
         });
 
       // If already logged in as admin, redirect
       if (localStorage.getItem("adminLoggedIn") === "true") {
-        window.location.href = "admin-themsanpham.html";
+        window.location.href = "admin-themsanpham.php";
       }
     </script>
   </body>

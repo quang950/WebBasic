@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -109,7 +109,7 @@
       </tbody>
     </table>
     <div class="checkout-bar">
-      <a href="../../index.html" class="back-link">← Tiếp tục mua sắm</a>
+      <a href="../../index.php" class="back-link">← Tiếp tục mua sắm</a>
       <button id="ordersBtn" onclick="window.location.href='orders.html'; return false;" style="background:#007bff;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;">Xem đơn hàng đã mua</button>
       <div style="display:flex;align-items:center;gap:16px;">
         <div class="total" id="cart-total" style="font-size:1.3rem;color:#333;">Tổng: 0 VNĐ</div>

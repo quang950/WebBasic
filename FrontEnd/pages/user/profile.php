@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -193,7 +193,7 @@
                 </div>
             </form>
             <div class="back-to-site">
-                <a href="../../index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+                <a href="../../index.php"><i class="fas fa-home"></i> Về trang chủ</a>
             </div>
         </div>
     </div>

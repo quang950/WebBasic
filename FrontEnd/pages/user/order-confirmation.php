@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -326,13 +326,13 @@
       
       <!-- Nút hành động -->
       <div class="action-buttons">
-        <a href="../../index.html" class="btn btn-primary">
+        <a href="../../index.php" class="btn btn-primary">
           <i class="fas fa-home"></i> Về trang chủ
         </a>
-        <a href="orders.html" class="btn btn-success">
+        <a href="orders.php" class="btn btn-success">
           <i class="fas fa-list"></i> Xem đơn hàng của tôi
         </a>
-        <a href="cart.html" class="btn btn-secondary">
+        <a href="cart.php" class="btn btn-secondary">
           <i class="fas fa-shopping-cart"></i> Tiếp tục mua hàng
         </a>
       </div>

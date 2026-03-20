@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -19,8 +19,8 @@
   <div class="orders-container">
     <h2>Đơn hàng đã đặt</h2>
     <div style="display:flex;justify-content:center;gap:24px;margin-bottom:32px;">
-      <a href="../../index.html" style="padding:12px 32px;background:#007bff;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,123,255,0.08);transition:background 0.2s;">Về trang chủ</a>
-      <a href="cart.html" style="padding:12px 32px;background:#28a745;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(40,167,69,0.08);transition:background 0.2s;">Về giỏ hàng</a>
+      <a href="../../index.php" style="padding:12px 32px;background:#007bff;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,123,255,0.08);transition:background 0.2s;">Về trang chủ</a>
+      <a href="cart.php" style="padding:12px 32px;background:#28a745;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(40,167,69,0.08);transition:background 0.2s;">Về giỏ hàng</a>
     </div>
     <div id="ordersList"></div>
   </div>
