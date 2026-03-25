@@ -292,37 +292,39 @@
             const provinceLabel = provinceSelect.options[provinceSelect.selectedIndex]?.text || '';
             const email = document.getElementById('email').value.trim();
             const formData = {
-                id: `u_${Date.now()}`,
                 firstName: document.getElementById('firstName').value.trim(),
                 lastName: document.getElementById('lastName').value.trim(),
-                name: `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`.trim(),
-                email: normalizeEmail(email),
+                email: email,
                 phone: document.getElementById('phone').value,
                 birthDate: document.getElementById('birthDate').value,
                 province: document.getElementById('province').value,
-                district: document.getElementById('district').value,
-                ward: document.getElementById('ward').value,
                 address: `${document.getElementById('addressDetail').value}, ${document.getElementById('ward').value}, ${document.getElementById('district').value}, ${provinceLabel}`,
-                password: password,
-                subscribeNewsletter: document.getElementById('subscribeNewsletter').checked,
-                isAdmin: false,
-                createdAt: new Date().toISOString()
+                password: password
             };
             
-            const users = getStoredUsers();
-            const emailExists = users.some((u) => normalizeEmail(u.email) === formData.email);
-            if (emailExists) {
-                showToast('Email đã tồn tại, vui lòng dùng email khác', 'error');
-                return;
-            }
-
-            users.push(formData);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            showToast('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1200);
+            // Gọi API register
+            fetch('/WebBasic/BackEnd/api/register.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.php';
+                    }, 1200);
+                } else {
+                    showToast(data.message || 'Đăng ký thất bại!', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Lỗi kết nối: ' + error.message, 'error');
+            });
         });
         
         // Hiển thị modal

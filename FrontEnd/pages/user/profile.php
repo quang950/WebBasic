@@ -184,7 +184,7 @@
                     </a>
                 </div>
                 <div class="button-group">
-                    <button type="button" class="back-btn" onclick="window.location.href='../../index.html'">
+                    <button type="button" class="back-btn" onclick="window.location.href='../../index.php'">
                         <i class="fas fa-arrow-left"></i> <span>Quay lại</span>
                     </button>
                     <button type="submit" class="login-btn">

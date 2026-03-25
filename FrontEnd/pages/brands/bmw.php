@@ -30,8 +30,8 @@
                         <a href="vinfast.php">Vinfast</a>
                     </div>
                 </div>
-                <a href="index.html#about">Giới thiệu</a>
-                <a href="index.html#contact">Liên hệ</a>
+                <a href="../../index.php#about">Giới thiệu</a>
+                <a href="../../index.php#contact">Liên hệ</a>
             </div>
             <div class="user-actions">
                 <a href="#" onclick="checkLoginAndGoToCart()" class="cart-icon">
@@ -53,8 +53,8 @@
                     </a>
                 </div>
                 <div class="user-info" id="userInfo" style="display: none;">
-                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.html'">
-                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.html'"></span>
+                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.php'">
+                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.php'"></span>
                     <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
                 </div>
             </div>

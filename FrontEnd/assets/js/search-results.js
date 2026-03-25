@@ -13,14 +13,25 @@ const state = {
     priceTo: "",
   },
   apiBase: null,
+  productsData: {}, // Cache sản phẩm từ JSON để lấy thông tin chi tiết
 };
 
-document.addEventListener("DOMContentLoaded", async () => {
-  bindEvents();
-  hydrateFiltersFromUrl();
-  setFilterInputs();
-  await fetchAndRender(1);
-});
+// Load dữ liệu từ products.json để có đầy đủ thông tin chi tiết
+async function loadProductsData() {
+  try {
+    const response = await fetch('../../DataBase/products.json');
+    if (!response.ok) throw new Error('Cannot load products.json: ' + response.status);
+    const data = await response.json();
+    console.log('[SUCCESS] Loaded', data.length, 'products from JSON');
+    data.forEach(product => {
+      state.productsData[product.id] = product;
+    });
+    console.log('[SUCCESS] state.productsData now has keys:', Object.keys(state.productsData).slice(0, 10));
+  } catch (err) {
+    console.error('[ERROR] Failed to load products.json:', err.message);
+    console.warn('[FALLBACK] Will load product details from API on demand');
+  }
+}
 
 function bindEvents() {
   document.getElementById("prevPageBtn").addEventListener("click", () => {
@@ -183,21 +194,47 @@ function renderProducts() {
     return;
   }
 
+  console.log('[DEBUG] renderProducts: state.items =', state.items);
+  console.log('[DEBUG] renderProducts: state.productsData keys =', Object.keys(state.productsData));
+
   container.innerHTML = state.items
-    .map(
-      (item) => `
-      <div class="car-card" data-id="${item.id}">
-        <img src="${item.image_url || '../../assets/images/default-car.jpg'}" alt="${escapeHtml(item.name)}" onerror="this.src='../../assets/images/default-car.jpg'">
-        <h3>${escapeHtml(item.name)}</h3>
-        <p style="color:#ddd; margin:0.3rem 0;">Loai: ${escapeHtml(item.category || "Chua phan loai")}</p>
-        <p class="price">${formatPrice(Number(item.price || 0))} VND</p>
-        <div class="button-container">
-          <button class="buy-btn" onclick="return false;" style="cursor:pointer; opacity:1;">Mua hang</button>
-          <a href="#" class="view-details" data-id="${item.id}">Chi tiet</a>
+    .map((item) => {
+      console.log('[DEBUG] Processing item:', item.id, item.name);
+      // Lấy thông tin chi tiết từ JSON nếu có
+      const fullData = state.productsData[item.id] || {};
+      console.log('[DEBUG] fullData for id', item.id, ':', fullData);
+      
+      const dataAttrs = `
+        data-id="${item.id}"
+        data-origin="${escapeHtml(fullData.origin || 'Không rõ')}"
+        data-year="${fullData.year || 'Không rõ'}"
+        data-fuel="${escapeHtml(fullData.fuel || 'Không rõ')}"
+        data-seats="${fullData.seats || 'Không rõ'}"
+        data-transmission="${escapeHtml(fullData.transmission || 'Không rõ')}"
+        data-engine="${escapeHtml(fullData.engine || 'Không rõ')}"
+        data-desc="${escapeHtml(fullData.description || item.description || 'Đang cập nhật')}"
+      `;
+      
+      // Tính đúng đường dẫn ảnh - sử dụng absolute URL từ server root
+      let imageSrc = fullData.image_url || item.image_url || 'assets/images/default-car.jpg';
+      // Convert relative path thành absolute URL từ server root: /WebBasic/assets/images/...
+      if (imageSrc && !imageSrc.startsWith('http') && !imageSrc.startsWith('/')) {
+        imageSrc = '/WebBasic/' + imageSrc;
+      }
+      console.log('[DEBUG] imageSrc:', imageSrc);
+      
+      return `
+        <div class="car-card" ${dataAttrs}>
+          <img src="${imageSrc}" alt="${escapeHtml(item.name)}" onerror="this.src='/WebBasic/assets/images/default-car.jpg'">
+          <h3>${escapeHtml(item.name)}</h3>
+          <p class="price">${formatPrice(Number(item.price || 0))} VNĐ</p>
+          <div class="button-container">
+            <button class="buy-btn" onclick="return false;" style="cursor:pointer; opacity:1;">Mua hàng</button>
+            <a href="#" class="view-details" data-id="${item.id}">Chi tiết</a>
+          </div>
         </div>
-      </div>
-      `,
-    )
+      `;
+    })
     .join("");
 
   attachDetailEventListeners();
@@ -234,45 +271,77 @@ function attachDetailEventListeners() {
 
 async function showProductDetail(productId) {
   try {
-    const apiBase = await resolveApiBase();
-    const response = await fetch(`${apiBase}/product_detail.php?id=${encodeURIComponent(productId)}`);
-    const result = await response.json();
-
-    if (!response.ok || !result.success || !result.data) {
-      throw new Error(result.message || "Khong lay duoc chi tiet san pham");
+    console.log('[DEBUG] Opening detail for product', productId);
+    // Lấy card từ DOM
+    const card = document.querySelector(`.car-card[data-id="${productId}"]`);
+    if (!card) {
+      throw new Error("Không tìm thấy sản phẩm");
     }
 
-    const product = result.data;
-    const modal = document.getElementById("carModal");
-    const modalImg = document.getElementById("modalImg");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalPrice = document.getElementById("modalPrice");
-    const modalDesc = document.getElementById("modalDesc");
+    // Extract dữ liệu từ card data attributes (giống homepage)
+    let img = card.querySelector('img').src;
+    const title = card.querySelector('h3').textContent;
+    const price = card.querySelector('.price').textContent;
+    let origin = card.dataset.origin || 'Không rõ';
+    let year = card.dataset.year || 'Không rõ';
+    let fuel = card.dataset.fuel || 'Không rõ';
+    let seats = card.dataset.seats || 'Không rõ';
+    let transmission = card.dataset.transmission || 'Không rõ';
+    let engine = card.dataset.engine || 'Không rõ';
+    let desc = card.dataset.desc || 'Không có mô tả';
 
-    modalImg.src = product.image_url || "../../assets/images/default-car.jpg";
-    modalTitle.textContent = product.name || "San pham";
-    modalPrice.textContent = `Gia: ${formatPrice(Number(product.price || 0))} VND`;
+    // If data attributes are empty (JSON not loaded), try to fetch from API
+    const hasCompleteData = !(origin === 'Không rõ' && year === 'Không rõ');
+    if (!hasCompleteData && state.productsData[productId]) {
+      const fullData = state.productsData[productId];
+      origin = fullData.origin || 'Không rõ';
+      year = fullData.year || 'Không rõ';
+      fuel = fullData.fuel || 'Không rõ';
+      seats = fullData.seats || 'Không rõ';
+      transmission = fullData.transmission || 'Không rõ';
+      engine = fullData.engine || 'Không rõ';
+      desc = fullData.description || desc;
+      img = fullData.image_url ? '/WebBasic/' + fullData.image_url : img;
+    }
 
-    modalDesc.innerHTML = `
-      <p><strong>Loai:</strong> ${escapeHtml(product.category || "Chua cap nhat")}</p>
-      <p><strong>Ton kho:</strong> ${Number(product.stock || 0)}</p>
-      <p><strong>Mo ta:</strong> ${escapeHtml(product.description || "Dang cap nhat")}</p>
+    console.log('[DEBUG] Product detail:', { title, price, origin, year, fuel, seats, transmission, engine, img });
+
+    // Cập nhật modal
+    const modal = document.getElementById('carModal');
+    document.getElementById('modalImg').src = img;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalPrice').textContent = price;
+
+    const detailsHTML = `
+      <div style="text-align: left; margin: 20px 0;">
+        <p><strong>📍 Xuất xứ:</strong> ${origin}</p>
+        <p><strong>📅 Năm sản xuất:</strong> ${year}</p>
+        <p><strong>⛽ Nhiên liệu:</strong> ${fuel}</p>
+        <p><strong>💺 Số ghế:</strong> ${seats}</p>
+        <p><strong>⚙️ Hộp số:</strong> ${transmission}</p>
+        <p><strong>🔧 Động cơ:</strong> ${engine}</p>
+        <p><strong>📝 Mô tả:</strong> ${desc}</p>
+      </div>
     `;
 
-    modal.style.display = "block";
+    document.getElementById('modalDesc').innerHTML = detailsHTML;
 
-    const closeBtn = modal.querySelector(".close-btn");
-    closeBtn.onclick = () => {
-      modal.style.display = "none";
+    // Hiển thị modal
+    modal.style.display = 'flex';
+
+    const closeBtn = modal.querySelector('.close-btn');
+    closeBtn.onclick = function() {
+      modal.style.display = 'none';
     };
 
-    window.onclick = (event) => {
+    window.onclick = function(event) {
       if (event.target === modal) {
-        modal.style.display = "none";
+        modal.style.display = 'none';
       }
     };
   } catch (err) {
-    renderError(err.message || "Khong the hien thi chi tiet san pham");
+    console.error('[DEBUG] showProductDetail error:', err);
+    renderError(err.message || "Không thể hiển thị chi tiết sản phẩm");
   }
 }
 
@@ -300,3 +369,12 @@ function escapeHtml(text) {
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadProductsData(); // Load dữ liệu từ products.json
+  bindEvents();
+  hydrateFiltersFromUrl();
+  setFilterInputs();
+  await fetchAndRender(1);
+});

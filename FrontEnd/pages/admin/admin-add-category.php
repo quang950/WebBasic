@@ -168,7 +168,7 @@
     <div class="form-container">
         <div class="form-header">
             <h2><i class="fas fa-plus-circle"></i> Thêm loại xe mới</h2>
-            <a href="admin-themsanpham.html#categories" class="back-btn">
+            <a href="admin-themsanpham.php#categories" class="back-btn">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
@@ -211,7 +211,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" onclick="window.location.href='admin-themsanpham.html#categories'" class="cancel-btn">
+                <button type="button" onclick="window.location.href='admin-themsanpham.php#categories'" class="cancel-btn">
                     Hủy
                 </button>
                 <button type="submit" class="save-btn" onclick="return false;">

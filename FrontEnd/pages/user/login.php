@@ -130,7 +130,7 @@
     <div class="admin-login-box">
       <div
         class="admin-toggle"
-        onclick="window.location.href = '../admin/admin-login.html'"
+        onclick="window.location.href = '../admin/admin-login.php'"
       >
         <i class="fas fa-user-shield"></i>
         <span>Admin</span>
@@ -261,51 +261,45 @@
             return;
           }
 
-          const users = getStoredUsers();
-          const user = users.find(
-            (u) => normalizeEmail(u.email) === normalizeEmail(email),
-          );
-
-          if (!user) {
-            showToast("Email chưa được đăng ký", "error");
-            return;
-          }
-
-          if (String(user.password || "") !== String(password)) {
-            showToast("Mật khẩu không đúng", "error");
-            return;
-          }
-
-          const firstName = user.firstName || user.first_name || "";
-          const lastName = user.lastName || user.last_name || "";
-          const fullName = `${firstName} ${lastName}`.trim() || user.name || email;
-          const isAdmin = Boolean(user.isAdmin || user.is_admin);
-
-          const userInfo = {
-            id: user.id || `u_${Date.now()}`,
-            name: fullName,
-            email: user.email,
-            firstName,
-            lastName,
-            phone: user.phone || "",
-            province: user.province || "",
-            address: user.address || "",
-            isAdmin,
-            loginTime: new Date().toISOString(),
-            loginType: "normal",
-          };
-
-          localStorage.setItem("userLoggedIn", "true");
-          localStorage.setItem("userInfo", JSON.stringify(userInfo));
-          localStorage.setItem("userEmail", userInfo.email);
-
-          if (isAdmin) {
-            localStorage.setItem("adminLoggedIn", "true");
-            showToast("Đăng nhập thành công!", "success", "../admin/admin-themsanpham.php");
-          } else {
-            localStorage.removeItem("adminLoggedIn");
-            showToast("Đăng nhập thành công!", "success", "../../index.php");
-          }
+          // Gọi API login
+          fetch('/WebBasic/BackEnd/api/login.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({email, password})
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              const userInfo = data.user;
+              
+              // Lưu vào localStorage
+              localStorage.setItem("userLoggedIn", "true");
+              localStorage.setItem("userInfo", JSON.stringify(userInfo));
+              localStorage.setItem("userEmail", userInfo.email);
+              
+              if (userInfo.isAdmin) {
+                localStorage.setItem("adminLoggedIn", "true");
+                showToast("Đăng nhập thành công!", "../../index.php");
+                setTimeout(() => {
+                  window.location.href = "../admin/admin-themsanpham.php";
+                }, 1500);
+              } else {
+                localStorage.removeItem("adminLoggedIn");
+                showToast("Đăng nhập thành công!", "../../index.php");
+                setTimeout(() => {
+                  window.location.href = "../../index.php";
+                }, 1500);
+              }
+            } else {
+              showToast(data.message || "Đăng nhập thất bại", "error");
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showToast("Lỗi kết nối: " + error.message, "error");
+          });
         });
 
       // Kiểm tra nếu đã đăng nhập

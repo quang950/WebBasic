@@ -110,7 +110,7 @@
     </table>
     <div class="checkout-bar">
       <a href="../../index.php" class="back-link">← Tiếp tục mua sắm</a>
-      <button id="ordersBtn" onclick="window.location.href='orders.html'; return false;" style="background:#007bff;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;">Xem đơn hàng đã mua</button>
+      <button id="ordersBtn" onclick="window.location.href='orders.php'; return false;" style="background:#007bff;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;">Xem đơn hàng đã mua</button>
       <div style="display:flex;align-items:center;gap:16px;">
         <div class="total" id="cart-total" style="font-size:1.3rem;color:#333;">Tổng: 0 VNĐ</div>
         <button id="showOrderFormBtn" style="background:#28a745;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-weight:600;cursor:pointer;font-size:1.05rem;">Đặt hàng</button>
@@ -249,10 +249,6 @@
       <button type="submit" class="checkout-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:1.1rem;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'">
         <i class="fas fa-check-circle" style="margin-right:8px;"></i>Xác nhận đặt hàng
       </button>
-      
-      <p style="text-align:center;margin-top:12px;color:#999;font-size:0.85rem;font-style:italic;">
-        <i class="fas fa-info-circle"></i> Prototype mode: Đơn hàng sẽ không được lưu thực tế
-      </p>
     </form>
   </div>
 
@@ -282,7 +278,7 @@
       };
       
       document.getElementById('ordersBtn').onclick = function(e) { 
-        window.location.href='orders.html'; 
+        window.location.href='orders.php'; 
         return false; 
       };
       

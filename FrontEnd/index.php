@@ -96,93 +96,11 @@
                   >
                 </div>
 
-                <div
-                  style="
-                    display: grid;
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                    gap: 10px;
-                  "
-                >
+                <div style="margin-bottom: 12px;">
                   <input
                     type="text"
                     id="searchName"
                     placeholder="Tên sản phẩm (ví dụ: Camry)"
-                    style="
-                      padding: 10px 12px;
-                      border-radius: 6px;
-                      border: 1px solid #ccc;
-                      font-size: 0.95rem;
-                      width: 100%;
-                    "
-                  />
-
-                  <select
-                    id="searchCategory"
-                    style="
-                      padding: 10px 12px;
-                      border-radius: 6px;
-                      border: 1px solid #ccc;
-                      font-size: 0.95rem;
-                      width: 100%;
-                      background: #fff;
-                    "
-                  >
-                    <option value="">Tất cả phân loại</option>
-                    <option value="toyota">Toyota</option>
-                    <option value="mercedes">Mercedes</option>
-                    <option value="bmw">BMW</option>
-                    <option value="audi">Audi</option>
-                    <option value="lexus">Lexus</option>
-                    <option value="honda">Honda</option>
-                    <option value="hyundai">Hyundai</option>
-                    <option value="kia">KIA</option>
-                    <option value="vinfast">Vinfast</option>
-                  </select>
-
-                  <select
-                    id="searchModelType"
-                    style="
-                      padding: 10px 12px;
-                      border-radius: 6px;
-                      border: 1px solid #ccc;
-                      font-size: 0.95rem;
-                      width: 100%;
-                      background: #fff;
-                      grid-column: 1 / -1;
-                    "
-                  >
-                    <option value="">Tất cả dòng xe</option>
-                    <option value="suv">SUV</option>
-                    <option value="sedan">Sedan</option>
-                    <option value="mpv">MPV</option>
-                    <option value="hatchback">Hatchback</option>
-                    <option value="coupe">Coupe</option>
-                    <option value="crossover">Crossover</option>
-                    <option value="roadster">Roadster</option>
-                    <option value="ban tai">Bán tải</option>
-                    <option value="hybrid">Hybrid</option>
-                    <option value="dien">Xe điện</option>
-                  </select>
-
-                  <input
-                    type="number"
-                    id="searchPriceFrom"
-                    min="0"
-                    placeholder="Giá từ"
-                    style="
-                      padding: 10px 12px;
-                      border-radius: 6px;
-                      border: 1px solid #ccc;
-                      font-size: 0.95rem;
-                      width: 100%;
-                    "
-                  />
-
-                  <input
-                    type="number"
-                    id="searchPriceTo"
-                    min="0"
-                    placeholder="Giá đến"
                     style="
                       padding: 10px 12px;
                       border-radius: 6px;
@@ -272,37 +190,24 @@
                 });
               }
 
-              // Xử lý nút tìm kiếm trên navbar - lọc trực tiếp tại trang chủ
+              // Xử lý nút tìm kiếm trên navbar
               var searchBtn = document.getElementById("searchBtn");
               var searchResetBtn = document.getElementById("searchResetBtn");
-              var searchCategory = document.getElementById("searchCategory");
-              var searchModelType = document.getElementById("searchModelType");
-              var searchPriceFrom = document.getElementById("searchPriceFrom");
-              var searchPriceTo = document.getElementById("searchPriceTo");
 
               if (searchBtn) {
                 searchBtn.addEventListener("click", function () {
                   var searchName = document
                     .getElementById("searchName")
                     .value.trim();
-                  var category = searchCategory ? searchCategory.value : "";
-                  var modelType = searchModelType ? searchModelType.value : "";
-                  var priceFrom = searchPriceFrom
-                    ? searchPriceFrom.value.trim()
-                    : "";
-                  var priceTo = searchPriceTo ? searchPriceTo.value.trim() : "";
 
-                  if (typeof window.applyHomeSearch === "function") {
-                    window.applyHomeSearch({
-                      keyword: searchName,
-                      make: category,
-                      model: modelType,
-                      priceFrom: priceFrom,
-                      priceTo: priceTo,
-                      page: 1,
-                    });
+                  if (!searchName) {
+                    alert("Vui lòng nhập tên sản phẩm");
+                    return;
                   }
 
+                  // Redirect to search results page with absolute path (same as direct URL access)
+                  var redirectUrl = "/WebBasic/pages/user/search-results.php?name=" + encodeURIComponent(searchName);
+                  window.location.href = redirectUrl;
                   closeSearchPopup();
                 });
 
@@ -319,22 +224,6 @@
                 searchResetBtn.addEventListener("click", function () {
                   var searchNameInput = document.getElementById("searchName");
                   if (searchNameInput) searchNameInput.value = "";
-                  if (searchCategory) searchCategory.value = "";
-                  if (searchModelType) searchModelType.value = "";
-                  if (searchPriceFrom) searchPriceFrom.value = "";
-                  if (searchPriceTo) searchPriceTo.value = "";
-
-                  if (typeof window.applyHomeSearch === "function") {
-                    window.applyHomeSearch({
-                      keyword: "",
-                      make: "",
-                      model: "",
-                      priceFrom: "",
-                      priceTo: "",
-                      page: 1,
-                    });
-                  }
-
                   closeSearchPopup();
                 });
               }
@@ -3763,7 +3652,10 @@
           t.style.opacity = "0";
           setTimeout(function () {
             if (t.parentNode) t.parentNode.removeChild(t);
-            if (redirectUrl) window.location.href = redirectUrl;
+            // Only redirect if redirectUrl is a valid URL path (contains / or .php), not a type string
+            if (redirectUrl && typeof redirectUrl === 'string' && (redirectUrl.includes('/') || redirectUrl.includes('.php'))) {
+              window.location.href = redirectUrl;
+            }
           }, 300);
         }, 2000);
       }

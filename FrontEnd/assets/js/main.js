@@ -4,7 +4,8 @@
 // ========================================
 
 // Dynamic base path (works at root and inside pages/ subfolders)
-const _basePath = window.location.pathname.replace(/\\/g, '/').includes('/pages/') ? '../../' : '';
+// Always use /WebBasic/ as the base path for absolute URLs
+const _basePath = '/WebBasic/';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Hiển thị avatar trên navbar nếu có
@@ -152,10 +153,21 @@ function bindBuyButtons() {
     }, true);
 }
 
+// Flag để debounce rapid clicks trên buy button
+let isAddingToCart = false;
+
 // Hàm thêm vào giỏ hàng
 function addToCart(name, price, img, quantity = 1) {
+    // Nếu đang xử lý thêm vào giỏ, bỏ qua
+    if (isAddingToCart) {
+        return false;
+    }
+    
     if (!isUserLoggedIn()) {
+        isAddingToCart = true;
         showLoginRequiredModal();
+        // Reset flag sau 300ms để cho phép click tiếp theo
+        setTimeout(() => { isAddingToCart = false; }, 300);
         return false;
     }
 
@@ -290,8 +302,23 @@ function loadCart() {
 // LOGIN/LOGOUT RELATED FUNCTIONS
 // ========================================
 
+// Flag để tránh show modal nhiều lần khi click nhanh
+let isLoginModalVisible = false;
+let isRedirectingToLogin = false;
+
 // Modal yêu cầu đăng nhập
 function showLoginRequiredModal() {
+    // Nếu modal đã hiển thị hoặc đang redirect, không show lại
+    if (isLoginModalVisible || isRedirectingToLogin) {
+        return;
+    }
+    
+    // Nếu modal đã tồn tại trong DOM, không tạo lại
+    if (document.getElementById('loginRequiredModal')) {
+        return;
+    }
+    
+    isLoginModalVisible = true;
     const modalHTML = `
         <div id="loginRequiredModal" class="modal" style="display: block;">
             <div class="modal-content" style="max-width: 400px; text-align: center;">
@@ -325,19 +352,28 @@ function showLoginRequiredModal() {
 function closeLoginRequiredModal() {
     const modal = document.getElementById('loginRequiredModal');
     if (modal) modal.remove();
+    isLoginModalVisible = false;
 }
 
 function goToLogin() {
+    // Set flag để ngăn chặn các click tiếp theo
+    isRedirectingToLogin = true;
     closeLoginRequiredModal();
     window.location.href = _basePath + 'pages/user/login.php';
 }
 
 // Kiểm tra đăng nhập trước khi vào giỏ hàng
 function checkLoginAndGoToCart() {
+    // Nếu đang redirect, bỏ qua
+    if (isRedirectingToLogin) {
+        return;
+    }
+    
     const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
     if (!isLoggedIn) {
         showLoginRequiredModal();
     } else {
+        isRedirectingToLogin = true;
         window.location.href = _basePath + 'pages/user/cart.php';
     }
 }

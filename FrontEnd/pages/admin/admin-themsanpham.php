@@ -237,7 +237,7 @@
                 <section id="categories-section" class="content-section" style="display:none">
                     <div class="section-header">
                         <h2>Quản lý loại sản phẩm</h2>
-                        <button onclick="window.location.href='admin-add-category.html'" class="add-btn">
+                        <button onclick="window.location.href='admin-add-category.php'" class="add-btn">
                             <i class="fas fa-plus"></i> Thêm loại xe
                         </button>
                     </div>
@@ -457,13 +457,13 @@
         function goToHomePage() {
             // Lưu trạng thái admin đang đăng nhập khi về trang chủ
             localStorage.setItem('adminViewingHome', 'true');
-            window.location.href = '../../index.html';
+            window.location.href = '../../index.php';
         }
 
         // Kiểm tra đăng nhập khi load trang
         document.addEventListener('DOMContentLoaded', function() {
             if (!localStorage.getItem('adminLoggedIn')) {
-                window.location.href = 'admin-login.html';
+                window.location.href = 'admin-login.php';
                 return;
             }
             
@@ -488,87 +488,53 @@
 
         // ========== QUẢN LÝ LOẠI SẢN PHẨM ==========
         
-        // Khởi tạo dữ liệu mẫu cho loại sản phẩm
-        function initCategories() {
-            // Xóa dữ liệu cũ và tạo mới với 20 loại xe
-            // Random số sản phẩm từ 5-25 và trạng thái random
-            const randomCount = () => Math.floor(Math.random() * 21) + 5; // 5-25
-            const randomVisible = () => Math.random() > 0.3; // 70% visible, 30% hidden
-            
-            const categories = [
-                    { id: 1, name: 'Toyota', slug: 'toyota', description: 'Thương hiệu xe Nhật Bản uy tín', productCount: randomCount(), visible: randomVisible() },
-                    { id: 2, name: 'Mercedes', slug: 'mercedes', description: 'Thương hiệu xe Đức cao cấp', productCount: randomCount(), visible: randomVisible() },
-                    { id: 3, name: 'BMW', slug: 'bmw', description: 'Xe Đức thể thao sang trọng', productCount: randomCount(), visible: randomVisible() },
-                    { id: 4, name: 'Audi', slug: 'audi', description: 'Xe Đức công nghệ cao', productCount: randomCount(), visible: randomVisible() },
-                    { id: 5, name: 'Lexus', slug: 'lexus', description: 'Xe Nhật cao cấp', productCount: randomCount(), visible: randomVisible() },
-                    { id: 6, name: 'Honda', slug: 'honda', description: 'Xe Nhật bền bỉ tiết kiệm', productCount: randomCount(), visible: randomVisible() },
-                    { id: 7, name: 'Hyundai', slug: 'hyundai', description: 'Xe Hàn Quốc hiện đại', productCount: randomCount(), visible: randomVisible() },
-                    { id: 8, name: 'Kia', slug: 'kia', description: 'Xe Hàn Quốc thời trang', productCount: randomCount(), visible: randomVisible() },
-                    { id: 9, name: 'VinFast', slug: 'vinfast', description: 'Xe điện Việt Nam', productCount: randomCount(), visible: randomVisible() },
-                    { id: 10, name: 'Mazda', slug: 'mazda', description: 'Xe Nhật thiết kế đẹp', productCount: randomCount(), visible: randomVisible() },
-                    { id: 11, name: 'Ford', slug: 'ford', description: 'Xe Mỹ mạnh mẽ', productCount: randomCount(), visible: randomVisible() },
-                    { id: 12, name: 'Chevrolet', slug: 'chevrolet', description: 'Xe Mỹ đa dạng', productCount: randomCount(), visible: randomVisible() },
-                    { id: 13, name: 'Nissan', slug: 'nissan', description: 'Xe Nhật công nghệ', productCount: randomCount(), visible: randomVisible() },
-                    { id: 14, name: 'Mitsubishi', slug: 'mitsubishi', description: 'Xe Nhật bền bỉ', productCount: randomCount(), visible: randomVisible() },
-                    { id: 15, name: 'Suzuki', slug: 'suzuki', description: 'Xe Nhật nhỏ gọn', productCount: randomCount(), visible: randomVisible() },
-                    { id: 16, name: 'Subaru', slug: 'subaru', description: 'Xe Nhật off-road', productCount: randomCount(), visible: randomVisible() },
-                    { id: 17, name: 'Volkswagen', slug: 'volkswagen', description: 'Xe Đức phổ thông', productCount: randomCount(), visible: randomVisible() },
-                    { id: 18, name: 'Porsche', slug: 'porsche', description: 'Xe Đức siêu sang', productCount: randomCount(), visible: randomVisible() },
-                    { id: 19, name: 'Volvo', slug: 'volvo', description: 'Xe Thụy Điển an toàn', productCount: randomCount(), visible: randomVisible() },
-                    { id: 20, name: 'Land Rover', slug: 'land-rover', description: 'Xe Anh địa hình', productCount: randomCount(), visible: randomVisible() }
-                ];
-            
-            // Luôn cập nhật lại dữ liệu mới
-            localStorage.setItem('categories', JSON.stringify(categories));
-            return categories;
-        }
-
-        // Reset và tạo lại dữ liệu mới
-        function resetCategories() {
-            localStorage.removeItem('categories');
-            initCategories();
-            loadCategories();
-            alert('Đã làm mới dữ liệu với số sản phẩm và trạng thái ngẫu nhiên!');
-        }
-
-        // Load và hiển thị danh sách loại sản phẩm
+        // Load và hiển thị danh sách loại sản phẩm từ database API
         function loadCategories() {
-            initCategories();
-            const categories = JSON.parse(localStorage.getItem('categories')) || [];
             const tbody = document.getElementById('categoriesTableBody');
             
             if (!tbody) return;
             
-            if (categories.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Chưa có loại sản phẩm nào</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = categories.map(cat => `
-                <tr>
-                    <td style="padding:12px;text-align:left;">${cat.name}</td>
-                    <td style="padding:12px;text-align:center;">${cat.productCount || 0}</td>
-                    <td style="padding:12px;text-align:center;">
-                        ${cat.visible 
-                            ? '<i class="fas fa-eye" style="color:#28a745;"></i> Hiển thị' 
-                            : '<i class="fas fa-eye-slash" style="color:#dc3545;"></i> Ẩn'
-                        }
-                    </td>
-                    <td style="padding:8px;text-align:center;">
-                        <div style="display:flex;gap:0.5rem;align-items:center;justify-content:center;">
-                            <button onclick="editCategory(${cat.id})" class="edit-btn" title="Sửa">
-                                <i class="fas fa-edit"></i> Sửa
-                            </button>
-                            <button onclick="toggleHideCategory(${cat.id})" title="${cat.visible ? 'Ẩn' : 'Hiện'}" style="flex:1;padding:0.5rem;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background-color 0.3s ease;">
-                                <i class="fas fa-${cat.visible ? 'eye-slash' : 'eye'}"></i> ${cat.visible ? 'Ẩn' : 'Hiện'}
-                            </button>
-                            <button onclick="deleteCategory(${cat.id})" class="delete-btn" title="Xóa">
-                                <i class="fas fa-trash"></i> Xóa
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            // Show loading
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
+            
+            // Fetch categories from API
+            fetch('/WebBasic/BackEnd/api/categories.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.categories && data.categories.length > 0) {
+                        tbody.innerHTML = data.categories.map(cat => `
+                            <tr>
+                                <td style="padding:12px;text-align:left;">${cat.name}</td>
+                                <td style="padding:12px;text-align:center;">${cat.product_count || 0}</td>
+                                <td style="padding:12px;text-align:center;">
+                                    ${cat.is_visible 
+                                        ? '<i class="fas fa-eye" style="color:#28a745;"></i> Hiển thị' 
+                                        : '<i class="fas fa-eye-slash" style="color:#dc3545;"></i> Ẩn'
+                                    }
+                                </td>
+                                <td style="padding:8px;text-align:center;">
+                                    <div style="display:flex;gap:0.5rem;align-items:center;justify-content:center;">
+                                        <button onclick="editCategory(${cat.id})" class="edit-btn" title="Sửa" style="padding:0.5rem;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </button>
+                                        <button onclick="toggleHideCategory(${cat.id})" title="${cat.is_visible ? 'Ẩn' : 'Hiện'}" style="padding:0.5rem;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;">
+                                            <i class="fas fa-${cat.is_visible ? 'eye-slash' : 'eye'}"></i> ${cat.is_visible ? 'Ẩn' : 'Hiện'}
+                                        </button>
+                                        <button onclick="deleteCategory(${cat.id})" class="delete-btn" title="Xóa" style="padding:0.5rem;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">
+                                            <i class="fas fa-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Chưa có loại sản phẩm nào</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading categories:', err);
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Lỗi khi tải danh sách loại sản phẩm</td></tr>';
+                });
         }
 
         // Hiển thị modal thêm loại sản phẩm
@@ -576,7 +542,6 @@
             document.getElementById('categoryModalTitle').textContent = 'Thêm loại sản phẩm';
             document.getElementById('categoryEditId').value = '';
             document.getElementById('categoryName').value = '';
-            document.getElementById('categorySlug').value = '';
             document.getElementById('categoryDescription').value = '';
             document.getElementById('categoryVisible').checked = true;
             document.getElementById('addCategoryModal').style.display = 'block';
@@ -589,76 +554,45 @@
 
         // Sửa loại sản phẩm
         function editCategory(id) {
-            const categories = JSON.parse(localStorage.getItem('categories')) || [];
-            const category = categories.find(c => c.id === id);
-            
-            if (!category) return;
-            
-            document.getElementById('categoryModalTitle').textContent = 'Sửa loại sản phẩm';
-            document.getElementById('categoryEditId').value = category.id;
-            document.getElementById('categoryName').value = category.name;
-            document.getElementById('categorySlug').value = category.slug;
-            document.getElementById('categoryDescription').value = category.description || '';
-            document.getElementById('categoryVisible').checked = category.visible;
-            document.getElementById('addCategoryModal').style.display = 'block';
+            alert('Chức năng sửa chưa khả dụng');
         }
 
-        // Xóa loại sản phẩm (prototype)
+        // Xóa loại sản phẩm
         function deleteCategory(id) {
             if (!confirm('Bạn có chắc muốn xóa loại sản phẩm này?')) return;
-            alert('Chức năng xóa chưa khả dụng trong phiên bản demo');
+            
+            fetch('/WebBasic/BackEnd/api/categories.php', {
+                method: 'DELETE',
+                body: new URLSearchParams({id: id})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Xóa thành công');
+                    loadCategories();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(err => alert('Lỗi kết nối: ' + err));
         }
 
-        // Ẩn/Hiện loại sản phẩm (prototype)
+        // Ẩn/Hiện loại sản phẩm
         function toggleHideCategory(id) {
-            alert('Chức năng ẩn/hiện chưa khả dụng trong phiên bản demo');
+            alert('Chức năng ẩn/hiện chưa khả dụng');
         }
 
         // Tìm kiếm loại sản phẩm
         function searchCategories() {
-            const tableBody = document.getElementById('categoriesTableBody');
-            if (!tableBody) return;
-            
-            // Hiển thị 1 loại xe Toyota
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="4" style="padding: 12px 12px 0 12px;">
-                        <button onclick="loadCategoriesData()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-undo"></i> Quay lại
-                        </button>
-                    </td>
-                </tr>
-                <tr style="border-bottom:1px solid #e0e0e0;">
-                    <td style="color:#000;padding:12px;font-weight:500;">Toyota</td>
-                    <td style="color:#000;text-align:center;padding:12px;">8</td>
-                    <td style="color:#000;text-align:center;padding:12px;">
-                        <span style="padding:6px 12px;background:#e8f5e9;color:#2e7d32;border-radius:6px;font-weight:600;font-size:0.9em;">
-                            <i class="fas fa-eye"></i> Hiển thị
-                        </span>
-                    </td>
-                    <td style="color:#000;text-align:center;padding:12px;">
-                        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-                            <button onclick="return false;" class="edit-btn" style="flex:1;padding:0.5rem;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;min-width:80px;transition:background-color 0.3s ease;">
-                                <i class="fas fa-edit"></i> Sửa
-                            </button>
-                            <button onclick="return false;" title="Ẩn" style="flex:1;padding:0.5rem;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background-color 0.3s ease;">
-                                <i class="fas fa-eye-slash"></i> Ẩn
-                            </button>
-                            <button onclick="return false;" class="delete-btn" title="Xóa" style="padding:0.5rem;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;min-width:80px;transition:background-color 0.3s ease;">
-                                <i class="fas fa-trash"></i> Xóa
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+            loadCategories();
         }
 
         // Load lại dữ liệu loại sản phẩm
         function loadCategoriesData() {
-            if (typeof loadCategories === 'function') {
-                loadCategories();
-            }
+            loadCategories();
         }
+
+        // NO DUPLICATES
 
         // Tìm kiếm sản phẩm tồn kho
         function searchStockProduct() {

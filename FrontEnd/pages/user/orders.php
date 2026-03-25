@@ -26,41 +26,50 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Đơn hàng mẫu cố định cho prototype
-      const sampleOrder = {
-        id: 1730188800000,
-        name: 'Nguyễn Văn A',
-        phone: '0901234567',
-        address: '123 Đường ABC, Quận 1, TP.HCM',
-        payment: 'cod',
-        items: [
-          {
-            name: 'Mercedes E200',
-            price: 2310000000,
-            img: 'assets/images/mercedes-e200.jpg',
-            quantity: 1
-          }
-        ],
-        total: 2310000000,
-        date: '29/10/2025, 10:30:00',
-        status: 'pending'
-      };
-      
       const ordersList = document.getElementById('ordersList');
-      console.log('Sample Order:', sampleOrder);
-      let html = '<div class="order-card">';
-      html += `<div class="order-header">Mã đơn: ${sampleOrder.id} | Ngày đặt: ${sampleOrder.date}</div>`;
-      html += `<div><strong>Người nhận:</strong> ${sampleOrder.name} | <strong>ĐT:</strong> ${sampleOrder.phone} | <strong>Địa chỉ:</strong> ${sampleOrder.address} | <strong>Thanh toán:</strong> Tiền mặt khi nhận hàng</div>`;
-      html += '<table class="order-items"><thead><tr><th>Ảnh</th><th>Tên xe</th><th>Giá</th><th>Số lượng</th></tr></thead><tbody>';
-      sampleOrder.items.forEach(item => {
-        console.log('Rendering item:', item);
-        html += `<tr><td><img src="${item.img}" alt="${item.name}" style="width:70px;border-radius:8px;"></td><td>${item.name}</td><td>${item.price.toLocaleString('vi-VN')} VNĐ</td><td>${item.quantity}</td></tr>`;
-      });
-      html += '</tbody></table>';
-      html += `<div class="order-total">Tổng cộng: ${sampleOrder.total.toLocaleString('vi-VN')} VNĐ</div>`;
-      html += '</div>';
-      console.log('Final HTML:', html);
-      ordersList.innerHTML = html;
+      
+      // Get user info from localStorage
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      
+      if (!userInfo.id) {
+        ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:1.1rem;">Vui lòng <a href="login.php" style="color:#007bff;text-decoration:none;">đăng nhập</a> để xem đơn hàng</p></div>';
+        return;
+      }
+      
+      // Fetch orders from API
+      fetch('/WebBasic/BackEnd/api/get_orders.php?userId=' + userInfo.id)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.orders && data.orders.length > 0) {
+            let html = '';
+            data.orders.forEach(order => {
+              html += '<div class="order-card">';
+              html += `<div class="order-header">Mã đơn: ${order.id} | Ngày đặt: ${order.created_at}</div>`;
+              html += `<div><strong>Thanh toán:</strong> ${order.payment_method === 'cod' ? 'Tiền mặt khi nhận hàng' : order.payment_method === 'bank' ? 'Chuyển khoản ngân hàng' : 'Thanh toán trực tuyến'}</div>`;
+              html += '<table class="order-items"><thead><tr><th>Tên xe</th><th>Giá</th><th>Số lượng</th><th>Tổng</th></tr></thead><tbody>';
+              
+              let orderTotal = 0;
+              if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                  const itemTotal = (item.price || 0) * (item.quantity || 1);
+                  orderTotal += itemTotal;
+                  html += `<tr><td>${item.product_name || 'Sản phẩm'}</td><td>${(item.price || 0).toLocaleString('vi-VN')} VNĐ</td><td>${item.quantity}</td><td>${itemTotal.toLocaleString('vi-VN')} VNĐ</td></tr>`;
+                });
+              }
+              
+              html += '</tbody></table>';
+              html += `<div class="order-total">Tổng cộng: ${orderTotal.toLocaleString('vi-VN')} VNĐ</div>`;
+              html += '</div>';
+            });
+            ordersList.innerHTML = html;
+          } else {
+            ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:1.1rem;">Bạn chưa có đơn hàng nào</p></div>';
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching orders:', err);
+          ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:1.1rem;">Lỗi khi tải đơn hàng. Vui lòng thử lại.</p></div>';
+        });
     });
   </script>
 </body>
