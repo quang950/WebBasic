@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMW - 3 Boys Auto</title>
+    <title>Hyundai - 3 Boys Auto</title>
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
@@ -11,27 +11,25 @@
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo">
-                <a href="../../index.html">3 Boys Auto</a>
-            </div>
+            <div class="logo"><a href="../../index.php">3 Boys Auto</a></div>
             <div class="nav-links">
-                <a href="../../index.html">Trang chủ</a>
+                <a href="../../index.php">Trang chủ</a>
                 <div class="dropdown">
                     <a href="#" class="dropdown-trigger">Loại xe <i class="fas fa-chevron-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="toyota.html">Toyota</a>
-                        <a href="mercedes.html">Mercedes</a>
-                        <a href="bmw.html" class="active">BMW</a>
-                        <a href="audi.html">Audi</a>
-                        <a href="lexus.html">Lexus</a>
-                        <a href="honda.html">Honda</a>
-                        <a href="hyundai.html">Hyundai</a>
-                        <a href="kia.html">KIA</a>
-                        <a href="vinfast.html">Vinfast</a>
+                        <a href="toyota.php">Toyota</a>
+                        <a href="mercedes.php">Mercedes</a>
+                        <a href="bmw.php">BMW</a>
+                        <a href="audi.php">Audi</a>
+                        <a href="lexus.php">Lexus</a>
+                        <a href="honda.php">Honda</a>
+                        <a href="hyundai.php" class="active">Hyundai</a>
+                        <a href="kia.php">KIA</a>
+                        <a href="vinfast.php">Vinfast</a>
                     </div>
                 </div>
-                <a href="index.html#about">Giới thiệu</a>
-                <a href="index.html#contact">Liên hệ</a>
+                <a href="../../index.php#about">Giới thiệu</a>
+                <a href="../../index.php#contact">Liên hệ</a>
             </div>
             <div class="user-actions">
                 <a href="#" onclick="checkLoginAndGoToCart()" class="cart-icon">
@@ -40,7 +38,7 @@
                     <span class="cart-count">0</span>
                 </a>
                 <div class="login-options" id="loginOptions">
-                    <a href="../user/login.html" class="blob-btn login-btn" id="loginBtn">
+                    <a href="../user/login.php" class="blob-btn login-btn" id="loginBtn">
                         <span class="blob-btn__inner">
                             <span class="blob-btn__blobs">
                                 <span class="blob-btn__blob"></span>
@@ -53,8 +51,8 @@
                     </a>
                 </div>
                 <div class="user-info" id="userInfo" style="display: none;">
-                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.html'">
-                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.html'"></span>
+                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.php'">
+                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.php'"></span>
                     <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
                 </div>
             </div>
@@ -64,9 +62,9 @@
     <main style="padding-top: 2rem;">
         <section class="hero" style="margin-bottom: 3rem; padding: 4rem 5%;">
             <div style="text-align: center;">
-                <img src="../../assets/images/logo-bmw.png" alt="BMW Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
-                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">BMW</h1>
-                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Niềm vui lái xe thuần túy</p>
+                <img src="../../assets/images/logo-hyundai.png" alt="Hyundai Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
+                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">HYUNDAI</h1>
+                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Tiến lên phía trước</p>
             </div>
         </section>
 
@@ -75,100 +73,100 @@
                 <div class="car-slider" style="margin: 0;">
                     <div class="car-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
                         
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan thể thao cân bằng giữa thoải mái và hiệu suất.">
-                            <img src="../../assets/images/bmw-320i.jpg" alt="BMW 320i">
-                            <h3>BMW 320i</h3>
-                            <p class="price">1.399.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L" data-desc="Sedan hạng C hiện đại, trang bị phong phú.">
+                            <img src="../../assets/images/hyundai-elantra.jpg" alt="Hyundai Elantra">
+                            <h3>Hyundai Elantra</h3>
+                            <p class="price">769.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan thể thao mạnh mẽ hơn, cảm giác lái hứng khởi.">
-                            <img src="../../assets/images/bmw-330i.jpg" alt="BMW 330i">
-                            <h3>BMW 330i</h3>
-                            <p class="price">1.719.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="CVT" data-engine="1.4L" data-desc="Sedan hạng B tiết kiệm và nhiều tiện nghi.">
+                            <img src="../../assets/images/hyundai-accent.jpg" alt="Hyundai Accent">
+                            <h3>Hyundai Accent</h3>
+                            <p class="price">569.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="4" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Coupe 4 chỗ, thiết kế thể thao và hiện đại.">
-                            <img src="../../assets/images/bmw-430i.jpg" alt="BMW 430i">
-                            <h3>BMW 430i</h3>
-                            <p class="price">3.399.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="1.5L" data-desc="SUV cỡ B thời trang, phù hợp đô thị.">
+                            <img src="../../assets/images/hyundai-creta.jpg" alt="Hyundai Creta">
+                            <h3>Hyundai Creta</h3>
+                            <p class="price">715.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan hạng E sang trọng, êm ái và an toàn.">
-                            <img src="../../assets/images/bmw-520i.jpg" alt="BMW 520i">
-                            <h3>BMW 520i</h3>
-                            <p class="price">1.979.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L" data-desc="Crossover hạng C rộng rãi, nhiều công nghệ.">
+                            <img src="../../assets/images/hyundai-tucson.jpg" alt="Hyundai Tucson">
+                            <h3>Hyundai Tucson</h3>
+                            <p class="price">989.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Sedan hạng E hiệu suất cao, nhiều công nghệ hiện đại.">
-                            <img src="../../assets/images/bmw-530i.jpg" alt="BMW 530i">
-                            <h3>BMW 530i</h3>
-                            <p class="price">2.499.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="2.5L" data-desc="SUV 7 chỗ cao cấp, thiết kế mới ấn tượng.">
+                            <img src="../../assets/images/hyundai-santafe.jpg" alt="Hyundai Santafe">
+                            <h3>Hyundai Santafe</h3>
+                            <p class="price">1.365.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="3.0L I6" data-desc="Sedan hạng sang cỡ lớn, êm ái và tiện nghi cao cấp.">
-                            <img src="../../assets/images/bmw-730li.jpg" alt="BMW 730Li">
-                            <h3>BMW 730Li</h3>
-                            <p class="price">4.369.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="1.2L" data-desc="Xe đô thị nhỏ gọn, linh hoạt và tiết kiệm.">
+                            <img src="../../assets/images/hyundai-grand.jpg" alt="Hyundai Grand">
+                            <h3>Hyundai Grand</h3>
+                            <p class="price">435.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="3.0L I6" data-desc="SUV hạng sang rộng rãi, mạnh mẽ và an toàn.">
-                            <img src="../../assets/images/bmw-x5.jpg" alt="BMW X5">
-                            <h3>BMW X5</h3>
-                            <p class="price">4.479.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="3.8L V6" data-desc="SUV 7 chỗ cỡ lớn, sang trọng và mạnh mẽ.">
+                            <img src="../../assets/images/hyundai-palisade.jpg" alt="Hyundai Palisade">
+                            <h3>Hyundai Palisade</h3>
+                            <p class="price">1.589.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="3.0L I6" data-desc="SUV full-size 7 chỗ đẳng cấp, nội thất xa xỉ.">
-                            <img src="../../assets/images/bmw-x7.jpg" alt="BMW X7">
-                            <h3>BMW X7</h3>
-                            <p class="price">6.889.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="CVT" data-engine="1.5L" data-desc="MPV 7 chỗ gia đình, tiện nghi và giá hợp lý.">
+                            <img src="../../assets/images/hyundai-stargazer.jpg" alt="Hyundai Stargazer">
+                            <h3>Hyundai Stargazer</h3>
+                            <p class="price">685.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="2" data-transmission="Tự động (AT)" data-engine="2.0L Turbo" data-desc="Roadster 2 chỗ mui trần, phong cách và cảm xúc.">
-                            <img src="../../assets/images/bmw-z4.jpg" alt="BMW Z4">
-                            <h3>BMW Z4</h3>
-                            <p class="price">4.239.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (AT)" data-engine="2.0L" data-desc="Sedan hạng D trẻ trung, nhiều công nghệ tiện ích.">
+                            <img src="../../assets/images/hyundai-sonata.jpg" alt="Hyundai Sonata">
+                            <h3>Hyundai Sonata</h3>
+                            <p class="price">705.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Đức" data-year="2025" data-fuel="Xăng" data-seats="4" data-transmission="Tự động (AT)" data-engine="4.4L V8" data-desc="Siêu phẩm hiệu suất cao, tăng tốc ấn tượng và sang trọng.">
-                            <img src="../../assets/images/bmw-m8.jpg" alt="BMW M8">
-                            <h3>BMW M8</h3>
-                            <p class="price">3.660.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="1.5L Turbo" data-desc="MPV 7 chỗ cao cấp, rộng rãi và thoải mái.">
+                            <img src="../../assets/images/hyundai-custin.jpg" alt="Hyundai Custin">
+                            <h3>Hyundai Custin</h3>
+                            <p class="price">890.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
@@ -238,13 +236,13 @@
             <div>
                 <h3 style="margin-bottom: 1rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Theo dõi chúng tôi</h3>
                 <div style="display: flex; gap: 1rem; font-size: 1.5rem;">
-                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-facebook"></i></a>
-                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-instagram"></i></a>
-                    <a href="#" style="color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><i class="fab fa-youtube"></i></a>
+                    <a href="#" style="color: #fff;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: #fff;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: #fff;"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
         </div>
-        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #fff;">
             <p>&copy; 2024 3 Boys Auto. All rights reserved.</p>
         </div>
     </footer>

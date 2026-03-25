@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -184,7 +184,7 @@
                     </a>
                 </div>
                 <div class="button-group">
-                    <button type="button" class="back-btn" onclick="window.location.href='../../index.html'">
+                    <button type="button" class="back-btn" onclick="window.location.href='../../index.php'">
                         <i class="fas fa-arrow-left"></i> <span>Quay lại</span>
                     </button>
                     <button type="submit" class="login-btn">
@@ -193,7 +193,7 @@
                 </div>
             </form>
             <div class="back-to-site">
-                <a href="../../index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+                <a href="../../index.php"><i class="fas fa-home"></i> Về trang chủ</a>
             </div>
         </div>
     </div>

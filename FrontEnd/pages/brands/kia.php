@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Honda - 3 Boys Auto</title>
+    <title>KIA - 3 Boys Auto</title>
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
@@ -11,25 +11,25 @@
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo"><a href="../../index.html">3 Boys Auto</a></div>
+            <div class="logo"><a href="../../index.php">3 Boys Auto</a></div>
             <div class="nav-links">
-                <a href="../../index.html">Trang chủ</a>
+                <a href="../../index.php">Trang chủ</a>
                 <div class="dropdown">
                     <a href="#" class="dropdown-trigger">Loại xe <i class="fas fa-chevron-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="toyota.html">Toyota</a>
-                        <a href="mercedes.html">Mercedes</a>
-                        <a href="bmw.html">BMW</a>
-                        <a href="audi.html">Audi</a>
-                        <a href="lexus.html">Lexus</a>
-                        <a href="honda.html" class="active">Honda</a>
-                        <a href="hyundai.html">Hyundai</a>
-                        <a href="kia.html">KIA</a>
-                        <a href="vinfast.html">Vinfast</a>
+                        <a href="toyota.php">Toyota</a>
+                        <a href="mercedes.php">Mercedes</a>
+                        <a href="bmw.php">BMW</a>
+                        <a href="audi.php">Audi</a>
+                        <a href="lexus.php">Lexus</a>
+                        <a href="honda.php">Honda</a>
+                        <a href="hyundai.php">Hyundai</a>
+                        <a href="kia.php" class="active">KIA</a>
+                        <a href="vinfast.php">Vinfast</a>
                     </div>
                 </div>
-                <a href="index.html#about">Giới thiệu</a>
-                <a href="index.html#contact">Liên hệ</a>
+                <a href="../../index.php#about">Giới thiệu</a>
+                <a href="../../index.php#contact">Liên hệ</a>
             </div>
             <div class="user-actions">
                 <a href="#" onclick="checkLoginAndGoToCart()" class="cart-icon">
@@ -38,7 +38,7 @@
                     <span class="cart-count">0</span>
                 </a>
                 <div class="login-options" id="loginOptions">
-                    <a href="../user/login.html" class="blob-btn login-btn" id="loginBtn">
+                    <a href="../user/login.php" class="blob-btn login-btn" id="loginBtn">
                         <span class="blob-btn__inner">
                             <span class="blob-btn__blobs">
                                 <span class="blob-btn__blob"></span>
@@ -51,8 +51,8 @@
                     </a>
                 </div>
                 <div class="user-info" id="userInfo" style="display: none;">
-                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.html'">
-                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.html'"></span>
+                    <img src="" alt="Avatar" class="user-avatar" id="userAvatar" style="cursor:pointer" onclick="window.location.href='../user/profile.php'">
+                    <span class="user-name" id="userName" style="cursor:pointer" onclick="window.location.href='../user/profile.php'"></span>
                     <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
                 </div>
             </div>
@@ -62,9 +62,9 @@
     <main style="padding-top: 2rem;">
         <section class="hero" style="margin-bottom: 3rem; padding: 4rem 5%;">
             <div style="text-align: center;">
-                <img src="../../assets/images/logo-honda.png" alt="Honda Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
-                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">HONDA</h1>
-                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Sức mạnh của những giấc mơ</p>
+                <img src="../../assets/images/logo-kia.png" alt="KIA Logo" style="height: 100px; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
+                <h1 style="font-size: 3rem; color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); margin-bottom: 1rem;">KIA</h1>
+                <p style="font-size: 1.3rem; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.6);">Phong cách trẻ trung năng động</p>
             </div>
         </section>
 
@@ -73,89 +73,29 @@
                 <div class="car-slider" style="margin: 0;">
                     <div class="car-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
                         
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="CVT" data-engine="1.5L" data-desc="Sedan hạng B tiết kiệm, bền bỉ và dễ lái.">
-                            <img src="../../assets/images/honda-city.jpg" alt="Honda City">
-                            <h3>Honda City</h3>
-                            <p class="price">568.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="AT" data-engine="1.2L" data-desc="Hatchback đô thị nhỏ gọn, tiết kiệm và linh hoạt.">
+                            <img src="../../assets/images/kia-morning.jpg" alt="KIA Morning">
+                            <h3>KIA Morning</h3>
+                            <p class="price">424.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="CVT" data-engine="1.5L Turbo" data-desc="Sedan hạng C thể thao, cảm giác lái phấn khích.">
-                            <img src="../../assets/images/honda-civic.jpg" alt="Honda Civic">
-                            <h3>Honda Civic</h3>
-                            <p class="price">889.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="MT/AT" data-engine="1.4L" data-desc="Sedan hạng B giá tốt, thực dụng và tiết kiệm.">
+                            <img src="../../assets/images/kia-soluto.jpg" alt="KIA Soluto">
+                            <h3>KIA Soluto</h3>
+                            <p class="price">482.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="1.5L Turbo" data-desc="SUV 7 chỗ tiện nghi, rộng rãi cho gia đình.">
-                            <img src="../../assets/images/honda-crv.jpg" alt="Honda CR-V">
-                            <h3>Honda CR-V</h3>
-                            <p class="price">1.259.000.000 VNĐ</p>
-                            <div class="button-container">
-                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                                <a href="#" class="view-details">Chi tiết</a>
-                            </div>
-                        </div>
-
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="CVT" data-engine="1.5L" data-desc="MPV 7 chỗ thực dụng, kinh tế và bền bỉ.">
-                            <img src="../../assets/images/honda-brv.jpg" alt="Honda BR-V">
-                            <h3>Honda BR-V</h3>
-                            <p class="price">705.000.000 VNĐ</p>
-                            <div class="button-container">
-                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                                <a href="#" class="view-details">Chi tiết</a>
-                            </div>
-                        </div>
-
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="CVT" data-engine="1.5L" data-desc="Crossover đô thị linh hoạt, tiết kiệm và hiện đại.">
-                            <img src="../../assets/images/honda-hrv.jpg" alt="Honda HR-V">
-                            <h3>Honda HR-V</h3>
-                            <p class="price">869.000.000 VNĐ</p>
-                            <div class="button-container">
-                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                                <a href="#" class="view-details">Chi tiết</a>
-                            </div>
-                        </div>
-
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="2" data-transmission="Tự động (AT)" data-engine="3.5L V6 Hybrid" data-desc="Siêu xe hybrid, hiệu suất cao và công nghệ tiên tiến.">
-                            <img src="../../assets/images/honda-nsx.jpg" alt="Honda NSX">
-                            <h3>Honda NSX</h3>
-                            <p class="price">4.883.000.000 VNĐ</p>
-                            <div class="button-container">
-                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                                <a href="#" class="view-details">Chi tiết</a>
-                            </div>
-                        </div>
-
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="CVT" data-engine="1.5L Turbo" data-desc="Sedan hạng D rộng rãi, êm ái và an toàn.">
-                            <img src="../../assets/images/honda-accord.jpg" alt="Honda Accord">
-                            <h3>Honda Accord</h3>
-                            <p class="price">1.319.000.000 VNĐ</p>
-                            <div class="button-container">
-                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                                <a href="#" class="view-details">Chi tiết</a>
-                            </div>
-                        </div>
-
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (CVT)" data-engine="3.5L V6" data-desc="MPV cao cấp 7-8 chỗ, rộng rãi và tiện nghi đầy đủ cho gia đình.">
-                            <img src="../../assets/images/honda-odyssey.jpg" alt="Honda Odyssey">
-                            <h3>Honda Odyssey</h3>
-                            <p class="price">1.376.000.000 VNĐ</p>
-                            <div class="button-container">
-                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
-                                <a href="#" class="view-details">Chi tiết</a>
-                            </div>
-                        </div>
-
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="Tự động (CVT)" data-engine="1.5L" data-desc="Hatchback 5 chỗ nhỏ gọn, tiết kiệm nhiên liệu và linh hoạt trong đô thị.">
-                            <img src="../../assets/images/honda-jazz.jpg" alt="Honda Jazz">
-                            <h3>Honda Jazz</h3>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="AT" data-engine="1.5L" data-desc="SUV cỡ B trẻ trung, trang bị phong phú.">
+                            <img src="../../assets/images/kia-sonet.jpg" alt="KIA Sonet">
+                            <h3>KIA Sonet</h3>
                             <p class="price">624.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
@@ -163,10 +103,70 @@
                             </div>
                         </div>
 
-                        <div class="car-card" data-origin="Nhật Bản" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="Tự động (AT)" data-engine="3.5L V6" data-desc="SUV cỡ lớn 7 chỗ, tiện nghi và an toàn cao.">
-                            <img src="../../assets/images/honda-pilot.jpg" alt="Honda Pilot">
-                            <h3>Honda Pilot</h3>
-                            <p class="price">1.012.000.000 VNĐ</p>
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="AT" data-engine="2.2L Diesel" data-desc="MPV 7 chỗ cỡ lớn, êm ái và tiện nghi.">
+                            <img src="../../assets/images/kia-carnival.jpg" alt="KIA Carnival">
+                            <h3>KIA Carnival</h3>
+                            <p class="price">1.589.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng/Dầu" data-seats="7" data-transmission="AT" data-engine="2.2L Diesel/2.5L" data-desc="SUV 7 chỗ cao cấp, thiết kế hiện đại và tiện nghi.">
+                            <img src="../../assets/images/kia-sorento.jpg" alt="KIA Sorento">
+                            <h3>KIA Sorento</h3>
+                            <p class="price">1.184.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="AT" data-engine="1.6L Turbo" data-desc="SUV hạng C thể thao, nhiều công nghệ.">
+                            <img src="../../assets/images/kia-sportage.jpg" alt="KIA Sportage">
+                            <h3>KIA Sportage</h3>
+                            <p class="price">879.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="7" data-transmission="AT" data-engine="1.5L/1.4L Turbo" data-desc="MPV 5+2 linh hoạt, phù hợp gia đình trẻ.">
+                            <img src="../../assets/images/kia-carens.jpg" alt="KIA Carens">
+                            <h3>KIA Carens</h3>
+                            <p class="price">769.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="AT" data-engine="1.6L/2.0L" data-desc="Sedan hạng C rộng rãi, vận hành mượt mà.">
+                            <img src="../../assets/images/kia-cerato.jpg" alt="KIA Cerato">
+                            <h3>KIA Cerato</h3>
+                            <p class="price">685.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="AT" data-engine="1.6L" data-desc="Sedan hạng C thiết kế trẻ trung, tiết kiệm.">
+                            <img src="../../assets/images/kia-k3.jpg" alt="KIA K3">
+                            <h3>KIA K3</h3>
+                            <p class="price">819.000.000 VNĐ</p>
+                            <div class="button-container">
+                                <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
+                                <a href="#" class="view-details">Chi tiết</a>
+                            </div>
+                        </div>
+
+                        <div class="car-card" data-origin="Hàn Quốc" data-year="2025" data-fuel="Xăng" data-seats="5" data-transmission="AT" data-engine="2.0L" data-desc="Sedan hạng D cao cấp, nhiều công nghệ an toàn.">
+                            <img src="../../assets/images/kia-k5.jpg" alt="KIA K5">
+                            <h3>KIA K5</h3>
+                            <p class="price">1.069.000.000 VNĐ</p>
                             <div class="button-container">
                                 <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Mua hàng</button>
                                 <a href="#" class="view-details">Chi tiết</a>

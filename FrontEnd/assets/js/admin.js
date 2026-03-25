@@ -192,7 +192,7 @@ function logout() {
         localStorage.removeItem('adminLoggedIn');
         localStorage.removeItem('adminUsername');
         localStorage.removeItem('adminViewingHome');
-        window.location.href = 'admin-login.html';
+        window.location.href = 'admin-login.php';
     }
 }
 
