@@ -62,6 +62,10 @@ CREATE TABLE orders (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+ALTER TABLE orders 
+CHANGE address shipping_address TEXT,
+ADD COLUMN shipping_phone VARCHAR(20);
+
 CREATE TABLE order_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT,
@@ -71,6 +75,11 @@ CREATE TABLE order_details (
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
+ALTER TABLE products 
+ADD COLUMN price_cost DECIMAL(15, 2) DEFAULT 0, 
+ADD COLUMN profit_margin FLOAT DEFAULT 10;
+-- Cập nhật thử một ít dữ liệu để có giá
+UPDATE products SET price_cost = price * 0.9, profit_margin = 10;
 
 INSERT INTO categories (name) VALUES 
 ('Toyota'),

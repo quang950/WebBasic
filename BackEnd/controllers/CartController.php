@@ -8,56 +8,46 @@ class CartController {
         $this->model = new CartModel();
     }
 
-    // Thêm vào giỏ hàng
-    public function addToCart($user_id, $product_id, $quantity) {
-        if (!$user_id || !$product_id || $quantity <= 0) {
-            return ["error" => "Invalid data"];
-        }
-
-        return $this->model->add($user_id, $product_id, $quantity);
-    }
-
-    // Lấy giỏ hàng theo user
-    public function getCart($user_id) {
+    // Lấy giỏ hàng
+    public function get($user_id) {
         if (!$user_id) {
-            return ["error" => "User ID required"];
+            return ["error" => "Thiếu user_id"];
         }
 
         return $this->model->getByUser($user_id);
     }
 
-    // Cập nhật số lượng
-    public function updateCart($cart_id, $quantity) {
-        if (!$cart_id || $quantity <= 0) {
-            return ["error" => "Invalid data"];
+    // Thêm vào giỏ
+    public function add($data) {
+        if (!isset($data['user_id'], $data['product_id'], $data['quantity'])) {
+            return ["error" => "Thiếu dữ liệu"];
         }
 
-        return $this->model->update($cart_id, $quantity);
+        return $this->model->add(
+            $data['user_id'],
+            $data['product_id'],
+            (int)$data['quantity']
+        );
     }
 
-    // Xoá sản phẩm khỏi giỏ
-    public function deleteCart($cart_id) {
+    // Update số lượng
+    public function update($data) {
+        if (!isset($data['cart_id'], $data['quantity'])) {
+            return ["error" => "Thiếu dữ liệu"];
+        }
+
+        return $this->model->update(
+            $data['cart_id'],
+            (int)$data['quantity']
+        );
+    }
+
+    // Xoá item (quantity = 0)
+    public function delete($cart_id) {
         if (!$cart_id) {
-            return ["error" => "Cart ID required"];
+            return ["error" => "Thiếu cart_id"];
         }
 
-        return $this->model->delete($cart_id);
-    }
-
-    // alias để giữ tương thích với các tên API cũ
-    public function removeFromCart($cart_id) {
-        return $this->deleteCart($cart_id);
-    }
-
-    public function updateQuantity($cart_id, $quantity) {
-    if (!$cart_id || $quantity === null) {
-        return ["error" => "Missing data"];
-    }
-
-    $result = $this->model->updateQuantity($cart_id, $quantity);
-
-    return $result
-        ? ["message" => "Cart updated"]
-        : ["error" => "Update failed"];
+        return $this->model->update($cart_id, 0);
     }
 }

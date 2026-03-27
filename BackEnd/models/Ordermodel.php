@@ -5,120 +5,146 @@ class OrderModel {
     private $conn;
 
     public function __construct() {
-        $this->conn = (new Database())->getConnection();
+        global $conn;
+        $this->conn = $conn;
     }
 
-    public function createOrder($user_id, $address, $payment_method) {
+    // 🔥 1. TẠO ĐƠN HÀNG (CHECKOUT)
+    public function createOrder($user_id, $address, $phone, $payment) {
         try {
-            //  BẮT ĐẦU TRANSACTION
-            $this->conn->beginTransaction();
+            $this->conn->begin_transaction();
 
-            //  1. Lấy giỏ hàng
-            $stmt = $this->conn->prepare(
-                "SELECT c.product_id, c.quantity, p.price, p.stock
-                 FROM cart c
-                 JOIN products p ON c.product_id = p.id
-                 WHERE c.user_id = ?"
-            );
-            $stmt->execute([$user_id]);
-            $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // 1. Lấy giỏ hàng
+            $stmt = $this->conn->prepare("
+                SELECT c.*, p.name, p.price 
+                FROM cart c
+                JOIN products p ON c.product_id = p.id
+                WHERE c.user_id = ?
+            ");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $cart = $stmt->get_result();
 
-            if (empty($cartItems)) {
-                return ["error" => "Cart is empty"];
+            if ($cart->num_rows == 0) {
+                throw new Exception("Cart is empty");
             }
 
-            //  2. Check stock + tính tổng tiền
+            // 2. Tính tổng tiền
             $total = 0;
-            foreach ($cartItems as $item) {
-                if ($item['quantity'] > $item['stock']) {
-                    return ["error" => "Product out of stock"];
-                }
-                $total += $item['price'] * $item['quantity'];
+            $items = [];
+            while ($row = $cart->fetch_assoc()) {
+                $total += $row['price'] * $row['quantity'];
+                $items[] = $row;
             }
 
-            //  3. Tạo order
-            $stmt = $this->conn->prepare(
-                "INSERT INTO orders (user_id, total_price, address, payment_method)
-                 VALUES (?, ?, ?, ?)"
-            );
-            $stmt->execute([$user_id, $total, $address, $payment_method]);
+            // 3. Tạo order
+            $stmtOrder = $this->conn->prepare("
+                INSERT INTO orders(user_id, total_price, shipping_address, shipping_phone, payment_method)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmtOrder->bind_param("idsss", $user_id, $total, $address, $phone, $payment);
+            $stmtOrder->execute();
 
-            $order_id = $this->conn->lastInsertId();
+            $order_id = $this->conn->insert_id;
 
-            //  4. Lưu order_details + trừ kho
-            foreach ($cartItems as $item) {
-                // lưu chi tiết
-                $stmt = $this->conn->prepare(
-                    "INSERT INTO order_details (order_id, product_id, quantity, price)
-                     VALUES (?, ?, ?, ?)"
-                );
-                $stmt->execute([
+            // 4. Thêm order_items
+            foreach ($items as $row) {
+                $stmtItem = $this->conn->prepare("
+                    INSERT INTO order_items(order_id, product_name, quantity, unit_price)
+                    VALUES (?, ?, ?, ?)
+                ");
+                $stmtItem->bind_param(
+                    "isid",
                     $order_id,
-                    $item['product_id'],
-                    $item['quantity'],
-                    $item['price']
-                ]);
-
-                // trừ kho
-                $stmt = $this->conn->prepare(
-                    "UPDATE products 
-                     SET stock = stock - ? 
-                     WHERE id = ?"
+                    $row['name'],
+                    $row['quantity'],
+                    $row['price']
                 );
-                $stmt->execute([
-                    $item['quantity'],
-                    $item['product_id']
-                ]);
+                $stmtItem->execute();
             }
 
-            //  5. Xoá giỏ hàng
-            $stmt = $this->conn->prepare(
-                "DELETE FROM cart WHERE user_id = ?"
-            );
-            $stmt->execute([$user_id]);
+            // 5. Xoá giỏ hàng
+            $stmtClear = $this->conn->prepare("
+                DELETE FROM cart WHERE user_id = ?
+            ");
+            $stmtClear->bind_param("i", $user_id);
+            $stmtClear->execute();
 
-            //  COMMIT
             $this->conn->commit();
 
-            return [
-                "message" => "Order created successfully",
-                "order_id" => $order_id
-            ];
+            return $order_id;
 
         } catch (Exception $e) {
-            //  ROLLBACK nếu lỗi
-            $this->conn->rollBack();
-            return ["error" => $e->getMessage()];
-        }
-    }
-    // 6. Lấy lịch sử mua hàng (Yêu cầu: Đơn hàng mới nhất ở trên cùng)
-    public function getOrderHistory($user_id) {
-        try {
-            $stmt = $this->conn->prepare(
-                "SELECT * FROM orders 
-                 WHERE user_id = ? 
-                 ORDER BY created_at DESC" // DESC đảm bảo đơn mới nhất lên đầu
-            );
-            $stmt->execute([$user_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
+            $this->conn->rollback();
             return ["error" => $e->getMessage()];
         }
     }
 
-    // 7. Lấy chi tiết đơn hàng (Dùng để hiển thị tóm tắt đơn hàng sau khi mua)
-    public function getOrderDetails($order_id) {
-        try {
-            $stmt = $this->conn->prepare(
-                "SELECT od.*, p.name as product_name, p.image_url 
-                 FROM order_details od
-                 JOIN products p ON od.product_id = p.id
-                 WHERE od.order_id = ?"
-            );
-            $stmt->execute([$order_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            return ["error" => $e->getMessage()];
+    // 🔥 2. LẤY LỊCH SỬ ĐƠN HÀNG
+    public function getOrdersByUser($user_id) {
+        $stmt = $this->conn->prepare("
+            SELECT id, total_price, shipping_address, shipping_phone, payment_method, status, created_at
+            FROM orders
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+        ");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $orders = [];
+
+        while ($order = $result->fetch_assoc()) {
+            $order_id = $order['id'];
+
+            // Lấy item
+            $stmtItems = $this->conn->prepare("
+                SELECT product_name, quantity, unit_price
+                FROM order_items
+                WHERE order_id = ?
+            ");
+            $stmtItems->bind_param("i", $order_id);
+            $stmtItems->execute();
+            $itemsResult = $stmtItems->get_result();
+
+            $items = [];
+            while ($item = $itemsResult->fetch_assoc()) {
+                $items[] = $item;
+            }
+
+            $order['items'] = $items;
+            $orders[] = $order;
         }
+
+        return $orders;
+    }
+
+    // 🔥 3. PREVIEW ĐƠN HÀNG (TRƯỚC KHI ĐẶT)
+    public function previewOrder($user_id) {
+        $stmt = $this->conn->prepare("
+            SELECT c.quantity, p.name, p.price
+            FROM cart c
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = ?
+        ");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $items = [];
+        $total = 0;
+
+        while ($row = $result->fetch_assoc()) {
+            $subtotal = $row['price'] * $row['quantity'];
+            $total += $subtotal;
+
+            $row['subtotal'] = $subtotal;
+            $items[] = $row;
+        }
+
+        return [
+            "items" => $items,
+            "total_price" => $total
+        ];
     }
 }

@@ -1,45 +1,65 @@
 <?php
-// cart.php
-// Calls CartController
-
-require_once '../controllers/CartController.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 header("Content-Type: application/json");
 
-$controller = new CartController();
+require_once __DIR__ . '/../controllers/CartController.php';
 
-// lấy action từ URL
+$controller = new CartController();
 $action = $_GET['action'] ?? '';
 
-if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents("php://input"), true);
+// Lấy JSON body
+$input = json_decode(file_get_contents("php://input"), true);
 
-    $user_id = $data['user_id'] ?? null;
-    $product_id = $data['product_id'] ?? null;
-    $quantity = $data['quantity'] ?? 1;
+switch ($action) {
 
-    echo json_encode($controller->addToCart($user_id, $product_id, $quantity));
-}
-elseif ($action === 'get' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $user_id = $_GET['user_id'] ?? null;
+    // LẤY GIỎ HÀNG
+    case 'get':
+        if (!isset($_GET['user_id'])) {
+            echo json_encode(["error" => "Thiếu user_id"]);
+            break;
+        }
 
-    echo json_encode($controller->getCart($user_id));
-}
-elseif ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents("php://input"), true);
+        $user_id = intval($_GET['user_id']);
+        echo json_encode($controller->get($user_id));
+        break;
 
-    $cart_id = $data['cart_id'] ?? null;
+    //  THÊM VÀO GIỎ
+    case 'add':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(["error" => "Phải dùng POST"]);
+            break;
+        }
 
-    echo json_encode($controller->deleteCart($cart_id));
-}
-elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents("php://input"), true);
+        if (!isset($input['user_id'], $input['product_id'], $input['quantity'])) {
+            echo json_encode(["error" => "Thiếu dữ liệu"]);
+            break;
+        }
 
-    $cart_id = $data['cart_id'] ?? null;
-    $quantity = $data['quantity'] ?? null;
+        echo json_encode([
+            "success" => $controller->add($input)
+        ]);
+        break;
 
-    echo json_encode($controller->updateQuantity($cart_id, $quantity));
-}
-else {
-    echo json_encode(["error" => "Invalid action"]);
+    //  UPDATE GIỎ HÀNG
+    case 'update':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(["error" => "Phải dùng POST"]);
+            break;
+        }
+
+        if (!isset($input['cart_id'], $input['quantity'])) {
+            echo json_encode(["error" => "Thiếu dữ liệu"]);
+            break;
+        }
+
+        echo json_encode([
+            "success" => $controller->update($input)
+        ]);
+        break;
+
+    default:
+        echo json_encode(["error" => "Action không hợp lệ"]);
+        break;
 }

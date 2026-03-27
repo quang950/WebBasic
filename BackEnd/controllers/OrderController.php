@@ -8,13 +8,21 @@ class OrderController {
         $this->model = new OrderModel();
     }
 
-    //  Tạo đơn hàng
-    public function createOrder($user_id, $address, $payment_method) {
-        // validate cơ bản
-        if (!$user_id || !$address || !$payment_method) {
+    // API chính
+    public function create($data) {
+        if (
+            !isset($data['user_id']) ||
+            !isset($data['shipping_address']) ||
+            !isset($data['payment_method'])
+        ) {
             return ["error" => "Missing required fields"];
         }
 
-        return $this->model->createOrder($user_id, $address, $payment_method);
+        return $this->model->createOrder(
+            $data['user_id'],
+            $data['shipping_address'],
+            $data['shipping_phone'] ?? '',
+            $data['payment_method']
+        );
     }
 }
