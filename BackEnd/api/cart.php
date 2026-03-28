@@ -5,8 +5,8 @@ error_reporting(E_ALL);
 header("Content-Type: application/json");
 
 require_once __DIR__ . '/../controllers/CartController.php';
-
-$controller = new CartController();
+require_once __DIR__ . '/../config/db_connect.php';
+$controller = new CartController($conn);
 $action = $_GET['action'] ?? '';
 
 // Lấy JSON body

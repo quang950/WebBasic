@@ -4,8 +4,8 @@ require_once __DIR__ . '/../models/CartModel.php';
 class CartController {
     private $model;
 
-    public function __construct() {
-        $this->model = new CartModel();
+    public function __construct($conn) {
+        $this->model = new CartModel($conn);
     }
 
     // Lấy giỏ hàng

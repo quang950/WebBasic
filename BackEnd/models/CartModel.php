@@ -4,8 +4,7 @@ require_once __DIR__ . '/../config/db_connect.php';
 class CartModel {
     private $conn;
 
-    public function __construct() {
-        global $conn;
+    public function __construct($conn) {
         $this->conn = $conn;
     }
 
