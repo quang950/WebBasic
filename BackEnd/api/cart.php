@@ -1,65 +1,76 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// cart.php - API giỏ hàng
 
-header("Content-Type: application/json");
+header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-require_once __DIR__ . '/../controllers/CartController.php';
-require_once __DIR__ . '/../config/db_connect.php';
-$controller = new CartController($conn);
-$action = $_GET['action'] ?? '';
+// OPTIONS (CORS)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+	http_response_code(200);
+	echo json_encode(['success' => true]);
+	exit;
+}
 
-// Lấy JSON body
-$input = json_decode(file_get_contents("php://input"), true);
+// chỉ cho GET + POST
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'])) {
+	http_response_code(405);
+	echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ']);
+	exit;
+}
 
-switch ($action) {
+require_once dirname(__DIR__) . '/config/db_connect.php';
+require_once dirname(__DIR__) . '/controllers/CartController.php';
 
-    // LẤY GIỎ HÀNG
-    case 'get':
-        if (!isset($_GET['user_id'])) {
-            echo json_encode(["error" => "Thiếu user_id"]);
-            break;
-        }
+try {
+	// FIX giống product
+	$action = strtolower(trim($_GET['action'] ?? ''));
 
-        $user_id = intval($_GET['user_id']);
-        echo json_encode($controller->get($user_id));
-        break;
+	$controller = new CartController($conn ?? null);
 
-    //  THÊM VÀO GIỎ
-    case 'add':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(["error" => "Phải dùng POST"]);
-            break;
-        }
+	// đọc body JSON
+	$input = json_decode(file_get_contents("php://input"), true);
 
-        if (!isset($input['user_id'], $input['product_id'], $input['quantity'])) {
-            echo json_encode(["error" => "Thiếu dữ liệu"]);
-            break;
-        }
+	switch ($action) {
 
-        echo json_encode([
-            "success" => $controller->add($input)
-        ]);
-        break;
+		case 'get':
+			if (!isset($_GET['user_id'])) {
+				throw new Exception("Thiếu user_id");
+			}
+			$result = $controller->get((int)$_GET['user_id']);
+			break;
 
-    //  UPDATE GIỎ HÀNG
-    case 'update':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(["error" => "Phải dùng POST"]);
-            break;
-        }
+		case 'add':
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				throw new Exception("Phải dùng POST");
+			}
+			$result = $controller->add($input ?? []);
+			break;
 
-        if (!isset($input['cart_id'], $input['quantity'])) {
-            echo json_encode(["error" => "Thiếu dữ liệu"]);
-            break;
-        }
+		case 'update':
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				throw new Exception("Phải dùng POST");
+			}
+			$result = $controller->update($input ?? []);
+			break;
 
-        echo json_encode([
-            "success" => $controller->update($input)
-        ]);
-        break;
+		default:
+			throw new Exception("Action không hợp lệ");
+	}
 
-    default:
-        echo json_encode(["error" => "Action không hợp lệ"]);
-        break;
+	// giống product
+	if (!empty($dbError)) {
+		$result['db_warning'] = $dbError;
+	}
+
+	http_response_code(200);
+	echo json_encode($result);
+
+} catch (Throwable $e) {
+	http_response_code(400);
+	echo json_encode([
+		'success' => false,
+		'message' => $e->getMessage()
+	]);
 }
