@@ -215,6 +215,56 @@ class ProductModel {
 
 		return ['success' => false, 'message' => 'Không tìm thấy sản phẩm'];
 	}
+		// Thêm sản phẩm
+	public function create($data) {
+		$stmt = $this->conn->prepare("
+			INSERT INTO products (name, price, description, image_url, stock, category_id)
+			VALUES (?, ?, ?, ?, ?, ?)
+		");
+
+		$stmt->bind_param(
+			"sdssii",
+			$data['name'],
+			$data['price'],
+			$data['description'],
+			$data['image_url'],
+			$data['stock'],
+			$data['category_id']
+		);
+
+		$stmt->execute();
+		return $this->conn->insert_id;
+	}
+
+	// Cập nhật
+	public function update($id, $data) {
+		$stmt = $this->conn->prepare("
+			UPDATE products
+			SET name=?, price=?, description=?, image_url=?, stock=?, category_id=?
+			WHERE id=?
+		");
+
+		$stmt->bind_param(
+			"sdssiii",
+			$data['name'],
+			$data['price'],
+			$data['description'],
+			$data['image_url'],
+			$data['stock'],
+			$data['category_id'],
+			$id
+		);
+
+		return $stmt->execute();
+	}
+
+	// Xoá
+	public function delete($id) {
+		$stmt = $this->conn->prepare("DELETE FROM products WHERE id=?");
+		$stmt->bind_param("i", $id);
+		return $stmt->execute();
+	}
+		
 }
 
 ?>

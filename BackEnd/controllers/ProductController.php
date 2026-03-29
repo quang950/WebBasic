@@ -37,6 +37,46 @@ class ProductController {
 		}
 		return $this->productModel->getProductById($id);
 	}
+	public function handleCreate($data) {
+		if (empty($data['name']) || empty($data['price'])) {
+			return ['success' => false, 'message' => 'Thiếu dữ liệu'];
+		}
+
+		$id = $this->productModel->create($data);
+
+		return [
+			'success' => true,
+			'id' => $id
+		];
+	}
+
+	public function handleUpdate($data) {
+		$id = $data['id'] ?? null;
+
+		if (!$id) {
+			return ['success' => false, 'message' => 'Thiếu ID'];
+		}
+
+		$result = $this->productModel->update($id, $data);
+
+		return [
+			'success' => $result
+		];
+	}
+
+	public function handleDelete($data) {
+		$id = $data['id'] ?? null;
+
+		if (!$id) {
+			return ['success' => false, 'message' => 'Thiếu ID'];
+		}
+
+		$result = $this->productModel->delete($id);
+
+		return [
+			'success' => $result
+		];
+	}
 }
 
 ?>

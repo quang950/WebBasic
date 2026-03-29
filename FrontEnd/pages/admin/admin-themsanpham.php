@@ -837,5 +837,37 @@
             try { loadProducts(); updateStats(); } catch (e) { /* ignore */ }
         });
     </script>
+    <script>
+    async function loadProducts(page = 1) {
+        try {
+            const res = await fetch(`/api/products.php?page=${page}`);
+            const data = await res.json();
+
+            if (!data.success) {
+                console.error(data.message);
+                return;
+            }
+
+            let html = '';
+            data.data.forEach(p => {
+                html += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.name}</td>
+                        <td>${p.price}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('product-list').innerHTML = html;
+
+        } catch (err) {
+            console.error("Lỗi gọi API:", err);
+        }
+    }
+
+    // load khi mở trang
+    loadProducts();
+    </script>
 </body>
 </html>
