@@ -835,60 +835,10 @@
 
         // Tìm kiếm sản phẩm giá bán
         function searchPricingProduct() {
-            const pricingGrid = document.getElementById('pricingGrid');
-            if (!pricingGrid) return;
-            
-            // Hiển thị 1 xe Toyota Camry
-            pricingGrid.innerHTML = `
-                <div style="margin-bottom: 15px;">
-                    <button onclick="loadPricingData()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-undo"></i> Quay lại
-                    </button>
-                </div>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                        <thead>
-                            <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
-                                <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
-                                <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Hãng</th>
-                                <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
-                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
-                                <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">% Lợi nhuận</th>
-                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="border-bottom:1px solid #f0f0f0;">
-                                <td style="padding:12px;">
-                                    <div style="font-weight:600;color:#333;margin-bottom:4px;">Camry</div>
-                                    <div style="font-size:0.85em;color:#666;">ID: 1</div>
-                                </td>
-                                <td style="padding:12px;">
-                                    <span style="display:inline-block;background:#e3f2fd;color:#1976d2;padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">
-                                        TOYOTA
-                                    </span>
-                                </td>
-                                <td style="padding:12px;color:#555;">Sedan</td>
-                                <td style="padding:12px;text-align:right;font-weight:500;color:#333;">1.100.000.000</td>
-                                <td style="padding:12px;text-align:center;">
-                                    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-                                        <input type="number" value="12.3" min="0" max="100" step="0.1" 
-                                            style="width:70px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.95em;"
-                                            onchange="return false;">
-                                        <span style="font-weight:600;color:#2e7d32;">%</span>
-                                    </div>
-                                </td>
-                                <td style="padding:12px;text-align:right;">
-                                    <div style="font-weight:600;color:#0d279d;font-size:1.05em;">1.235.000.000</div>
-                                    <div style="font-size:0.85em;color:#28a745;margin-top:4px;">
-                                        +135.000.000
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            if (typeof window.loadPricing === 'function') {
+                window.loadPricing();
+            }
+            return false;
         }
 
         // Load lại dữ liệu giá bán
@@ -907,94 +857,6 @@
         window.loadPricingData = loadPricingData;
         window.searchCategories = searchCategories;
         window.loadCategoriesData = loadCategoriesData;
-    </script>
-    <script>
-        // Prototype mode: disable mutating admin actions and seed demo data
-        document.addEventListener('DOMContentLoaded', function() {
-            // Seed demo products if empty
-            try {
-                let demoProducts = JSON.parse(localStorage.getItem('products')) || [];
-                if (!demoProducts.length) {
-                    demoProducts = [
-                        {
-                            id: Date.now(),
-                            name: 'Toyota Camry',
-                            brand: 'toyota',
-                            price: 1235000000,
-                            year: 2025,
-                            fuel: 'Xăng',
-                            transmission: 'Tự động (CVT)',
-                            category: 'Sedan',
-                            image: 'assets/images/toyota-camry.jpg',
-                            description: 'Sedan hạng D sang trọng, tiết kiệm.',
-                            dateAdded: new Date().toISOString(),
-                            hidden: false
-                        },
-                        {
-                            id: Date.now() + 1,
-                            name: 'Mercedes E200',
-                            brand: 'mercedes',
-                            price: 2310000000,
-                            year: 2024,
-                            fuel: 'Xăng',
-                            transmission: 'Tự động (AT)',
-                            category: 'Sedan',
-                            image: 'assets/images/mercedes-e200.jpg',
-                            description: 'Doanh nhân lịch lãm, công nghệ hiện đại.',
-                            dateAdded: new Date().toISOString(),
-                            hidden: false
-                        }
-                    ];
-                    localStorage.setItem('products', JSON.stringify(demoProducts));
-                }
-            } catch (e) { /* ignore */ }
-
-            // Helper: unified prototype notice (silent for submission)
-            function protoNotice(msg) {
-                // no-op: intentionally silent to avoid any popup/toast in submission
-            }
-
-            // Override mutating functions to no-op
-            const noopFns = [
-                'deleteProduct','toggleHideProduct',
-                'deleteImport','editImport','completeImport','saveImports',
-                'showAddCategoryModal','deleteCategory','editCategory','toggleHideCategory',
-                'updateDiscount',  // Vô hiệu hóa chức năng cập nhật discount
-                'filterPricing'    // Vô hiệu hóa chức năng tìm kiếm giá bán
-                // Cho phép: loadPricing (chỉ hiển thị), updateOrderStatus (cho phép cập nhật tình trạng đơn hàng)
-            ];
-            noopFns.forEach(fn => {
-                if (typeof window[fn] === 'function') {
-                    window[fn] = function() { protoNotice(); return false; };
-                } else {
-                    // create stub in case referenced by onclick
-                    window[fn] = function() { protoNotice(); return false; };
-                }
-            });
-
-            // Prevent form submissions and destructive buttons
-            document.addEventListener('submit', function(e) {
-                if (e.target && (e.target.id === 'addImportForm' || e.target.id === 'addCategoryForm')) {
-                    e.preventDefault();
-                    protoNotice();
-                    return false;
-                }
-            }, true);
-
-            document.addEventListener('click', function(e) {
-                const btn = e.target.closest('button');
-                if (!btn) return;
-                const classes = ['edit-btn','delete-btn','save-btn','lock-btn','unhide-btn','hide-btn'];
-                if (classes.some(c => btn.classList.contains(c))) {
-                    e.preventDefault();
-                    protoNotice();
-                    return false;
-                }
-            }, true);
-
-            // Refresh UI after seeding / overrides
-            try { loadProducts(); updateStats(); } catch (e) { /* ignore */ }
-        });
     </script>
     <script>
     async function loadProducts(page = 1) {
@@ -1032,6 +894,7 @@
     // IMPORT MANAGEMENT FUNCTIONS
     // ==========================================
     const API_BASE = '/WebBasic/BackEnd/api/';
+    const PRICING_API = `${API_BASE}pricing.php`;
     let currentImportTicketId = null;
     let ticketItemsForCreate = []; // Lưu danh sách sản phẩm sẽ thêm vào phiếu
     let selectedProductForImport = null; // Lưu sản phẩm được chọn từ dropdown
@@ -1039,6 +902,7 @@
     let currentTicketStatus = 'draft';
     let currentTicketItems = [];
     let isCreatingTicket = false;
+    let pricingData = [];
 
     function formatMoney(value) {
         const num = Number(value || 0);
@@ -1053,6 +917,187 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
+
+    // ==========================================
+    // PRICING MANAGEMENT FUNCTIONS
+    // ==========================================
+    async function loadPricingCategories() {
+        const categoryFilter = document.getElementById('pricingCategoryFilter');
+        if (!categoryFilter) return;
+
+        const currentValue = categoryFilter.value || '';
+        try {
+            const response = await fetch(`${API_BASE}categories.php?action=list`);
+            const result = await response.json();
+
+            if (response.ok && result.success && Array.isArray(result.categories)) {
+                categoryFilter.innerHTML = '<option value="">Tất cả loại xe</option>' +
+                    result.categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
+
+                if (currentValue) {
+                    categoryFilter.value = currentValue;
+                }
+            }
+        } catch (error) {
+            console.error('Load pricing categories error:', error);
+        }
+    }
+
+    function renderPricingTable(products) {
+        const pricingGrid = document.getElementById('pricingGrid');
+        if (!pricingGrid) return;
+
+        if (!Array.isArray(products) || products.length === 0) {
+            pricingGrid.innerHTML = '<div class="empty-state">Không tìm thấy sản phẩm phù hợp.</div>';
+            return;
+        }
+
+        pricingGrid.innerHTML = `
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background:linear-gradient(135deg,#1b4f72 0%,#2874a6 100%);color:#fff;">
+                            <th style="padding:14px;text-align:left;font-weight:600;min-width:230px;">Sản phẩm</th>
+                            <th style="padding:14px;text-align:left;font-weight:600;min-width:140px;">Loại xe</th>
+                            <th style="padding:14px;text-align:right;font-weight:600;min-width:150px;">Giá vốn (VNĐ)</th>
+                            <th style="padding:14px;text-align:center;font-weight:600;min-width:200px;">% Lợi nhuận</th>
+                            <th style="padding:14px;text-align:right;font-weight:600;min-width:170px;">Giá bán (VNĐ)</th>
+                            <th style="padding:14px;text-align:right;font-weight:600;min-width:170px;">Lợi nhuận (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${products.map(product => {
+                            const costPrice = Number(product.cost_price || 0);
+                            const profitMargin = Number(product.profit_margin || 0);
+                            const sellingPrice = Number(product.selling_price || 0);
+                            const profitAmount = Number(product.profit_amount || (sellingPrice - costPrice));
+
+                            return `
+                                <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+                                    <td style="padding:12px;">
+                                        <div style="font-weight:600;color:#333;margin-bottom:4px;">${escapeHtml(product.name)}</div>
+                                        <div style="font-size:0.85em;color:#666;">ID: ${product.id} | Tồn kho: ${product.stock ?? 0}</div>
+                                    </td>
+                                    <td style="padding:12px;color:#555;">${escapeHtml(product.category_name || 'N/A')}</td>
+                                    <td style="padding:12px;text-align:right;font-weight:500;color:#333;">${formatMoney(costPrice)}</td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                                            <input
+                                                id="pricing-margin-${product.id}"
+                                                type="number"
+                                                value="${profitMargin.toFixed(2)}"
+                                                min="0"
+                                                max="500"
+                                                step="0.1"
+                                                style="width:84px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.95em;"
+                                            >
+                                            <span style="font-weight:600;color:#2e7d32;">%</span>
+                                            <button
+                                                type="button"
+                                                onclick="updateProductProfitMargin(${product.id})"
+                                                style="padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#0d6efd;color:#fff;font-weight:600;">
+                                                Cập nhật
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td style="padding:12px;text-align:right;">
+                                        <div style="font-weight:700;color:#0d279d;font-size:1.02em;">${formatMoney(sellingPrice)}</div>
+                                    </td>
+                                    <td style="padding:12px;text-align:right;">
+                                        <div style="font-weight:600;color:${profitAmount >= 0 ? '#28a745' : '#dc3545'};">${profitAmount >= 0 ? '+' : ''}${formatMoney(profitAmount)}</div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    async function loadPricing() {
+        const pricingGrid = document.getElementById('pricingGrid');
+        if (!pricingGrid) return;
+
+        const search = document.getElementById('pricingSearchProduct')?.value.trim() || '';
+        const categoryId = document.getElementById('pricingCategoryFilter')?.value || '';
+
+        pricingGrid.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu giá bán...</div>';
+
+        try {
+            await loadPricingCategories();
+
+            const params = new URLSearchParams({ action: 'list', limit: '500' });
+            if (search) params.set('search', search);
+            if (categoryId) params.set('categoryId', categoryId);
+
+            const response = await fetch(`${PRICING_API}?${params.toString()}`);
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Không tải được dữ liệu giá bán');
+            }
+
+            pricingData = result.data || [];
+            renderPricingTable(pricingData);
+        } catch (error) {
+            console.error('Load pricing error:', error);
+            pricingGrid.innerHTML = `<div style="text-align:center;color:#dc3545;padding:20px;">${escapeHtml(error.message || 'Lỗi tải dữ liệu giá bán')}</div>`;
+        }
+    }
+
+    function searchPricingProduct() {
+        loadPricing();
+        return false;
+    }
+
+    function loadPricingData() {
+        loadPricing();
+        return false;
+    }
+
+    async function updateProductProfitMargin(productId) {
+        const input = document.getElementById(`pricing-margin-${productId}`);
+        if (!input) return;
+
+        const marginValue = parseFloat(input.value);
+        if (Number.isNaN(marginValue) || marginValue < 0 || marginValue > 500) {
+            alert('❌ % lợi nhuận phải từ 0 đến 500');
+            input.focus();
+            return;
+        }
+
+        try {
+            input.disabled = true;
+
+            const response = await fetch(PRICING_API, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_margin',
+                    product_id: productId,
+                    profit_margin: marginValue
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Cập nhật % lợi nhuận thất bại');
+            }
+
+            await loadPricing();
+        } catch (error) {
+            console.error('Update margin error:', error);
+            alert('❌ ' + (error.message || 'Lỗi cập nhật % lợi nhuận'));
+        } finally {
+            input.disabled = false;
+        }
+    }
+
+    window.loadPricing = loadPricing;
+    window.searchPricingProduct = searchPricingProduct;
+    window.loadPricingData = loadPricingData;
+    window.updateProductProfitMargin = updateProductProfitMargin;
 
     function searchImportTickets() {
         const search = document.getElementById('searchImportInput')?.value || '';
@@ -1794,6 +1839,21 @@
             });
         }
 
+        const pricingSearchInput = document.getElementById('pricingSearchProduct');
+        if (pricingSearchInput) {
+            pricingSearchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchPricingProduct();
+                }
+            });
+        }
+
+        const pricingCategoryFilter = document.getElementById('pricingCategoryFilter');
+        if (pricingCategoryFilter) {
+            pricingCategoryFilter.addEventListener('change', searchPricingProduct);
+        }
+
         ['statusImportFilter', 'dateFromImportFilter', 'dateToImportFilter'].forEach(function(id) {
             const element = document.getElementById(id);
             if (element) {
@@ -1818,6 +1878,11 @@
         // Nếu mở trực tiếp tab imports thì tải danh sách ngay
         if (window.location.hash === '#imports') {
             searchImportTickets();
+        }
+
+        // Nếu mở trực tiếp tab pricing thì tải dữ liệu giá bán
+        if (window.location.hash === '#pricing') {
+            loadPricing();
         }
     });
     </script>
