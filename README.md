@@ -19,8 +19,7 @@ WebBasic/
 │   │   └── ProductController.php
 │   └── models/              # Tầng tương tác database
 │       ├── CartModel.php
-│       ├── ProductModel.php
-│       └── UserModel.php
+│       └── ProductModel.php
 ├── DataBase/                # Cơ sở dữ liệu
 │   └── car_shop.sql         # File export database
 ├── FrontEnd/                # Giao diện người dùng

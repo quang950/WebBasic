@@ -29,6 +29,7 @@ $tables = [
         name VARCHAR(255) NOT NULL,
         category VARCHAR(255),
         price DECIMAL(15, 2),
+        cost_price DECIMAL(15, 2) DEFAULT 0,
         description TEXT,
         image_url VARCHAR(500),
         stock INT DEFAULT 0,
@@ -74,6 +75,33 @@ $tables = [
         is_visible TINYINT DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );",
+    
+    // Import tickets table
+    "CREATE TABLE IF NOT EXISTS import_tickets (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        ticket_number VARCHAR(50) UNIQUE NOT NULL,
+        import_date DATE NOT NULL,
+        status ENUM('draft', 'completed') DEFAULT 'draft',
+        total_import_price DECIMAL(15, 2) DEFAULT 0,
+        notes TEXT,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMP NULL,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    );",
+    
+    // Import items table (chi tiết phiếu nhập)
+    "CREATE TABLE IF NOT EXISTS import_items (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        import_ticket_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL,
+        import_price DECIMAL(15, 2) NOT NULL,
+        total_price DECIMAL(15, 2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (import_ticket_id) REFERENCES import_tickets(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
     );"
 ];
 

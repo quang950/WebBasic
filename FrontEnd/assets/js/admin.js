@@ -177,13 +177,14 @@ function showSection(sectionName) {
         try {
             if (sectionName === 'customers' && typeof loadCustomers === 'function') loadCustomers();
             if (sectionName === 'orders' && typeof loadAdminOrders === 'function') loadAdminOrders();
-            if (sectionName === 'imports' && typeof loadImports === 'function') loadImports();
+            if (sectionName === 'imports' && typeof searchImportTickets === 'function') searchImportTickets();
             if (sectionName === 'stock' && typeof loadOldStock === 'function') loadOldStock();
             if (sectionName === 'pricing' && typeof loadPricing === 'function') loadPricing();
         } catch (e) {
             console.warn('Section init error for', sectionName, e);
         }
     }
+    return false;
 }
 
 // Đăng xuất
