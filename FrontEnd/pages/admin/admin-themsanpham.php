@@ -368,7 +368,7 @@
 
                 <div class="modal-actions">
                     <button type="button" onclick="closeAddProductModal()" class="cancel-btn">Hủy</button>
-                    <button type="submit" class="save-btn" onclick="return false;">Lưu sản phẩm</button>
+                    <button type="submit" class="save-btn" onclick="addProduct()">Lưu sản phẩm</button>
                 </div>
             </form>
         </div>
@@ -445,7 +445,7 @@
 
                     <div class="modal-actions">
                         <button type="button" onclick="closeAddCategoryModal()" class="cancel-btn">Hủy</button>
-                        <button type="submit" class="save-btn" onclick="return false;">Lưu</button>
+                        <button type="submit" class="save-btn" onclick="addProduct();">Lưu</button>
                     </div>
                 </form>
             </div>
@@ -591,6 +591,7 @@
         function loadCategoriesData() {
             loadCategories();
         }
+
 
         // NO DUPLICATES
 
@@ -868,6 +869,75 @@
 
     // load khi mở trang
     loadProducts();
+    function addProduct() {
+        const formData = new FormData();
+
+        formData.append('name', document.getElementById('product-name').value);
+        formData.append('price', document.getElementById('product-price').value);
+        formData.append('stock', document.getElementById('product-stock').value);
+        formData.append('category_id', document.getElementById('product-category').value);
+
+        fetch('../../BackEnd/api/admin/Create.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thêm sản phẩm thành công');
+                loadProducts(); // load lại danh sách
+            } else {
+                alert('' + data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+    function deleteProduct(id) {
+        if (!confirm('Bạn chắc chắn muốn xoá sản phẩm này?')) return;
+
+        const formData = new FormData();
+        formData.append('id', id);
+
+        fetch('../../BackEnd/api/admin/Delete.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(' Đã xoá sản phẩm');
+                loadProducts();
+            } else {
+                alert(' ' + data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function updateProduct(id) {
+        const price = document.getElementById(`price-${id}`).value;
+        const stock = document.getElementById(`stock-${id}`).value;
+
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('price', price);
+        formData.append('stock', stock);
+
+        fetch('../../BackEnd/api/admin/update.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(' Cập nhật thành công');
+                loadProducts();
+            } else {
+                alert(' ' + data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    }
     </script>
 </body>
 </html>

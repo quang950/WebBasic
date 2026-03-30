@@ -24,54 +24,77 @@
     </div>
     <div id="ordersList"></div>
   </div>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
       const ordersList = document.getElementById('ordersList');
-      
-      // Get user info from localStorage
-      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-      
-      if (!userInfo.id) {
-        ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:1.1rem;">Vui lòng <a href="login.php" style="color:#007bff;text-decoration:none;">đăng nhập</a> để xem đơn hàng</p></div>';
-        return;
-      }
-      
-      // Fetch orders from API
-      fetch('/WebBasic/BackEnd/api/get_orders.php?userId=' + userInfo.id)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.orders && data.orders.length > 0) {
-            let html = '';
-            data.orders.forEach(order => {
-              html += '<div class="order-card">';
-              html += `<div class="order-header">Mã đơn: ${order.id} | Ngày đặt: ${order.created_at}</div>`;
-              html += `<div><strong>Thanh toán:</strong> ${order.payment_method === 'cod' ? 'Tiền mặt khi nhận hàng' : order.payment_method === 'bank' ? 'Chuyển khoản ngân hàng' : 'Thanh toán trực tuyến'}</div>`;
-              html += '<table class="order-items"><thead><tr><th>Tên xe</th><th>Giá</th><th>Số lượng</th><th>Tổng</th></tr></thead><tbody>';
-              
-              let orderTotal = 0;
-              if (order.items && order.items.length > 0) {
-                order.items.forEach(item => {
-                  const itemTotal = (item.price || 0) * (item.quantity || 1);
-                  orderTotal += itemTotal;
-                  html += `<tr><td>${item.product_name || 'Sản phẩm'}</td><td>${(item.price || 0).toLocaleString('vi-VN')} VNĐ</td><td>${item.quantity}</td><td>${itemTotal.toLocaleString('vi-VN')} VNĐ</td></tr>`;
-                });
-              }
-              
-              html += '</tbody></table>';
-              html += `<div class="order-total">Tổng cộng: ${orderTotal.toLocaleString('vi-VN')} VNĐ</div>`;
-              html += '</div>';
-            });
-            ordersList.innerHTML = html;
-          } else {
-            ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:1.1rem;">Bạn chưa có đơn hàng nào</p></div>';
+
+      fetch('/WebBasic/BackEnd/api/get_orders.php', {
+          credentials: 'include' 
+      })
+      .then(res => res.json())
+      .then(data => {
+          if (!data.success || !data.orders || data.orders.length === 0) {
+              ordersList.innerHTML = `
+                  <div style="text-align:center;padding:40px;color:#999;">
+                      <p style="font-size:1.1rem;">Bạn chưa có đơn hàng nào</p>
+                  </div>
+              `;
+              return;
           }
-        })
-        .catch(err => {
-          console.error('Error fetching orders:', err);
-          ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><p style="font-size:1.1rem;">Lỗi khi tải đơn hàng. Vui lòng thử lại.</p></div>';
-        });
-    });
-  </script>
+
+          let html = '';
+          data.orders.forEach(order => {
+              html += `<div class="order-card">`;
+              html += `<div class="order-header">
+                          Mã đơn: ${order.id} | Ngày đặt: ${order.created_at}
+                      </div>`;
+              html += `<div><strong>Thanh toán:</strong> ${order.payment_method}</div>`;
+
+              html += `<table class="order-items">
+                          <thead>
+                            <tr>
+                              <th>Tên xe</th>
+                              <th>Giá</th>
+                              <th>Số lượng</th>
+                              <th>Tổng</th>
+                            </tr>
+                          </thead>
+                          <tbody>`;
+
+              let orderTotal = 0;
+              order.items.forEach(item => {
+                  const itemTotal = item.unit_price * item.quantity;
+                  orderTotal += itemTotal;
+
+                  html += `
+                      <tr>
+                          <td>${item.product_name}</td>
+                          <td>${item.unit_price.toLocaleString('vi-VN')} VNĐ</td>
+                          <td>${item.quantity}</td>
+                          <td>${itemTotal.toLocaleString('vi-VN')} VNĐ</td>
+                      </tr>
+                  `;
+              });
+
+              html += `</tbody></table>`;
+              html += `<div class="order-total">
+                          Tổng cộng: ${orderTotal.toLocaleString('vi-VN')} VNĐ
+                      </div>`;
+              html += `</div>`;
+          });
+
+          ordersList.innerHTML = html;
+      })
+      .catch(err => {
+          console.error(err);
+          ordersList.innerHTML = `
+              <div style="text-align:center;padding:40px;color:#999;">
+                  <p style="font-size:1.1rem;">Lỗi tải đơn hàng</p>
+              </div>
+          `;
+      });
+  });
+</script>
 </body>
 </html>
 

@@ -1,22 +1,18 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
-header('Access-Control-Allow-Headers: Content-Type');
+session_start();
 
+header('Content-Type: application/json');
 require_once __DIR__ . '/../config/db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-    exit;
-}
+//LẤY USER TỪ SESSION
+$userId = $_SESSION['user_id'] ?? null;
 
-$userId = isset($_GET['userId']) ? intval($_GET['userId']) : null;
-
+// Nếu chưa đăng nhập → trả về rỗng
 if (!$userId) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'User ID required']);
+    echo json_encode([
+        'success' => true,
+        'orders' => []
+    ]);
     exit;
 }
 

@@ -233,7 +233,7 @@
           <a href="#contact">Liên hệ</a>
         </div>
         <div class="user-actions">
-          <a href="#" onclick="checkLoginAndGoToCart()" class="cart-icon">
+          <a href="pages/user/cart.php" onclick="checkLoginAndGoToCart()" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span class="cart-text">Xem giỏ hàng</span>
             <span class="cart-count">0</span>

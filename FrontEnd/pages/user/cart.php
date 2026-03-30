@@ -356,7 +356,7 @@
             sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
             
             // Chuyển sang trang xác nhận ngay lập tức
-            window.location.replace('order-confirmation.html');
+            window.location.replace('order-confirmation.php');
             
           } catch (error) {
             console.error('Error:', error);
