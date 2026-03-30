@@ -1,33 +1,47 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/db_connect.php';
+require_once "db_connect.php";
+
+if (!$dbConnected) {
+    die("Lỗi kết nối CSDL");
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
 
+    // TÀI KHOẢN + MẬT KHẨU
+    $account  = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($account === '' || $password === '') {
+        echo "Vui lòng nhập tài khoản và mật khẩu";
+        exit;
+    }
+
+    // Chỉ cho phép admin
     $stmt = $conn->prepare("
-        SELECT * FROM users 
-        WHERE username = ? AND role = 'admin'
+        SELECT * FROM users
+        WHERE email = ? AND is_admin = 1
+        LIMIT 1
     ");
-    $stmt->bind_param("s", $username);
+    $stmt->bind_param("s", $account);
     $stmt->execute();
     $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+    $admin = $result->fetch_assoc();
 
-    if ($user && $password == $user['password']) {
-        $_SESSION['admin'] = $user;
+    // So sánh mật khẩu (plain text – theo DB hiện tại)
+    if ($admin && $password === $admin['password']) {
+
+        $_SESSION['admin'] = [
+            'id'   => $admin['id'],
+            'name' => $admin['first_name'] . ' ' . $admin['last_name'],
+            'email'=> $admin['email']
+        ];
+
         header("Location: dashboard.php");
         exit;
+
     } else {
-        echo "Sai tài khoản hoặc không phải admin";
+        echo "Sai tài khoản hoặc mật khẩu";
     }
 }
 ?>
-
-<form method="POST">
-    <h2>Admin Login</h2>
-    <input name="username" placeholder="Username"><br>
-    <input name="password" type="password" placeholder="Password"><br>
-    <button>Login</button>
-</form>
