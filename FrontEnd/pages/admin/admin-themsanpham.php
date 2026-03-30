@@ -26,42 +26,42 @@
                 <nav class="sidebar-nav">
                     <ul>
                         <li class="active">
-                            <a href="#products" onclick="showSection('products')">
+                            <a href="#products" onclick="return showSection('products')">
                                 <i class="fas fa-car"></i> Quản lý sản phẩm
                             </a>
                         </li>
                         <li>
-                            <a href="#orders" onclick="showSection('orders')">
+                            <a href="#orders" onclick="return showSection('orders')">
                                 <i class="fas fa-file-invoice"></i> Quản lý đơn hàng
                             </a>
                         </li>
                         <li>
-                            <a href="#imports" onclick="showSection('imports')">
+                            <a href="#imports" onclick="return showSection('imports')">
                                 <i class="fas fa-truck"></i> Quản lý nhập hàng
                             </a>
                         </li>
                         <li>
-                            <a href="#stock" onclick="showSection('stock')">
+                            <a href="#stock" onclick="return showSection('stock')">
                                 <i class="fas fa-boxes"></i> Quản lý tồn kho
                             </a>
                         </li>
                         <li>
-                            <a href="#customers" onclick="showSection('customers')">
+                            <a href="#customers" onclick="return showSection('customers')">
                                 <i class="fas fa-users"></i> Quản lý khách hàng
                             </a>
                         </li>
                         <li>
-                            <a href="#pricing" onclick="showSection('pricing')">
+                            <a href="#pricing" onclick="return showSection('pricing')">
                                 <i class="fas fa-tags"></i> Quản lý giá bán
                             </a>
                         </li>
                         <li>
-                            <a href="#categories" onclick="showSection('categories')">
+                            <a href="#categories" onclick="return showSection('categories')">
                                 <i class="fas fa-list"></i> Quản lý loại sản phẩm
                             </a>
                         </li>
                         <li>
-                            <a href="#dashboard" onclick="showSection('dashboard')">
+                            <a href="#dashboard" onclick="return showSection('dashboard')">
                                 <i class="fas fa-dashboard"></i> Thống kê
                             </a>
                         </li>
@@ -96,20 +96,24 @@
                 <section id="imports-section" class="content-section" style="display:none">
                     <div class="section-header">
                         <h2>Quản lý phiếu nhập hàng</h2>
-                        <button onclick="showAddImportModal()" class="add-btn" style="padding:10px 14px;"><i class="fas fa-plus"></i> Thêm phiếu nhập</button>
+                        <button onclick="openCreateTicketModal()" class="add-btn" style="padding:10px 14px;"><i class="fas fa-plus"></i> Thêm phiếu nhập</button>
                     </div>
-                    <div style="margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-                        <input type="text" id="importSearchId" placeholder="Tìm theo mã hoặc sản phẩm" style="padding:8px;border-radius:6px;border:1px solid #ccc;min-width:220px;">
-                        <label style="font-weight:600;color:#0d279d;">Ngày từ: <input type="text" id="importDateFrom" placeholder="dd/mm/yyyy" style="padding:6px 8px;border-radius:6px;border:1px solid #ccc;width:120px;margin-left:6px;"></label>
-                        <label style="font-weight:600;color:#0d279d;">đến: <input type="text" id="importDateTo" placeholder="dd/mm/yyyy" style="padding:6px 8px;border-radius:6px;border:1px solid #ccc;width:120px;margin-left:6px;"></label>
-                        <select id="importStatusFilter" style="padding:8px;border-radius:6px;border:1px solid #ccc;">
-                            <option value="">Tất cả</option>
-                            <option value="pending">Chưa hoàn thành</option>
-                            <option value="completed">Đã hoàn thành</option>
+
+                    <!-- Search & Filter -->
+                    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="searchImportInput" placeholder="Tìm mã phiếu nhập (VD: IT20260330...)" style="padding:10px 12px;border:1px solid #ddd;border-radius:6px;flex:1;min-width:250px;">
+                        <select id="statusImportFilter" style="padding:10px 12px;border:1px solid #ddd;border-radius:6px;flex:0 0 150px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="draft">Nháp</option>
+                            <option value="completed">Hoàn thành</option>
                         </select>
-                        <button onclick="filterImports()" class="search-btn"><i class="fas fa-search"></i> Lọc</button>
+                        <input type="date" id="dateFromImportFilter" style="padding:10px 12px;border:1px solid #ddd;border-radius:6px;flex:0 0 150px;">
+                        <input type="date" id="dateToImportFilter" style="padding:10px 12px;border:1px solid #ddd;border-radius:6px;flex:0 0 150px;">
+                        <button onclick="searchImportTickets()" class="search-btn" style="padding:10px 16px;"><i class="fas fa-search"></i> Tìm</button>
                     </div>
-                    <div id="importsGrid" style="margin-top:18px;"></div>
+
+                    <!-- Danh sách phiếu nhập -->
+                    <div id="importTicketsList"></div>
                 </section>
 
                 <!-- Quản lý tồn kho -->
@@ -383,7 +387,7 @@
                 </div>
                 <form id="addImportForm">
                     <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px 0;">
-                        <label>Ngày nhập: <input type="date" id="importDate" name="importDate" required></label>
+                        <label>Ngày nhập: <input type="date" id="legacyImportDate" name="legacyImportDate" required></label>
                         <label>Mã phiếu (Auto): <input type="text" id="importCode" name="importCode" disabled placeholder="(tự động)"></label>
                     </div>
 
@@ -450,6 +454,161 @@
                 </form>
             </div>
         </div>
+
+    <!-- MODAL: Create Import Ticket -->
+    <div id="createTicketModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000;">
+        <div style="background:#fff;border-radius:12px;width:95%;max-width:750px;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+            <div style="padding:24px 28px;border-bottom:2px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;font-size:1.3rem;color:#333;">📋 Tạo Phiếu Nhập Hàng Mới</h3>
+                <span onclick="closeCreateTicketModal()" style="cursor:pointer;font-size:28px;color:#999;">&times;</span>
+            </div>
+            <div style="padding:28px;max-height:70vh;overflow-y:auto;">
+                <form id="createTicketForm" style="display:flex;flex-direction:column;gap:20px;">
+                    <!-- Ngày nhập + Ghi chú -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div>
+                            <label style="display:block;margin-bottom:8px;font-weight:700;color:#333;">📅 Ngày nhập <span style="color:red;">*</span></label>
+                            <input type="date" id="importDate" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:6px;font-size:1rem;" required>
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:8px;font-weight:700;color:#333;">📝 Ghi chú</label>
+                            <input type="text" id="notes" placeholder="Ghi chú phiếu nhập..." style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:6px;font-size:0.95rem;">
+                        </div>
+                    </div>
+
+                    <!-- Tìm kiếm & thêm sản phẩm -->
+                    <div style="border:2px dashed #0d6efd;padding:16px;border-radius:8px;background:#f8f9ff;">
+                        <h4 style="margin:0 0 12px 0;color:#0d6efd;">🔍 Thêm Sản Phẩm Vào Phiếu</h4>
+                        
+                        <div style="display:grid;grid-template-columns:1fr 0.6fr 0.6fr auto;gap:10px;margin-bottom:12px;position:relative;">
+                            <div style="position:relative;">
+                                <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Tìm sản phẩm</label>
+                                <input type="text" id="searchProductForImport" placeholder="Nhập tên hoặc mã..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                                <div id="productSearchResults" style="position:absolute;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:150px;overflow-y:auto;display:none;width:100%;z-index:2000;top:100%;left:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                                    <!-- Results hiển thị ở đây -->
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Số lượng</label>
+                                <input type="number" id="importQuantity" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Giá nhập</label>
+                                <input type="number" id="importPrice" min="0" step="0.01" value="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                            </div>
+                            <div style="display:flex;align-items:flex-end;">
+                                <button type="button" onclick="addProductToTicket()" style="background:#0d6efd;color:#fff;border:none;padding:8px 14px;border-radius:4px;cursor:pointer;font-weight:600;white-space:nowrap;">➕ Thêm</button>
+                            </div>
+                        </div>
+                        <small style="color:#666;">Ghi chú: Nhập số lượng & giá mua, rồi bấm nút Thêm</small>
+                    </div>
+
+                    <!-- Bảng sản phẩm đã thêm -->
+                    <div>
+                        <h4 style="margin:0 0 12px 0;color:#333;">📦 Sản Phẩm Trong Phiếu</h4>
+                        <table style="width:100%;border-collapse:collapse;border:1px solid #ddd;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:10px;text-align:left;border-bottom:1px solid #ddd;font-size:12px;">Sản phẩm</th>
+                                    <th style="padding:10px;text-align:center;border-bottom:1px solid #ddd;font-size:12px;width:80px;">Số lượng</th>
+                                    <th style="padding:10px;text-align:right;border-bottom:1px solid #ddd;font-size:12px;width:100px;">Giá nhập</th>
+                                    <th style="padding:10px;text-align:right;border-bottom:1px solid #ddd;font-size:12px;width:100px;">Thành tiền</th>
+                                    <th style="padding:10px;text-align:center;border-bottom:1px solid #ddd;font-size:12px;width:40px;">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="importItemsTable">
+                                <tr><td colspan="5" style="padding:20px;text-align:center;color:#999;font-size:12px;">Chưa có sản phẩm nào</td></tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:12px;padding:12px;background:#f9f9f9;border-radius:4px;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:#666;font-weight:600;">💰 Tổng tiền nhập:</span>
+                            <span id="totalImportPrice" style="font-size:18px;font-weight:700;color:#dc3545;">₫0</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div style="padding:16px 28px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:12px;background:#fafafa;">
+                <button onclick="closeCreateTicketModal()" style="background:#e9ecef;color:#333;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Hủy</button>
+                <button onclick="submitCreateTicket()" style="background:#28a745;color:#fff;border:none;padding:10px 24px;border-radius:6px;cursor:pointer;font-weight:600;">✅ Tạo Phiếu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Detail/Edit Import Ticket -->
+    <div id="ticketDetailModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1001;">
+        <div style="background:#fff;border-radius:12px;width:95%;max-width:900px;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+            <div style="padding:24px 28px;border-bottom:2px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;font-size:1.3rem;color:#333;">📄 Chi Tiết Phiếu Nhập: <span id="detailTicketNumber">-</span></h3>
+                <span onclick="closeTicketDetailModal()" style="cursor:pointer;font-size:28px;color:#999;">&times;</span>
+            </div>
+
+            <div style="padding:22px 28px;max-height:72vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div>
+                        <label style="display:block;margin-bottom:6px;font-weight:600;color:#444;">Trạng thái</label>
+                        <div id="detailTicketStatusBadge" style="display:inline-block;padding:6px 12px;border-radius:16px;font-size:0.85rem;font-weight:700;background:#fff3cd;color:#856404;">Nháp</div>
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:6px;font-weight:600;color:#444;">📅 Ngày nhập</label>
+                        <input type="date" id="detailImportDate" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:6px;font-weight:600;color:#444;">💰 Tổng tiền</label>
+                        <div id="detailTotalImportPrice" style="padding:10px 12px;border-radius:6px;background:#f9f9f9;color:#d9534f;font-weight:700;">₫0</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display:block;margin-bottom:6px;font-weight:600;color:#444;">📝 Ghi chú</label>
+                    <input type="text" id="detailNotes" placeholder="Ghi chú phiếu nhập..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                </div>
+
+                <div id="detailAddItemSection" style="border:2px dashed #0d6efd;padding:16px;border-radius:8px;background:#f8f9ff;">
+                    <h4 style="margin:0 0 12px 0;color:#0d6efd;">➕ Thêm sản phẩm vào phiếu</h4>
+                    <div style="display:grid;grid-template-columns:1fr 0.5fr 0.6fr auto;gap:10px;align-items:end;position:relative;">
+                        <div style="position:relative;">
+                            <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Tìm sản phẩm</label>
+                            <input type="text" id="searchProductForDetail" placeholder="Nhập tên hoặc mã..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                            <div id="productSearchResultsDetail" style="position:absolute;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:150px;overflow-y:auto;display:none;width:100%;z-index:2002;top:100%;left:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></div>
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Số lượng</label>
+                            <input type="number" id="detailQuantity" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Giá nhập</label>
+                            <input type="number" id="detailPrice" min="0" step="0.01" value="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                        </div>
+                        <button type="button" onclick="addProductToCurrentTicket()" style="background:#0d6efd;color:#fff;border:none;padding:8px 14px;border-radius:4px;cursor:pointer;font-weight:600;white-space:nowrap;">➕ Thêm</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="margin:0 0 12px 0;color:#333;">📦 Danh sách sản phẩm</h4>
+                    <table style="width:100%;border-collapse:collapse;border:1px solid #ddd;">
+                        <thead>
+                            <tr style="background:#f5f5f5;">
+                                <th style="padding:10px;text-align:left;border-bottom:1px solid #ddd;font-size:12px;">Sản phẩm</th>
+                                <th style="padding:10px;text-align:center;border-bottom:1px solid #ddd;font-size:12px;width:90px;">Số lượng</th>
+                                <th style="padding:10px;text-align:right;border-bottom:1px solid #ddd;font-size:12px;width:120px;">Giá nhập</th>
+                                <th style="padding:10px;text-align:right;border-bottom:1px solid #ddd;font-size:12px;width:120px;">Thành tiền</th>
+                                <th style="padding:10px;text-align:center;border-bottom:1px solid #ddd;font-size:12px;width:70px;">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailItemsTable">
+                            <tr><td colspan="5" style="padding:20px;text-align:center;color:#999;font-size:12px;">Chưa có sản phẩm nào</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="padding:16px 28px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:12px;background:#fafafa;">
+                <button onclick="closeTicketDetailModal()" style="background:#e9ecef;color:#333;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Đóng</button>
+                <button id="saveTicketChangesBtn" onclick="saveCurrentTicketChanges()" style="background:#fd7e14;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">💾 Lưu thay đổi</button>
+                <button id="completeTicketBtn" onclick="completeCurrentTicket()" style="background:#198754;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">✅ Hoàn thành phiếu</button>
+            </div>
+        </div>
+    </div>
 
         <script src="../../assets/js/admin.js"></script>
     <script>
@@ -868,6 +1027,799 @@
 
     // load khi mở trang
     loadProducts();
+
+    // ==========================================  
+    // IMPORT MANAGEMENT FUNCTIONS
+    // ==========================================
+    const API_BASE = '/WebBasic/BackEnd/api/';
+    let currentImportTicketId = null;
+    let ticketItemsForCreate = []; // Lưu danh sách sản phẩm sẽ thêm vào phiếu
+    let selectedProductForImport = null; // Lưu sản phẩm được chọn từ dropdown
+    let selectedProductForDetail = null;
+    let currentTicketStatus = 'draft';
+    let currentTicketItems = [];
+    let isCreatingTicket = false;
+
+    function formatMoney(value) {
+        const num = Number(value || 0);
+        return num.toLocaleString('vi-VN');
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function searchImportTickets() {
+        const search = document.getElementById('searchImportInput')?.value || '';
+        const status = document.getElementById('statusImportFilter')?.value || '';
+        const dateFrom = document.getElementById('dateFromImportFilter')?.value || '';
+        const dateTo = document.getElementById('dateToImportFilter')?.value || '';
+
+        let url = `${API_BASE}import_tickets.php?action=list`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (status) url += `&status=${status}`;
+        if (dateFrom) url += `&dateFrom=${dateFrom}`;
+        if (dateTo) url += `&dateTo=${dateTo}`;
+
+        fetch(url)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    displayImportTickets(result.data);
+                }
+            })
+            .catch(err => console.error('Error:', err));
+    }
+
+    // Hàm tìm kiếm sản phẩm
+    async function searchProductsForImport() {
+        const searchInput = document.getElementById('searchProductForImport');
+        const resultsDiv = document.getElementById('productSearchResults');
+        const query = searchInput.value.trim();
+
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+            const data = await response.json();
+            
+            if (!data.success || !data.data || data.data.length === 0) {
+                resultsDiv.innerHTML = '<div style="padding:10px;color:#999;font-size:11px;">Không tìm thấy sản phẩm</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            resultsDiv.innerHTML = data.data.map(product => `
+                <div onclick="selectProductForImport(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${product.price || 0})" 
+                     style="padding:10px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;">
+                    <strong>${product.name}</strong><br>
+                    <small style="color:#666;">ID: ${product.id} | Giá: ₫${parseFloat(product.price || 0).toLocaleString('vi-VN')}</small>
+                </div>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        } catch (err) {
+            console.error('Error searching products:', err);
+            resultsDiv.innerHTML = '<div style="padding:10px;color:red;font-size:11px;">Lỗi tìm kiếm sản phẩm</div>';
+            resultsDiv.style.display = 'block';
+        }
+    }
+
+    // Khi người dùng chọn một sản phẩm từ dropdown
+    function selectProductForImport(productId, productName, costPrice) {
+        selectedProductForImport = { id: productId, name: productName, costPrice: costPrice };
+        document.getElementById('searchProductForImport').value = productName;
+        document.getElementById('productSearchResults').style.display = 'none';
+    }
+
+    // Thêm sản phẩm vào danh sách (lưu trữ local, chưa gửi API)
+    async function addProductToTicket() {
+        const quantity = parseInt(document.getElementById('importQuantity').value) || 0;
+        const price = parseFloat(document.getElementById('importPrice').value) || 0;
+        const searchInputValue = document.getElementById('searchProductForImport').value.trim();
+
+        if (!searchInputValue) {
+            alert('❌ Vui lòng nhập tên sản phẩm!');
+            return;
+        }
+        if (quantity < 1) {
+            alert('❌ Số lượng phải >= 1!');
+            return;
+        }
+        if (price < 0) {
+            alert('❌ Giá nhập không được âm!');
+            return;
+        }
+
+        let product = null;
+
+        // Nếu có sản phẩm được chọn từ dropdown, dùng nó
+        if (selectedProductForImport) {
+            product = selectedProductForImport;
+            selectedProductForImport = null; // Reset
+        } else {
+            // Nếu không, tìm kiếm bằng tên/mã
+            try {
+                const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(searchInputValue)}&limit=20`);
+                const data = await response.json();
+                
+                if (!data.success || !data.data || data.data.length === 0) {
+                    alert('❌ Không tìm thấy sản phẩm với tên: ' + searchInputValue);
+                    return;
+                }
+                product = data.data[0];
+            } catch (err) {
+                console.error('Error searching product:', err);
+                alert('❌ Lỗi tìm kiếm sản phẩm!');
+                return;
+            }
+        }
+
+        const subtotal = quantity * price;
+
+        // Kiểm tra xem sản phẩm đã có trong danh sách chưa
+        const existingIndex = ticketItemsForCreate.findIndex(item => item.product_id === product.id);
+        if (existingIndex >= 0) {
+            // Nếu có rồi thì cập nhật
+            if (confirm(`Sản phẩm "${product.name}" đã có trong phiếu. Cập nhật số lượng thêm ${quantity}?`)) {
+                ticketItemsForCreate[existingIndex].quantity += quantity;
+                ticketItemsForCreate[existingIndex].import_price = price;
+                ticketItemsForCreate[existingIndex].total_price = ticketItemsForCreate[existingIndex].quantity * price;
+            }
+        } else {
+            // Nếu chưa có thì thêm mới
+            ticketItemsForCreate.push({
+                product_id: product.id,
+                product_name: product.name,
+                quantity: quantity,
+                import_price: price,
+                total_price: subtotal
+            });
+        }
+
+        updateImportItemsTable();
+        calculateTotalPrice();
+
+        // Reset input fields
+        document.getElementById('searchProductForImport').value = '';
+        document.getElementById('importQuantity').value = '1';
+        document.getElementById('importPrice').value = '0';
+    }
+
+    // Cập nhật bảng hiển thị sản phẩm đã thêm
+    function updateImportItemsTable() {
+        const tbody = document.getElementById('importItemsTable');
+        
+        if (ticketItemsForCreate.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#999;font-size:12px;">Chưa có sản phẩm nào</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = ticketItemsForCreate.map((item, index) => `
+            <tr style="border-bottom:1px solid #ddd;transition:all 0.2s;">
+                <td style="padding:10px;">${item.product_name}</td>
+                <td style="padding:10px;text-align:center;">${item.quantity}</td>
+                <td style="padding:10px;text-align:right;">₫${parseFloat(item.import_price).toLocaleString('vi-VN')}</td>
+                <td style="padding:10px;text-align:right;font-weight:600;">₫${item.total_price.toLocaleString('vi-VN')}</td>
+                <td style="padding:10px;text-align:center;">
+                    <button type="button" onclick="removeProductFromTicket(${index})" style="background:#dc3545;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;transition:all 0.2s;">❌</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Xóa sản phẩm khỏi danh sách
+    function removeProductFromTicket(index) {
+        if (confirm('Xóa sản phẩm này khỏi phiếu?')) {
+            ticketItemsForCreate.splice(index, 1);
+            updateImportItemsTable();
+            calculateTotalPrice();
+        }
+    }
+
+    // Tính tổng tiền nhập
+    function calculateTotalPrice() {
+        const total = ticketItemsForCreate.reduce((sum, item) => sum + item.total_price, 0);
+        document.getElementById('totalImportPrice').textContent = '₫' + total.toLocaleString('vi-VN');
+    }
+
+    function displayImportTickets(tickets) {
+        const list = document.getElementById('importTicketsList');
+        if (!list) return;
+        
+        if (!tickets || tickets.length === 0) {
+            list.innerHTML = '<p style="text-align:center;color:#999;">Không có phiếu nhập nào</p>';
+            return;
+        }
+
+        list.innerHTML = tickets.map(ticket => `
+            <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:start;">
+                    <div>
+                        <div style="font-weight:600;font-size:1.1rem;color:#333;">${ticket.ticket_number}</div>
+                        <div style="color:#666;font-size:0.9rem;margin-top:4px;">📅 Ngày: ${new Date(ticket.import_date).toLocaleDateString('vi-VN')}</div>
+                        <div style="margin-top:8px;">
+                            <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.85rem;font-weight:600;background:${ticket.status === 'draft' ? '#fff3cd' : '#d4edda'};color:${ticket.status === 'draft' ? '#856404' : '#155724'};">
+                                ${ticket.status === 'draft' ? '🟡 Nháp' : '🟢 Hoàn thành'}
+                            </span>
+                            <span style="margin-left:16px;color:#0066cc;font-weight:600;">
+                                💰 ${formatMoney(ticket.total_import_price)} VNĐ
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+                        <button onclick="openTicketDetailModal(${ticket.id})" style="background:#007bff;color:#fff;border:none;padding:10px 16px;border-radius:4px;cursor:pointer;white-space:nowrap;">
+                            ${ticket.status === 'draft' ? '✏️ Sửa phiếu' : '🔍 Xem chi tiết'}
+                        </button>
+                        ${ticket.status === 'draft' ? `
+                            <button onclick="completeTicketById(${ticket.id})" style="background:#198754;color:#fff;border:none;padding:10px 16px;border-radius:4px;cursor:pointer;white-space:nowrap;">
+                                ✅ Hoàn thành
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function openTicketDetailModal(ticketId) {
+        currentImportTicketId = ticketId;
+        try {
+            await loadCurrentTicketDetail();
+            document.getElementById('ticketDetailModal').style.display = 'flex';
+        } catch (err) {
+            console.error('Open detail modal error:', err);
+            alert('❌ ' + (err.message || 'Không mở được chi tiết phiếu nhập'));
+        }
+    }
+
+    function closeTicketDetailModal() {
+        document.getElementById('ticketDetailModal').style.display = 'none';
+        currentImportTicketId = null;
+        currentTicketItems = [];
+        selectedProductForDetail = null;
+    }
+
+    function updateTicketDetailPermissionUI() {
+        const isDraft = currentTicketStatus === 'draft';
+        const statusBadge = document.getElementById('detailTicketStatusBadge');
+        const saveBtn = document.getElementById('saveTicketChangesBtn');
+        const completeBtn = document.getElementById('completeTicketBtn');
+        const addSection = document.getElementById('detailAddItemSection');
+        const dateInput = document.getElementById('detailImportDate');
+        const notesInput = document.getElementById('detailNotes');
+
+        statusBadge.textContent = isDraft ? '🟡 Nháp' : '🟢 Hoàn thành';
+        statusBadge.style.background = isDraft ? '#fff3cd' : '#d4edda';
+        statusBadge.style.color = isDraft ? '#856404' : '#155724';
+
+        if (addSection) addSection.style.display = isDraft ? 'block' : 'none';
+        if (saveBtn) saveBtn.style.display = isDraft ? 'inline-block' : 'none';
+        if (completeBtn) completeBtn.style.display = isDraft ? 'inline-block' : 'none';
+        if (dateInput) dateInput.disabled = !isDraft;
+        if (notesInput) notesInput.disabled = !isDraft;
+    }
+
+    function renderCurrentTicketItems() {
+        const tbody = document.getElementById('detailItemsTable');
+        if (!tbody) return;
+
+        if (!currentTicketItems || currentTicketItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#999;font-size:12px;">Chưa có sản phẩm nào</td></tr>';
+            document.getElementById('detailTotalImportPrice').textContent = '₫0';
+            return;
+        }
+
+        const isDraft = currentTicketStatus === 'draft';
+        let total = 0;
+
+        tbody.innerHTML = currentTicketItems.map(item => {
+            const lineTotal = Number(item.total_price || (Number(item.quantity || 0) * Number(item.import_price || 0)));
+            total += lineTotal;
+
+            return `
+                <tr>
+                    <td style="padding:10px;border-bottom:1px solid #ddd;">${escapeHtml(item.name)}</td>
+                    <td style="padding:10px;text-align:center;border-bottom:1px solid #ddd;">${item.quantity}</td>
+                    <td style="padding:10px;text-align:right;border-bottom:1px solid #ddd;">₫${formatMoney(item.import_price)}</td>
+                    <td style="padding:10px;text-align:right;border-bottom:1px solid #ddd;font-weight:600;">₫${formatMoney(lineTotal)}</td>
+                    <td style="padding:10px;text-align:center;border-bottom:1px solid #ddd;">
+                        ${isDraft ? `
+                            <button type="button" onclick="removeItemFromCurrentTicket(${item.id})" style="background:#dc3545;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">❌</button>
+                        ` : '-'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('detailTotalImportPrice').textContent = '₫' + formatMoney(total);
+    }
+
+    async function loadCurrentTicketDetail() {
+        if (!currentImportTicketId) return;
+
+        const res = await fetch(`${API_BASE}import_tickets.php?action=detail&id=${currentImportTicketId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Không tải được chi tiết phiếu');
+        }
+
+        const ticket = data.ticket || {};
+        currentTicketStatus = ticket.status || 'draft';
+        currentTicketItems = data.items || [];
+
+        document.getElementById('detailTicketNumber').textContent = ticket.ticket_number || '-';
+        document.getElementById('detailImportDate').value = (ticket.import_date || '').split(' ')[0];
+        document.getElementById('detailNotes').value = ticket.notes || '';
+
+        updateTicketDetailPermissionUI();
+        renderCurrentTicketItems();
+    }
+
+    async function saveCurrentTicketChanges() {
+        if (!currentImportTicketId) return;
+        if (currentTicketStatus !== 'draft') {
+            alert('❌ Chỉ phiếu ở trạng thái nháp mới được sửa.');
+            return;
+        }
+
+        const importDate = document.getElementById('detailImportDate').value;
+        const notes = document.getElementById('detailNotes').value || '';
+
+        if (!importDate) {
+            alert('❌ Vui lòng chọn ngày nhập.');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}import_tickets.php`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update',
+                    ticket_id: currentImportTicketId,
+                    import_date: importDate,
+                    notes: notes
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Lưu thay đổi thất bại');
+            }
+
+            alert('✅ Đã lưu thay đổi phiếu nhập.');
+            await loadCurrentTicketDetail();
+            searchImportTickets();
+        } catch (err) {
+            console.error('Save ticket error:', err);
+            alert('❌ ' + (err.message || 'Lỗi khi lưu thay đổi phiếu nhập'));
+        }
+    }
+
+    async function completeCurrentTicket() {
+        if (!currentImportTicketId) return;
+        if (currentTicketStatus !== 'draft') {
+            alert('❌ Phiếu đã hoàn thành, không thể thao tác lại.');
+            return;
+        }
+
+        if (!confirm('Xác nhận hoàn thành phiếu nhập này? Sau khi hoàn thành sẽ không thể sửa.')) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}import_tickets.php`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'complete',
+                    ticket_id: currentImportTicketId
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Hoàn thành phiếu thất bại');
+            }
+
+            alert('✅ Hoàn thành phiếu nhập thành công.');
+            await loadCurrentTicketDetail();
+            searchImportTickets();
+        } catch (err) {
+            console.error('Complete ticket error:', err);
+            alert('❌ ' + (err.message || 'Lỗi khi hoàn thành phiếu nhập'));
+        }
+    }
+
+    async function completeTicketById(ticketId) {
+        if (!confirm('Xác nhận hoàn thành phiếu này? Sau khi hoàn thành sẽ không thể sửa.')) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}import_tickets.php`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'complete',
+                    ticket_id: ticketId
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Hoàn thành phiếu thất bại');
+            }
+
+            alert('✅ Hoàn thành phiếu nhập thành công.');
+            searchImportTickets();
+        } catch (err) {
+            console.error('Quick complete error:', err);
+            alert('❌ ' + (err.message || 'Lỗi khi hoàn thành phiếu nhập'));
+        }
+    }
+
+    async function searchProductsForDetail() {
+        const searchInput = document.getElementById('searchProductForDetail');
+        const resultsDiv = document.getElementById('productSearchResultsDetail');
+        const query = searchInput.value.trim();
+
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+            const data = await response.json();
+
+            if (!data.success || !data.data || data.data.length === 0) {
+                resultsDiv.innerHTML = '<div style="padding:10px;color:#999;font-size:11px;">Không tìm thấy sản phẩm</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            resultsDiv.innerHTML = data.data.map(product => `
+                <div onclick="selectProductForDetail(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${product.price || 0})"
+                     style="padding:10px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;">
+                    <strong>${escapeHtml(product.name)}</strong><br>
+                    <small style="color:#666;">ID: ${product.id} | Giá: ₫${formatMoney(product.price || 0)}</small>
+                </div>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        } catch (err) {
+            console.error('Search detail product error:', err);
+            resultsDiv.innerHTML = '<div style="padding:10px;color:red;font-size:11px;">Lỗi tìm kiếm sản phẩm</div>';
+            resultsDiv.style.display = 'block';
+        }
+    }
+
+    function selectProductForDetail(productId, productName, costPrice) {
+        selectedProductForDetail = { id: productId, name: productName, costPrice: costPrice };
+        document.getElementById('searchProductForDetail').value = productName;
+        document.getElementById('productSearchResultsDetail').style.display = 'none';
+        if ((Number(document.getElementById('detailPrice').value) || 0) === 0 && Number(costPrice || 0) > 0) {
+            document.getElementById('detailPrice').value = Number(costPrice).toFixed(2);
+        }
+    }
+
+    async function addProductToCurrentTicket() {
+        if (!currentImportTicketId) return;
+        if (currentTicketStatus !== 'draft') {
+            alert('❌ Phiếu đã hoàn thành, không thể thêm sản phẩm.');
+            return;
+        }
+
+        const quantity = parseInt(document.getElementById('detailQuantity').value, 10) || 0;
+        const importPrice = parseFloat(document.getElementById('detailPrice').value) || 0;
+        const query = document.getElementById('searchProductForDetail').value.trim();
+
+        if (!query) {
+            alert('❌ Vui lòng chọn sản phẩm.');
+            return;
+        }
+        if (quantity < 1) {
+            alert('❌ Số lượng phải >= 1.');
+            return;
+        }
+        if (importPrice <= 0) {
+            alert('❌ Giá nhập phải lớn hơn 0.');
+            return;
+        }
+
+        let productId = selectedProductForDetail?.id || 0;
+
+        if (!productId) {
+            try {
+                const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+                const data = await response.json();
+                if (!data.success || !data.data || data.data.length === 0) {
+                    throw new Error('Không tìm thấy sản phẩm để thêm');
+                }
+                productId = data.data[0].id;
+            } catch (err) {
+                alert('❌ ' + (err.message || 'Lỗi tìm sản phẩm'));
+                return;
+            }
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}import_tickets.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'add_item',
+                    ticket_id: currentImportTicketId,
+                    product_id: productId,
+                    quantity: quantity,
+                    import_price: importPrice
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Thêm sản phẩm thất bại');
+            }
+
+            document.getElementById('searchProductForDetail').value = '';
+            document.getElementById('detailQuantity').value = '1';
+            document.getElementById('detailPrice').value = '0';
+            selectedProductForDetail = null;
+
+            await loadCurrentTicketDetail();
+            searchImportTickets();
+        } catch (err) {
+            console.error('Add current ticket item error:', err);
+            alert('❌ ' + (err.message || 'Lỗi khi thêm sản phẩm vào phiếu'));
+        }
+    }
+
+    async function removeItemFromCurrentTicket(itemId) {
+        if (!currentImportTicketId) return;
+        if (currentTicketStatus !== 'draft') {
+            alert('❌ Phiếu đã hoàn thành, không thể xóa sản phẩm.');
+            return;
+        }
+
+        if (!confirm('Xác nhận xóa sản phẩm này khỏi phiếu?')) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}import_tickets.php`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'delete_item',
+                    item_id: itemId,
+                    ticket_id: currentImportTicketId
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Xóa sản phẩm thất bại');
+            }
+
+            await loadCurrentTicketDetail();
+            searchImportTickets();
+        } catch (err) {
+            console.error('Remove current ticket item error:', err);
+            alert('❌ ' + (err.message || 'Lỗi khi xóa sản phẩm'));
+        }
+    }
+
+    function openCreateTicketModal() {
+        // Reset form
+        ticketItemsForCreate = [];
+        document.getElementById('importDate').valueAsDate = new Date();
+        document.getElementById('notes').value = '';
+        document.getElementById('searchProductForImport').value = '';
+        document.getElementById('importQuantity').value = '1';
+        document.getElementById('importPrice').value = '0';
+        updateImportItemsTable();
+        calculateTotalPrice();
+        
+        document.getElementById('createTicketModal').style.display = 'flex';
+    }
+
+    function closeCreateTicketModal() {
+        document.getElementById('createTicketModal').style.display = 'none';
+    }
+
+    async function submitCreateTicket() {
+        if (isCreatingTicket) return;
+
+        const importDate = document.getElementById('importDate')?.value;
+        const notes = document.getElementById('notes')?.value || '';
+        const createBtn = document.querySelector('#createTicketModal button[onclick="submitCreateTicket()"]');
+        let createdTicketId = null;
+
+        // Kiểm tra xem có sản phẩm nào không
+        if (ticketItemsForCreate.length === 0) {
+            alert('❌ Vui lòng thêm ít nhất một sản phẩm vào phiếu!');
+            return;
+        }
+
+        if (!importDate) {
+            alert('❌ Vui lòng chọn ngày nhập!');
+            return;
+        }
+
+        try {
+            isCreatingTicket = true;
+            if (createBtn) {
+                createBtn.disabled = true;
+                createBtn.style.opacity = '0.7';
+                createBtn.textContent = 'Đang tạo...';
+            }
+
+            // Bước 1: Tạo phiếu
+            const createRes = await fetch(`${API_BASE}import_tickets.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'create',
+                    import_date: importDate,
+                    notes: notes,
+                    created_by: 1
+                })
+            });
+
+            const createText = await createRes.text();
+            let createData;
+            try {
+                createData = JSON.parse(createText);
+            } catch (e) {
+                throw new Error('Phản hồi tạo phiếu không phải JSON: ' + createText.slice(0, 120));
+            }
+
+            if (!createRes.ok || !createData.success) {
+                throw new Error(createData.message || 'Tạo phiếu thất bại');
+            }
+
+            const ticketId = createData.ticketId;
+            const ticketNumber = createData.ticketNumber;
+            createdTicketId = ticketId;
+
+            // Bước 2: Thêm từng item tuần tự để biết chính xác item lỗi
+            for (const item of ticketItemsForCreate) {
+                const addRes = await fetch(`${API_BASE}import_tickets.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'add_item',
+                        ticket_id: ticketId,
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        import_price: item.import_price
+                    })
+                });
+
+                const addText = await addRes.text();
+                let addData;
+                try {
+                    addData = JSON.parse(addText);
+                } catch (e) {
+                    throw new Error(`Lỗi item "${item.product_name}": phản hồi không hợp lệ`);
+                }
+
+                if (!addRes.ok || !addData.success) {
+                    throw new Error(`Lỗi item "${item.product_name}": ${addData.message || 'thất bại'}`);
+                }
+            }
+
+            alert('✅ Tạo phiếu nhập thành công!\nMã phiếu: ' + ticketNumber);
+            closeCreateTicketModal();
+
+            // Reset form
+            ticketItemsForCreate = [];
+            document.getElementById('importDate').valueAsDate = new Date();
+            document.getElementById('notes').value = '';
+            document.getElementById('searchProductForImport').value = '';
+            document.getElementById('importQuantity').value = '1';
+            document.getElementById('importPrice').value = '0';
+            updateImportItemsTable();
+            calculateTotalPrice();
+
+            // Reload danh sách phiếu
+            searchImportTickets();
+        } catch (err) {
+            console.error('Create ticket flow error:', err);
+
+            // Rollback phiếu nháp đã tạo nếu thêm item bị lỗi giữa chừng
+            if (createdTicketId) {
+                try {
+                    await fetch(`${API_BASE}import_tickets.php`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete_ticket',
+                            ticket_id: createdTicketId
+                        })
+                    });
+                } catch (rollbackErr) {
+                    console.warn('Rollback ticket failed:', rollbackErr);
+                }
+            }
+
+            alert('❌ ' + (err.message || 'Lỗi khi tạo phiếu nhập'));
+        } finally {
+            isCreatingTicket = false;
+            if (createBtn) {
+                createBtn.disabled = false;
+                createBtn.style.opacity = '1';
+                createBtn.textContent = '✅ Tạo Phiếu';
+            }
+        }
+    }
+
+    // Set default date + bind import events
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('importDate');
+        if (dateInput) {
+            dateInput.valueAsDate = new Date();
+        }
+
+        const createSearchInput = document.getElementById('searchProductForImport');
+        if (createSearchInput) {
+            createSearchInput.addEventListener('input', function() {
+                searchProductsForImport();
+            });
+        }
+
+        const detailSearchInput = document.getElementById('searchProductForDetail');
+        if (detailSearchInput) {
+            detailSearchInput.addEventListener('input', function() {
+                searchProductsForDetail();
+            });
+        }
+
+        const importSearchInput = document.getElementById('searchImportInput');
+        if (importSearchInput) {
+            importSearchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchImportTickets();
+                }
+            });
+        }
+
+        ['statusImportFilter', 'dateFromImportFilter', 'dateToImportFilter'].forEach(function(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', searchImportTickets);
+            }
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            const createResultsDiv = document.getElementById('productSearchResults');
+            const detailResultsDiv = document.getElementById('productSearchResultsDetail');
+
+            if (!e.target.closest('#searchProductForImport') && !e.target.closest('#productSearchResults')) {
+                if (createResultsDiv) createResultsDiv.style.display = 'none';
+            }
+
+            if (!e.target.closest('#searchProductForDetail') && !e.target.closest('#productSearchResultsDetail')) {
+                if (detailResultsDiv) detailResultsDiv.style.display = 'none';
+            }
+        });
+
+        // Nếu mở trực tiếp tab imports thì tải danh sách ngay
+        if (window.location.hash === '#imports') {
+            searchImportTickets();
+        }
+    });
     </script>
 </body>
 </html>
