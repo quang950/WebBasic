@@ -40,6 +40,9 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+    INSERT INTO users (first_name, last_name, email, password, is_admin)
+    VALUES ('Admin', 'System', 'admin', '123456', 1);
+
 CREATE TABLE cart (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -80,6 +83,8 @@ ADD COLUMN price_cost DECIMAL(15, 2) DEFAULT 0,
 ADD COLUMN profit_margin FLOAT DEFAULT 10;
 -- Cập nhật thử một ít dữ liệu để có giá
 UPDATE products SET price_cost = price * 0.9, profit_margin = 10;
+
+
 
 INSERT INTO categories (name) VALUES 
 ('Toyota'),
