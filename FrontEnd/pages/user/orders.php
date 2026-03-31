@@ -28,7 +28,7 @@
   document.addEventListener('DOMContentLoaded', function () {
       const ordersList = document.getElementById('ordersList');
 
-      fetch('/WebBasic/BackEnd/api/get_orders.php', {
+      fetch('../../../BackEnd/api/get_orders.php', {
           credentials: 'include' 
       })
       .then(res => res.json())

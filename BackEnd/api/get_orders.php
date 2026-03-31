@@ -32,11 +32,12 @@ $orders = [];
 while ($row = $result->fetch_assoc()) {
     $orderId = $row['id'];
     
-    // Get items for this order
+    // Get items for this order - JOIN với products để lấy tên sản phẩm
     $stmtItems = $conn->prepare("
-        SELECT product_name, quantity, unit_price
-        FROM order_items
-        WHERE order_id = ?
+        SELECT p.name as product_name, od.quantity, od.price as unit_price
+        FROM order_details od
+        JOIN products p ON od.product_id = p.id
+        WHERE od.order_id = ?
     ");
     
     $stmtItems->bind_param("i", $orderId);

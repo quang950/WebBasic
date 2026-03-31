@@ -288,6 +288,54 @@
             <i class="fas fa-money-bill-wave" style="color: #28a745;"></i> Thanh toán khi nhận hàng (COD)
           </span>
         </div>
+        
+        <!-- QR Code Section (hiển thị nếu chọn chuyển khoản) -->
+        <div id="bankTransferSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+          <h4 style="color: #333; margin: 0 0 16px 0;">
+            <i class="fas fa-qrcode"></i> Thông tin chuyển khoản
+          </h4>
+          
+          <!-- QR Code -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div id="qrCodeContainer" style="display: inline-block; padding: 16px; background: white; border: 2px solid #667eea; border-radius: 8px;">
+              <img src="" alt="QR Code" style="width: 200px; height: 200px;">
+            </div>
+            <p style="margin-top: 12px; font-size: 0.9rem; color: #666;">Quét mã QR VietQR để chuyển khoản</p>
+          </div>
+          
+          <!-- Thông tin chi tiết -->
+          <div style="background: #f0f8ff; padding: 16px; border-radius: 8px; border-left: 4px solid #007bff;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+              <div>
+                <p style="margin: 0; color: #666; font-size: 0.9rem;">Ngân hàng</p>
+                <p style="margin: 4px 0 0 0; color: #333; font-weight: 600;" id="bankName">Ngân hàng TMCP Ngoại thương Việt Nam (Vietcombank)</p>
+              </div>
+              <div>
+                <p style="margin: 0; color: #666; font-size: 0.9rem;">Số tài khoản</p>
+                <p style="margin: 4px 0 0 0; color: #333; font-weight: 600;">1032703862</p>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+              <p style="margin: 0; color: #666; font-size: 0.9rem;">Chủ tài khoản</p>
+              <p style="margin: 4px 0 0 0; color: #333; font-weight: 600;">NGUYEN QUANG VINH</p>
+            </div>
+            
+            <div>
+              <p style="margin: 0; color: #666; font-size: 0.9rem;">Nội dung chuyển khoản</p>
+              <p style="margin: 4px 0 0 0; color: #333; font-weight: 600; word-break: break-all;" id="transferContent">
+                DH001 - Nguyen Van A
+              </p>
+            </div>
+          </div>
+          
+          <div style="background: #fffbea; padding: 12px; border-radius: 8px; margin-top: 12px; border-left: 4px solid #ffc107;">
+            <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+              <i class="fas fa-info-circle"></i> 
+              <strong>Lưu ý:</strong> Vui lòng nhập đúng nội dung chuyển khoản để chúng tôi dễ dàng xác nhận đơn hàng của bạn
+            </p>
+          </div>
+        </div>
       </div>
       
       <!-- Danh sách sản phẩm -->
@@ -385,6 +433,8 @@
       let paymentIcon = '<i class="fas fa-money-bill-wave" style="color: #28a745;"></i>';
       if (paymentMethod.includes('ngân hàng')) {
         paymentIcon = '<i class="fas fa-university" style="color: #007bff;"></i>';
+        // Hiển thị QR code section khi chọn chuyển khoản ngân hàng
+        showBankTransferInfo(orderData);
       } else if (paymentMethod.includes('trực tuyến')) {
         paymentIcon = '<i class="fas fa-wallet" style="color: #17a2b8;"></i>';
       }
@@ -427,6 +477,32 @@
         style: 'currency',
         currency: 'VND'
       }).format(price);
+    }
+    
+    // Hàm hiển thị thông tin chuyển khoản và QR code
+    function showBankTransferInfo(orderData) {
+      const bankTransferSection = document.getElementById('bankTransferSection');
+      bankTransferSection.style.display = 'block';
+      
+      // Thông tin chuyển khoản
+      const bankCode = '970436'; // Vietcombank BIN
+      const accountNo = '1032703862'; // STK thực
+      const accountHolder = 'NGUYEN QUANG VINH'; // Chủ TK
+      const orderId = orderData.orderId || 'DH001';
+      const customerName = orderData.receiverName || 'Khách hàng';
+      const amount = orderData.totalPrice || 0;
+      
+      // Nội dung chuyển khoản
+      const transferContent = `${orderId} - ${customerName}`;
+      document.getElementById('transferContent').textContent = transferContent;
+      
+      // Lấy QR code từ VietQR API
+      // Format: https://img.vietqr.io/image/{BANK_CODE}-{ACCOUNT}-{TEMPLATE}.png?amount={AMOUNT}&addInfo={CONTENT}&accountName={NAME}
+      const qrImageUrl = `https://img.vietqr.io/image/${bankCode}-${accountNo}-compact2.png?amount=${Math.floor(amount)}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountHolder)}`;
+      
+      // Hiển thị hình ảnh QR từ VietQR
+      const qrContainer = document.getElementById('qrCodeContainer');
+      qrContainer.innerHTML = `<img src="${qrImageUrl}" alt="VietQR Code" style="width: 200px; height: 200px; border-radius: 8px;">`;
     }
   </script>
 </body>

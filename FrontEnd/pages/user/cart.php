@@ -340,7 +340,26 @@
               return false;
             }
             
-            // Tạo đối tượng đơn hàng
+            // Normalize cart items - ensure correct data types
+            const normalizedCart = cart.map(item => ({
+              name: String(item.name || ''),
+              price: Number(item.price) || 0,
+              quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+              img: String(item.img || '')
+            }));
+            
+            // Tính tổng tiền
+            const totalPrice = normalizedCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Tạo đối tượng gửi tới backend
+            const backendOrderData = {
+              shipping_address: receiverAddress,
+              shipping_phone: receiverPhone,
+              payment_method: paymentType,
+              cart_items: normalizedCart
+            };
+            
+            // Tạo đối tượng đơn hàng cho hiển thị
             const orderData = {
               orderId: 'DH' + Date.now().toString().slice(-6),
               orderDate: new Date().toLocaleString('vi-VN'),
@@ -349,14 +368,43 @@
               receiverEmail: receiverEmail,
               receiverAddress: receiverAddress,
               paymentMethod: paymentMethod,
-              products: cart
+              products: normalizedCart,
+              totalPrice: totalPrice
             };
             
-            // Lưu vào sessionStorage để trang xác nhận đọc
-            sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
-            
-            // Chuyển sang trang xác nhận ngay lập tức
-            window.location.replace('order-confirmation.php');
+            // Gửi request tới backend API để lưu order vào database
+            fetch('../../../BackEnd/api/Order.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              credentials: 'include',
+              body: JSON.stringify(backendOrderData)
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Lỗi gửi request: ' + response.status);
+              }
+              return response.json();
+            })
+            .then(result => {
+              if (result.success) {
+                // Lưu vào sessionStorage để trang xác nhận đọc
+                sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
+                
+                // Xóa giỏ hàng sau khi đặt hàng thành công
+                localStorage.removeItem('cart');
+                
+                // Chuyển sang trang xác nhận
+                window.location.replace('order-confirmation.php');
+              } else {
+                alert('Lỗi đặt hàng: ' + (result.message || 'Unknown error'));
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Có lỗi xảy ra khi lưu đơn hàng: ' + error.message);
+            });
             
           } catch (error) {
             console.error('Error:', error);

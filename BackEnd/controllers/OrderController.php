@@ -22,7 +22,8 @@ class OrderController {
             $data['user_id'],
             $data['shipping_address'],
             $data['shipping_phone'] ?? '',
-            $data['payment_method']
+            $data['payment_method'],
+            $data['cart_items'] ?? []
         );
     }
 }

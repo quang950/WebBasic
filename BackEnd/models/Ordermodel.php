@@ -10,31 +10,71 @@ class OrderModel {
     }
 
     // TẠO ĐƠN HÀNG (CHECKOUT)
-    public function createOrder($user_id, $address, $phone, $payment) {
+    public function createOrder($user_id, $address, $phone, $payment, $cart_items = []) {
         try {
             $this->conn->begin_transaction();
 
-            // 1. Lấy giỏ hàng
-            $stmt = $this->conn->prepare("
-                SELECT c.*, p.name, p.price 
-                FROM cart c
-                JOIN products p ON c.product_id = p.id
-                WHERE c.user_id = ?
-            ");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $cart = $stmt->get_result();
+            // Nếu không có items từ frontend, lấy từ database
+            if (empty($cart_items)) {
+                $stmt = $this->conn->prepare("
+                    SELECT c.product_id, c.quantity, p.name, p.price 
+                    FROM cart c
+                    JOIN products p ON c.product_id = p.id
+                    WHERE c.user_id = ?
+                ");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $cart = $stmt->get_result();
 
-            if ($cart->num_rows == 0) {
-                throw new Exception("Cart is empty");
+                if ($cart->num_rows == 0) {
+                    throw new Exception("Cart is empty");
+                }
+
+                $items = [];
+                while ($row = $cart->fetch_assoc()) {
+                    $items[] = $row;
+                }
+            } else {
+                // Sử dụng cart items từ frontend
+                // Cần lấy product_id từ database dựa trên product name hoặc ID
+                $items = [];
+                foreach ($cart_items as $item) {
+                    // Tìm product_id từ product name
+                    $stmtProd = $this->conn->prepare("
+                        SELECT id, price FROM products WHERE name = ?
+                    ");
+                    
+                    if (!$stmtProd) {
+                        throw new Exception("Prepare product lookup failed: " . $this->conn->error);
+                    }
+                    
+                    $stmtProd->bind_param("s", $item['name']);
+                    
+                    if (!$stmtProd->execute()) {
+                        throw new Exception("Execute product lookup failed: " . $stmtProd->error);
+                    }
+                    
+                    $prodResult = $stmtProd->get_result();
+                    
+                    if ($prodResult->num_rows == 0) {
+                        throw new Exception("Sản phẩm '{$item['name']}' không tồn tại trong database");
+                    }
+                    
+                    $prod = $prodResult->fetch_assoc();
+                    $items[] = [
+                        'product_id' => $prod['id'],
+                        'name' => $item['name'],
+                        'price' => $item['price'],
+                        'quantity' => $item['quantity']
+                    ];
+                    $stmtProd->close();
+                }
             }
 
             // 2. Tính tổng tiền
             $total = 0;
-            $items = [];
-            while ($row = $cart->fetch_assoc()) {
-                $total += $row['price'] * $row['quantity'];
-                $items[] = $row;
+            foreach ($items as $item) {
+                $total += $item['price'] * $item['quantity'];
             }
 
             // 3. Tạo order
@@ -42,37 +82,67 @@ class OrderModel {
                 INSERT INTO orders(user_id, total_price, shipping_address, shipping_phone, payment_method)
                 VALUES (?, ?, ?, ?, ?)
             ");
-            $stmtOrder->bind_param("idsss", $user_id, $total, $address, $phone, $payment);
-            $stmtOrder->execute();
+            
+            if (!$stmtOrder) {
+                throw new Exception("Prepare order failed: " . $this->conn->error);
+            }
+            
+            $total_str = (string)$total;
+            $stmtOrder->bind_param("issss", $user_id, $total_str, $address, $phone, $payment);
+            
+            if (!$stmtOrder->execute()) {
+                throw new Exception("Insert order failed: " . $stmtOrder->error);
+            }
 
             $order_id = $this->conn->insert_id;
 
-            // 4. Thêm order_items
+            // 4. Thêm order_details
             foreach ($items as $row) {
                 // 1. Trừ kho
                 $this->subtractStock($row['product_id'], $row['quantity']);
 
                 //  2. Lưu chi tiết đơn hàng
                 $stmtItem = $this->conn->prepare("
-                    INSERT INTO order_items(order_id, product_name, quantity, unit_price)
+                    INSERT INTO order_details(order_id, product_id, quantity, price)
                     VALUES (?, ?, ?, ?)
                 ");
+                
+                if (!$stmtItem) {
+                    throw new Exception("Prepare failed: " . $this->conn->error);
+                }
+                
+                $price_str = (string)$row['price'];
                 $stmtItem->bind_param(
-                    "isid",
+                    "iiis",
                     $order_id,
-                    $row['name'],
+                    $row['product_id'],
                     $row['quantity'],
-                    $row['price']
+                    $price_str
                 );
-                $stmtItem->execute();
+                
+                if (!$stmtItem->execute()) {
+                    throw new Exception("Insert order_details failed: " . $stmtItem->error);
+                }
+                
+                $stmtItem->close();
             }
 
             // 5. Xoá giỏ hàng
             $stmtClear = $this->conn->prepare("
                 DELETE FROM cart WHERE user_id = ?
             ");
+            
+            if (!$stmtClear) {
+                throw new Exception("Prepare delete cart failed: " . $this->conn->error);
+            }
+            
             $stmtClear->bind_param("i", $user_id);
-            $stmtClear->execute();
+            
+            if (!$stmtClear->execute()) {
+                throw new Exception("Execute delete cart failed: " . $stmtClear->error);
+            }
+            
+            $stmtClear->close();
 
             $this->conn->commit();
 
@@ -103,8 +173,8 @@ class OrderModel {
 
             // Lấy item
             $stmtItems = $this->conn->prepare("
-                SELECT product_name, quantity, unit_price
-                FROM order_items
+                SELECT product_id, quantity, price
+                FROM order_details
                 WHERE order_id = ?
             ");
             $stmtItems->bind_param("i", $order_id);
@@ -160,8 +230,15 @@ class OrderModel {
             WHERE id = ? AND stock >= ?
         ");
 
+        if (!$stmt) {
+            throw new Exception("Prepare subtractStock failed: " . $this->conn->error);
+        }
+
         $stmt->bind_param("iii", $quantity, $productId, $quantity);
-        $stmt->execute();
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Execute subtractStock failed: " . $stmt->error);
+        }
 
         // Nếu không update được dòng nào => hết hàng
         if ($stmt->affected_rows === 0) {
@@ -208,9 +285,9 @@ class OrderModel {
 
             // 2️ Lấy các sản phẩm trong đơn
             $stmtItems = $this->conn->prepare("
-                SELECT oi.product_id, oi.quantity
-                FROM order_items oi
-                WHERE oi.order_id = ?
+                SELECT od.product_id, od.quantity
+                FROM order_details od
+                WHERE od.order_id = ?
             ");
             $stmtItems->bind_param("i", $orderId);
             $stmtItems->execute();
