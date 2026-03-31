@@ -43,10 +43,10 @@ CREATE TABLE users (
     INSERT INTO users (first_name, last_name, email, password, phone, birth_date, province, is_admin)
     VALUES 
     ('Nguyễn', 'Vinh', 'vinhlhox2122006@gmail.com', 'ILOCKED!', '0923365944', '2026-03-10', 'hcm', 1),
-    ('Vinh', 'Nguyen', 'vinh', '$2y$10566qxPdWTX.0u/sEiYP7Hu2eAczLYFUil1Gho/gReaV...', NULL, NULL, NULL, 0),
-    ('Trung', 'Nguyen', 'trung', '$2y$10$aUWJLvKQTx9kWSge0laK.Ou6vqNWjgSUTy5xl$2lF9...', NULL, NULL, NULL, 0),
-    ('Tuấn', 'Nguyen', 'tuan', '$2y$10$71WFsZKhQ0lq.4vckY6XTux[bJ7cJQleWqqZVEiH03...', NULL, NULL, NULL, 0),
-    ('Quang', 'Nguyen', 'quang', '$2y$10$mkYftWQ4fr4.sZ/2WN2il.DI2yltV2IWqFGo/Fgl4...', NULL, NULL, NULL, 0),
+    ('Vinh', 'Nguyen', 'vinh', '$2y$10$66qxPdWTX.0u/sFEiYP7HuzeAczLYFUtL1Gho/gREaVNy4AfCx0uC', NULL, NULL, NULL, 0),
+    ('Trung', 'Nguyen', 'trung', '$2y$10$aUWJLvKQTx9kWrSge0IaK.Ou6vqNWjgSUTy5xIS2/F9dsZBOJIhom', NULL, NULL, NULL, 0),
+    ('Tuấn', 'Nguyen', 'tuan', '$2y$10$7WFsZKhQ0h9.4cvcKy6XTuxrbJ7cKjQIeWq/ZVElH03Cmj3ehER5y', NULL, NULL, NULL, 0),
+    ('Quang', 'Nguyen', 'quang', '$2y$10$mkYffWQ4t74.sZ/2WNz9lOjLDI2yltV2IWgFCo/Fgi4fIjk9r55H6', NULL, NULL, NULL, 0),
     ('Admin', 'System', 'admin', '123456', NULL, NULL, NULL, 1);
 
 CREATE TABLE cart (
