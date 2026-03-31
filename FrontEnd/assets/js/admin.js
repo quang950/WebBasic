@@ -43,48 +43,70 @@ function loadCustomers() {
     const grid = document.getElementById('customers-grid');
     if (!grid) return;
     
-    // Chỉ sử dụng dữ liệu mẫu, không lấy từ localStorage
-    const users = initSampleCustomers();
+    // Hiển thị loading spinner
+    grid.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải khách hàng...</div>';
     
-    if (!users.length) {
-        grid.innerHTML = '<div class="empty-state">Chưa có khách hàng nào đăng ký.</div>';
-        return;
-    }
-    grid.innerHTML = `
-        <table class=\"customers-table\" style=\"font-family:Arial,sans-serif;width:100%;table-layout:auto;\">
-            <thead>
-                <tr>
-                    <th style=\"min-width:150px;\">Họ tên</th>
-                    <th style=\"min-width:200px;\">Email</th>
-                    <th style=\"min-width:120px;\">Điện thoại</th>
-                    <th style=\"min-width:130px;\">Tỉnh/TP</th>
-                    <th style=\"min-width:120px;\">Trạng thái</th>
-                    <th style=\"min-width:280px;\">Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${users.map((u, idx) => `
-                    <tr>
-                        <td>${u.firstName} ${u.lastName}</td>
-                        <td>${u.email}</td>
-                        <td>${u.phone || ''}</td>
-                        <td>${u.province || ''}</td>
-                        <td>
-                            <span style="padding: 4px 12px; border-radius: 12px; font-size: 0.9em; font-weight: 600; white-space: nowrap; ${u.locked ? 'background: #ffebee; color: #c62828;' : 'background: #e8f5e9; color: #2e7d32;'}">
-                                <i class="fas ${u.locked ? 'fa-lock' : 'fa-check-circle'}"></i> ${u.locked ? 'Đã khóa' : 'Hoạt động'}
-                            </span>
-                        </td>
-                        <td style="white-space: nowrap;">
-                            <button onclick="showResetPasswordModal('${u.email}', '${u.firstName} ${u.lastName}')" class="reset-btn" style="padding:6px 12px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:5px;margin-right:6px;${u.locked ? 'opacity:0.5;cursor:not-allowed;' : ''}"><i class="fas fa-key"></i> Đặt lại mật khẩu</button>
-                            <button onclick="return false;" class="lock-btn" style="padding:6px 12px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;${u.locked ? 'background: #4caf50; border-color: #4caf50;' : 'background: #f44336; border-color: #f44336;'}">
-                                <i class="fas ${u.locked ? 'fa-lock-open' : 'fa-lock'}"></i> ${u.locked ? 'Mở khóa' : 'Khóa'}
-                            </button>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
+    // Gọi API để lấy tất cả khách hàng
+    fetch('/WebBasic/BackEnd/api/admin/get_all_customers.php', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error('Customer API Error:', response.status, response.statusText);
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        console.log('Customers API Result:', result);
+        if (result.success && result.customers) {
+            const customers = result.customers;
+            
+            if (customers.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Chưa có khách hàng nào đăng ký.</div>';
+                return;
+            }
+            
+            grid.innerHTML = `
+                <table class="customers-table" style="font-family:Arial,sans-serif;width:100%;table-layout:auto;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#007bff;color:#fff;">
+                            <th style="min-width:150px;padding:12px;text-align:left;border-bottom:2px solid #0056b3;">Họ tên</th>
+                            <th style="min-width:200px;padding:12px;text-align:left;border-bottom:2px solid #0056b3;">Email</th>
+                            <th style="min-width:120px;padding:12px;text-align:left;border-bottom:2px solid #0056b3;">Điện thoại</th>
+                            <th style="min-width:130px;padding:12px;text-align:left;border-bottom:2px solid #0056b3;">Tỉnh/TP</th>
+                            <th style="min-width:100px;padding:12px;text-align:center;border-bottom:2px solid #0056b3;">Số đơn</th>
+                            <th style="min-width:150px;padding:12px;text-align:right;border-bottom:2px solid #0056b3;">Tổng chi tiêu</th>
+                            <th style="min-width:200px;padding:12px;text-align:center;border-bottom:2px solid #0056b3;">Ngày đăng ký</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${customers.map(u => `
+                            <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                <td style="padding:12px;"><strong>${u.first_name} ${u.last_name}</strong></td>
+                                <td style="padding:12px;">${u.email}</td>
+                                <td style="padding:12px;">${u.phone || '-'}</td>
+                                <td style="padding:12px;">${u.province || '-'}</td>
+                                <td style="padding:12px;text-align:center;"><span style="background:#e7f3ff;padding:4px 8px;border-radius:4px;font-weight:600;">${u.order_count || 0}</span></td>
+                                <td style="padding:12px;text-align:right;"><strong>${formatPrice(u.total_spent || 0)} VNĐ</strong></td>
+                                <td style="padding:12px;text-align:center;">${formatDateVN(u.created_at)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else {
+            grid.innerHTML = '<div class="empty-state">Lỗi tải khách hàng</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading customers:', error);
+        grid.innerHTML = '<div class="empty-state" style="color:red;">Lỗi: ' + error.message + '</div>';
+    });
 }
 
 function toggleLockUser(idx) {
@@ -231,6 +253,88 @@ function closeAddProductModal() {
     modalTitle.textContent = 'Thêm sản phẩm mới';
 }
 
+// Add product function
+function addProduct() {
+    const form = document.getElementById('addProductForm');
+    if (!form) return false;
+    
+    const name = document.getElementById('productName').value.trim();
+    const brand = document.getElementById('productBrand').value.trim();
+    const price = parseFloat(document.getElementById('productPrice').value);
+    const year = parseInt(document.getElementById('productYear').value);
+    const fuel = document.getElementById('productFuel').value.trim();
+    const transmission = document.getElementById('productTransmission').value.trim();
+    const category = document.getElementById('productCategory').value.trim();
+    const image = document.getElementById('productImageUrl').value.trim();
+    const description = document.getElementById('productDescription').value.trim();
+    
+    // Validate
+    if (!name || !brand || !price) {
+        alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+        return false;
+    }
+    
+    if (price <= 0) {
+        alert('Giá phải lớn hơn 0!');
+        return false;
+    }
+    
+    // Show loading
+    const submitBtn = form.querySelector('.save-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang lưu...';
+    
+    // Send to API
+    fetch('/WebBasic/BackEnd/api/admin/add_product.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: `${brand.charAt(0).toUpperCase() + brand.slice(1)} ${name}`,
+            brand: brand,
+            price: price,
+            year: year,
+            fuel: fuel,
+            transmission: transmission,
+            category: category,
+            image: image || `/WebBasic/FrontEnd/assets/images/logo-${brand}.png`,
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Add product result:', result);
+        
+        if (result.success) {
+            alert('✓ Thêm sản phẩm thành công!');
+            closeAddProductModal();
+            
+            // Reload products list
+            if (typeof loadProducts === 'function') {
+                loadProducts();
+            }
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể thêm sản phẩm'));
+        }
+    })
+    .catch(error => {
+        console.error('Error adding product:', error);
+        alert('Lỗi: ' + error.message);
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    });
+    
+    return false;
+}
+
+// Make addProduct globally available
+window.addProduct = addProduct;
+
 // Preview ảnh khi chọn file
 function previewImage(input) {
     const preview = document.getElementById('imagePreview');
@@ -288,51 +392,75 @@ function loadProducts() {
 
     if (!productsGrid) return;
 
-    if (products.length === 0) {
-        productsGrid.innerHTML = '<div class="empty-state">Chưa có sản phẩm nào. Hãy thêm hoặc nhập từ trang chủ!</div>';
-        return;
-    }
+    // Show loading spinner
+    productsGrid.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải sản phẩm...</div>';
 
-    productsGrid.innerHTML = `
-        <div class="products-search-bar" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-search" style="color: #666;"></i>
-                <input type="text" id="productSearchInput" placeholder="Tìm kiếm sản phẩm..." 
-                    style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: Arial, sans-serif;"
-                    onkeyup="return false;">
-                <button onclick="showSingleProduct()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-search"></i> Tìm kiếm
-                </button>
-            </div>
-        </div>
-        <div class="products-list">
-            ${products.map(product => `
-                <div class="product-card" data-id="${product.id}">
-                    <div class="product-image">
-                        <img src="${product.image}" alt="${product.name}" onerror="this.src='assets/images/logo-${product.brand}.png'">
-                    </div>
-                    <div class="product-info">
-                        <h3>${product.name}</h3>
-                        <p class="brand">${product.brand.toUpperCase()}</p>
-                        <p class="price">${formatPrice(product.price)} VNĐ</p>
-                        <div class="product-details">
-                            <span><i class="fas fa-calendar"></i> ${product.year || ''}</span>
-                            <span><i class="fas fa-gas-pump"></i> ${product.fuel || ''}</span>
-                            <span><i class="fas fa-cogs"></i> ${product.transmission || ''}</span>
-                            ${product.category ? `<span><i class="fas fa-tags"></i> ${product.category}</span>` : ''}
-                        </div>
-                        <div class="product-actions">
-                            <button onclick="editProduct(${product.id})" class="edit-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-edit"></i> Sửa</button>
-                            <button onclick="return false;" class="${product.hidden ? 'unhide-btn' : 'hide-btn'}" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;">
-                                <i class="fas ${product.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${product.hidden ? 'Hiện' : 'Ẩn'}
-                            </button>
-                            <button onclick="return false;" class="delete-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-trash"></i> Xóa</button>
-                        </div>
+    // Fetch products from API
+    fetch('/WebBasic/BackEnd/api/admin/get_products.php', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Products API result:', result);
+        
+        if (result.success && result.products) {
+            const productsList = result.products;
+            
+            if (productsList.length === 0) {
+                productsGrid.innerHTML = '<div class="empty-state">Chưa có sản phẩm nào. Hãy thêm từ form trên!</div>';
+                return;
+            }
+
+            productsGrid.innerHTML = `
+                <div class="products-search-bar" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-search" style="color: #666;"></i>
+                        <input type="text" id="productSearchInput" placeholder="Tìm kiếm sản phẩm..." 
+                            style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: Arial, sans-serif;"
+                            onkeyup="return false;">
+                        <button onclick="showSingleProduct()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
                     </div>
                 </div>
-            `).join('')}
-        </div>
-    `;
+                <div class="products-list">
+                    ${productsList.map(product => `
+                        <div class="product-card" data-id="${product.id}">
+                            <div class="product-image">
+                                <img src="${product.image}" alt="${product.name}" onerror="this.src='/WebBasic/FrontEnd/assets/images/logo-${product.brand}.png'">
+                            </div>
+                            <div class="product-info">
+                                <h3>${product.name}</h3>
+                                <p class="brand">${product.brand.toUpperCase()}</p>
+                                <p class="price">${formatPrice(product.price)} VNĐ</p>
+                                <div class="product-details">
+                                    <span><i class="fas fa-calendar"></i> ${product.year || ''}</span>
+                                    <span><i class="fas fa-gas-pump"></i> ${product.fuel || ''}</span>
+                                    <span><i class="fas fa-cogs"></i> ${product.transmission || ''}</span>
+                                    ${product.category ? `<span><i class="fas fa-tags"></i> ${product.category}</span>` : ''}
+                                </div>
+                                <div class="product-actions">
+                                    <button onclick="editProduct(${product.id})" class="edit-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-edit"></i> Sửa</button>
+                                    <button onclick="return false;" class="hide-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-eye-slash"></i> Ẩn</button>
+                                    <button onclick="return false;" class="delete-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-trash"></i> Xóa</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            productsGrid.innerHTML = '<div class="empty-state">Lỗi tải sản phẩm</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading products:', error);
+        productsGrid.innerHTML = '<div class="empty-state" style="color:red;">Lỗi: ' + error.message + '</div>';
+    });
 }
 
 // Các chức năng sửa/xóa/ẩn sản phẩm đã bị vô hiệu hóa (Prototype mode)
@@ -402,13 +530,19 @@ function formatDateVN(dateStr) {
     if (!dateStr) return '';
     // Nếu đã đúng định dạng dd/mm/yyyy thì trả về luôn
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
-    // Nếu là yyyy-mm-dd hoặc yyyy/mm/dd
-    let d = dateStr.split(/[-\/]/);
-    if (d.length === 3) {
-        // yyyy-mm-dd -> dd/mm/yyyy
-        return `${d[2].padStart(2,'0')}/${d[1].padStart(2,'0')}/${d[0]}`;
+    
+    // Parse ISO date hoặc MySQL datetime
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return dateStr;
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return dateStr;
     }
-    return dateStr;
 }
 
 // Lightweight accessor for orders used by stock helpers
@@ -419,50 +553,164 @@ function loadOrders() {
 
 // ========== Quản lý đơn hàng cho admin ==========
 function loadAdminOrders() {
-    const orders = JSON.parse(localStorage.getItem('orders')) || [];
-    const grid = document.getElementById('adminOrdersGrid');
-    if (!grid) return;
-    if (!orders.length) {
-        grid.innerHTML = '<div class="empty-state">Chưa có đơn hàng nào.</div>';
-        return;
-    }
-    grid.innerHTML = renderAdminOrdersTable(orders);
+    const ordersGrid = document.getElementById('adminOrdersGrid');
+    if (!ordersGrid) return;
+    
+    // Hiển thị loading spinner
+    ordersGrid.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải đơn hàng...</div>';
+    
+    // Gọi API để lấy tất cả đơn hàng
+    fetch('/WebBasic/BackEnd/api/admin/get_all_orders.php', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error('API Response Error:', response.status, response.statusText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        console.log('Order API Result:', result);
+        if (result.success && result.orders) {
+            // Chuyển đổi dữ liệu từ API sang format display
+            const displayOrders = result.orders.map(order => ({
+                id: order.id,
+                date: formatDateVN(order.created_at),
+                name: (order.first_name || '') + ' ' + (order.last_name || ''),
+                phone: order.shipping_phone || '',
+                email: order.user_email || '',
+                address: order.shipping_address || '',
+                paymentMethod: order.payment || 'COD',
+                status: mapOrderStatus(order.status),
+                items: order.items.map(item => ({
+                    brand: extractBrand(item.product_name),
+                    name: item.product_name,
+                    quantity: item.quantity,
+                    price: item.unit_price
+                })),
+                total: order.total_price
+            }));
+            
+            if (displayOrders.length === 0) {
+                ordersGrid.innerHTML = '<div class="empty-state">Chưa có đơn hàng nào.</div>';
+            } else {
+                ordersGrid.innerHTML = renderAdminOrdersTable(displayOrders);
+            }
+        } else {
+            console.warn('Order API returned error:', result.message);
+            ordersGrid.innerHTML = '<div class="empty-state">Chưa có đơn hàng nào.</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading orders:', error);
+        ordersGrid.innerHTML = '<div class="empty-state" style="color:red;">Lỗi tải dữ liệu: ' + error.message + '</div>';
+    });
 }
 
 function filterAdminOrders() {
     const ordersGrid = document.getElementById('adminOrdersGrid');
     if (!ordersGrid) return false;
     
-    // Hiển thị 1 đơn hàng mẫu
-    const sampleOrder = {
-        id: 'DH001',
-        date: '11/11/2025',
-        name: 'Nguyễn Văn A',
-        phone: '0901234567',
-        address: '123 Đường ABC, Quận 1, TP.HCM',
-        paymentMethod: 'Chuyển khoản',
-        status: 'Mới đặt',
-        items: [
-            {
-                brand: 'Toyota',
-                name: 'Camry',
-                quantity: 1,
-                price: 1235000000
-            }
-        ],
-        total: 1235000000,
-        note: 'Giao hàng trong giờ hành chính'
-    };
+    // Lấy giá trị filter
+    const dateFrom = document.getElementById('orderDateFrom').value || '';
+    const dateTo = document.getElementById('orderDateTo').value || '';
+    const status = document.getElementById('orderStatusFilter').value || '';
     
-    ordersGrid.innerHTML = `
-        <div style="margin-bottom: 20px;">
-            <button onclick="loadAdminOrders()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fas fa-undo"></i> Quay lại
-            </button>
-        </div>
-        ${renderAdminOrdersTable([sampleOrder])}
-    `;
+    // Hiển thị loading spinner
+    ordersGrid.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải đơn hàng...</div>';
+    
+    // Gọi API
+    let url = '/WebBasic/BackEnd/api/admin/get_all_orders.php?';
+    if (dateFrom) url += 'dateFrom=' + encodeURIComponent(dateFrom) + '&';
+    if (dateTo) url += 'dateTo=' + encodeURIComponent(dateTo) + '&';
+    if (status) url += 'status=' + encodeURIComponent(status) + '&';
+    
+    console.log('Filter URL:', url);
+    
+    fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error('Filter API Response Error:', response.status, response.statusText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        console.log('Filter Result:', result);
+        if (result.success && result.orders) {
+            // Chuyển đổi dữ liệu từ API sang format displayadmin
+            const displayOrders = result.orders.map(order => ({
+                id: order.id,
+                date: formatDateVN(order.created_at),
+                name: (order.first_name || '') + ' ' + (order.last_name || ''),
+                phone: order.shipping_phone || '',
+                email: order.user_email || '',
+                address: order.shipping_address || '',
+                paymentMethod: order.payment || 'COD',
+                status: mapOrderStatus(order.status),
+                items: order.items.map(item => ({
+                    brand: extractBrand(item.product_name),
+                    name: item.product_name,
+                    quantity: item.quantity,
+                    price: item.unit_price
+                })),
+                total: order.total_price
+            }));
+            
+            ordersGrid.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button onclick="loadAdminOrders()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-undo"></i> Quay lại
+                    </button>
+                </div>
+                ${renderAdminOrdersTable(displayOrders)}
+            `;
+        } else {
+            console.warn('Filter API returned error:', result.message);
+            ordersGrid.innerHTML = '<div class="empty-state">Không tìm thấy đơn hàng nào.</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error during filter:', error);
+        ordersGrid.innerHTML = '<div class="empty-state" style="color:red;">Lỗi tải dữ liệu: ' + error.message + '</div>';
+    });
+    
     return false;
+}
+
+// Helper functions
+function mapOrderStatus(dbStatus) {
+    const statusMap = {
+        'new': 'Mới đặt',
+        'pending': 'Mới đặt',
+        'processing': 'Đã xử lý',
+        'delivered': 'Đã giao',
+        'cancelled': 'Đã hủy'
+    };
+    return statusMap[dbStatus] || (dbStatus || 'Mới đặt');
+}
+
+function extractBrand(productName) {
+    // Trích xuất hãng từ tên sản phẩm (ví dụ: "Toyota Camry" -> "Toyota")
+    if (!productName) return '';
+    const brands = ['Toyota', 'Honda', 'BMW', 'Mercedes', 'Audi', 'Lexus', 'Hyundai', 'Kia', 'Vinfast'];
+    for (let brand of brands) {
+        if (productName.toLowerCase().includes(brand.toLowerCase())) {
+            return brand;
+        }
+    }
+    return productName.split(' ')[0] || '';
 }
 
 function renderAdminOrdersTable(orders) {
@@ -470,10 +718,7 @@ function renderAdminOrdersTable(orders) {
     
     return `<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:20px;font-family:Arial,sans-serif;'>
         ${orders.slice().reverse().map(order => {
-            const statusText = order.status === 'Mới đặt' ? 'Mới đặt' : 
-                              order.status === 'Đã xử lý' ? 'Đã xử lý' : 
-                              order.status === 'Đã giao' ? 'Đã giao' : 
-                              order.status === 'Đã hủy' ? 'Đã hủy' : order.status;
+            const statusText = order.status || 'Mới đặt';
             
             const itemsHtml = order.items.map(item => `
                 <div style='margin-bottom:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-family:Arial,sans-serif;'>
@@ -485,19 +730,18 @@ function renderAdminOrdersTable(orders) {
             
             return `
                 <div style='background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);font-family:Arial,sans-serif;'>
-                    <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Mã đơn: ${order.id}</div>
+                    <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Mã đơn: <strong>#${order.id}</strong></div>
                     <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Ngày đặt: ${order.date}</div>
                     <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Người nhận: ${order.name}</div>
                     <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Số điện thoại: ${order.phone}</div>
                     <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Địa chỉ: ${order.address}</div>
-                    <div style='color:#000;font-size:1em;margin-bottom:8px;font-family:Arial,sans-serif;font-weight:normal;'>Thanh toán: ${order.paymentMethod}</div>
                     <div style='color:#000;font-size:1em;margin-bottom:12px;font-family:Arial,sans-serif;font-weight:normal;display:flex;align-items:center;gap:10px;'>
                         <span>Tình trạng:</span>
-                        <select onchange='updateOrderStatus("${order.id}", this.value)' style='padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:0.95em;background:#fff;cursor:pointer;'>
-                            <option value='Mới đặt' ${order.status==='Mới đặt'?'selected':''}>Mới đặt</option>
-                            <option value='Đã xử lý' ${order.status==='Đã xử lý'?'selected':''}>Đã xử lý</option>
-                            <option value='Đã giao' ${order.status==='Đã giao'?'selected':''}>Đã giao</option>
-                            <option value='Đã hủy' ${order.status==='Đã hủy'?'selected':''}>Đã hủy</option>
+                        <select onchange='return false;' style='padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:0.95em;background:#fff;'>
+                            <option value='Mới đặt' ${statusText==='Mới đặt'?'selected':''}>Mới đặt</option>
+                            <option value='Đã xử lý' ${statusText==='Đã xử lý'?'selected':''}>Đã xử lý</option>
+                            <option value='Đã giao' ${statusText==='Đã giao'?'selected':''}>Đã giao</option>
+                            <option value='Đã hủy' ${statusText==='Đã hủy'?'selected':''}>Đã hủy</option>
                         </select>
                     </div>
                     <div style='margin-top:12px;padding-top:12px;border-top:1px solid #e0e0e0;'>
@@ -507,7 +751,6 @@ function renderAdminOrdersTable(orders) {
                     <div style='margin-top:12px;padding-top:12px;border-top:1px solid #e0e0e0;'>
                         <div style='color:#000;font-size:1.1em;text-align:right;font-family:Arial,sans-serif;font-weight:normal;'>Tổng: ${formatPrice(order.total)} VNĐ</div>
                     </div>
-                    ${order.note ? `<div style='color:#000;font-size:1em;margin-top:12px;padding:8px;background:#fff3cd;border-radius:6px;font-family:Arial,sans-serif;font-weight:normal;'>Ghi chú: ${order.note}</div>` : ''}
                 </div>
             `;
         }).join('')}

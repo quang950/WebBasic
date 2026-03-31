@@ -25,10 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const actions = document.querySelector('.user-actions');
         if (isAdmin) {
             if (actions && !actions.querySelector('.admin-return-btn')) {
-                const btn = document.createElement('a');
-                btn.href = _basePath + 'pages/admin/admin-themsanpham.php';
+                const btn = document.createElement('button');
                 btn.className = 'admin-return-btn blob-btn login-btn';
                 btn.innerHTML = '<span class="blob-btn__inner"><span class="blob-btn__blobs"><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span></span></span>Quay lại Admin';
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    window.location.href = '/WebBasic/FrontEnd/pages/admin/admin-themsanpham.php';
+                };
                 actions.insertBefore(btn, actions.firstChild);
             }
             const cartIcon = document.querySelector('.cart-icon');

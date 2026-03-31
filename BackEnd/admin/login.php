@@ -1,47 +1,52 @@
 <?php
 session_start();
-require_once "db_connect.php";
+
+// KẾT NỐI DATABASE
+require_once __DIR__ . '/../config/db_connect.php';
 
 if (!$dbConnected) {
-    die("Lỗi kết nối CSDL");
+    die("Không thể kết nối CSDL");
 }
 
+// XỬ LÝ POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // TÀI KHOẢN + MẬT KHẨU
-    $account  = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    // LẤY DỮ LIỆU TỪ FORM
+    $email    = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-    if ($account === '' || $password === '') {
-        echo "Vui lòng nhập tài khoản và mật khẩu";
+    // VALIDATE
+    if ($email === '' || $password === '') {
+        echo "Vui lòng nhập email và mật khẩu";
         exit;
     }
 
-    // Chỉ cho phép admin
+    // LẤY ADMIN TỪ DB
     $stmt = $conn->prepare("
-        SELECT * FROM users
-        WHERE email = ? AND is_admin = 1
+        SELECT * FROM users 
+        WHERE email = ? AND is_admin = 1 
         LIMIT 1
     ");
-    $stmt->bind_param("s", $account);
+    $stmt->bind_param("s", $email);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $admin = $result->fetch_assoc();
 
-    // So sánh mật khẩu (plain text – theo DB hiện tại)
+    $result = $stmt->get_result();
+    $admin  = $result->fetch_assoc();
+
+    // KIỂM TRA MẬT KHẨU (plain text – đúng với DB hiện tại)
     if ($admin && $password === $admin['password']) {
 
+        // LƯU SESSION ADMIN
         $_SESSION['admin'] = [
-            'id'   => $admin['id'],
-            'name' => $admin['first_name'] . ' ' . $admin['last_name'],
-            'email'=> $admin['email']
+            'id'    => $admin['id'],
+            'name'  => $admin['first_name'] . ' ' . $admin['last_name'],
+            'email' => $admin['email']
         ];
 
         header("Location: dashboard.php");
         exit;
 
     } else {
-        echo "Sai tài khoản hoặc mật khẩu";
+        echo "Invalid email or password";
     }
 }
-?>

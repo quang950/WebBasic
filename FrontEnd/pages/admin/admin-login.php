@@ -467,51 +467,34 @@
           submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xác minh...';
 
           // Call backend API to authenticate
-          fetch('/WebBasic/BackEnd/api/login.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              email: username,
-              password: password
-            })
+        fetch('../../../BackEnd/api/login.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: username,
+            password: password
           })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.user) {
-              // Check if user is admin
-              if (data.user.is_admin === 1 || data.user.is_admin === true) {
-                // Store user info in localStorage
-                localStorage.setItem("adminLoggedIn", "true");
-                localStorage.setItem("adminUsername", data.user.email);
-                localStorage.setItem("adminUserId", data.user.id);
-                localStorage.setItem("adminInfo", JSON.stringify({
-                  id: data.user.id,
-                  email: data.user.email,
-                  name: data.user.first_name + " " + data.user.last_name,
-                  picture: "https://ui-avatars.com/api/?name=" + 
-                    encodeURIComponent(data.user.first_name + " " + data.user.last_name) + 
-                    "&background=dc3545&color=fff&size=50",
-                  loginTime: new Date().toISOString(),
-                  loginType: "admin"
-                }));
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.user) {
 
-                showToast(
-                  "Đăng nhập thành công!",
-                  "admin-themsanpham.php"
-                );
-              } else {
-                errorDiv.textContent = "Tài khoản này không có quyền admin!";
-                errorDiv.style.display = "block";
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-                setTimeout(() => {
-                  errorDiv.style.display = "none";
-                }, 3000);
-              }
+            // CHECK ADMIN TỪ DB
+            if (data.user.isAdmin === 1 || data.user.isAdmin === true) {
+              // Lưu thông tin admin vào localStorage TRƯỚC khi redirect
+              localStorage.setItem('adminLoggedIn', 'true');
+              localStorage.setItem('adminUsername', data.user.email || data.user.name || 'Admin');
+              localStorage.setItem('adminUserId', data.user.id || '');
+              
+              showToast(
+                "Đăng nhập thành công!",
+                "/WebBasic/FrontEnd/pages/admin/admin-themsanpham.php"
+              );
+
             } else {
-              errorDiv.textContent = data.message || "Đăng nhập thất bại! Vui lòng kiểm tra lại email/mật khẩu.";
+              errorDiv.textContent = "Tài khoản này không có quyền admin!";
               errorDiv.style.display = "block";
               submitBtn.disabled = false;
               submitBtn.innerHTML = originalBtnText;
@@ -519,23 +502,29 @@
                 errorDiv.style.display = "none";
               }, 3000);
             }
-          })
-          .catch(err => {
-            console.error("Login error:", err);
-            errorDiv.textContent = "Lỗi kết nối! Vui lòng thử lại.";
+
+          } else {
+            errorDiv.textContent =
+              data.message || "Đăng nhập thất bại! Vui lòng kiểm tra lại email/mật khẩu.";
             errorDiv.style.display = "block";
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
             setTimeout(() => {
               errorDiv.style.display = "none";
             }, 3000);
-          });
+          }
+        })
+        .catch(err => {
+          console.error("Login error:", err);
+          errorDiv.textContent = "Lỗi kết nối! Vui lòng thử lại.";
+          errorDiv.style.display = "block";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+          setTimeout(() => {
+            errorDiv.style.display = "none";
+          }, 3000);
         });
-
-      // If already logged in as admin, redirect
-      if (localStorage.getItem("adminLoggedIn") === "true") {
-        window.location.href = "admin-themsanpham.php";
-      }
+        });
     </script>
   </body>
 </html>
