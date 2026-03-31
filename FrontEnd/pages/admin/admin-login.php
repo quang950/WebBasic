@@ -460,26 +460,76 @@
             return;
           }
 
-          const adminInfo = {
-            id: "admin_" + Date.now(),
-            name: username,
-            username: username,
-            picture:
-              "https://ui-avatars.com/api/?name=" +
-              encodeURIComponent(username) +
-              "&background=dc3545&color=fff&size=50",
-            loginTime: new Date().toISOString(),
-            loginType: "admin",
-          };
+          // Show loading state
+          const submitBtn = document.querySelector(".signin-btn");
+          const originalBtnText = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xác minh...';
 
-          localStorage.setItem("adminLoggedIn", "true");
-          localStorage.setItem("adminUsername", username);
-          localStorage.setItem("adminInfo", JSON.stringify(adminInfo));
+          // Call backend API to authenticate
+          fetch('/WebBasic/BackEnd/api/login.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: username,
+              password: password
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.user) {
+              // Check if user is admin
+              if (data.user.is_admin === 1 || data.user.is_admin === true) {
+                // Store user info in localStorage
+                localStorage.setItem("adminLoggedIn", "true");
+                localStorage.setItem("adminUsername", data.user.email);
+                localStorage.setItem("adminUserId", data.user.id);
+                localStorage.setItem("adminInfo", JSON.stringify({
+                  id: data.user.id,
+                  email: data.user.email,
+                  name: data.user.first_name + " " + data.user.last_name,
+                  picture: "https://ui-avatars.com/api/?name=" + 
+                    encodeURIComponent(data.user.first_name + " " + data.user.last_name) + 
+                    "&background=dc3545&color=fff&size=50",
+                  loginTime: new Date().toISOString(),
+                  loginType: "admin"
+                }));
 
-          showToast(
-            "Đăng nhập admin thành công: " + username,
-            "admin-themsanpham.php",
-          );
+                showToast(
+                  "Đăng nhập thành công!",
+                  "admin-themsanpham.php"
+                );
+              } else {
+                errorDiv.textContent = "Tài khoản này không có quyền admin!";
+                errorDiv.style.display = "block";
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                setTimeout(() => {
+                  errorDiv.style.display = "none";
+                }, 3000);
+              }
+            } else {
+              errorDiv.textContent = data.message || "Đăng nhập thất bại! Vui lòng kiểm tra lại email/mật khẩu.";
+              errorDiv.style.display = "block";
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnText;
+              setTimeout(() => {
+                errorDiv.style.display = "none";
+              }, 3000);
+            }
+          })
+          .catch(err => {
+            console.error("Login error:", err);
+            errorDiv.textContent = "Lỗi kết nối! Vui lòng thử lại.";
+            errorDiv.style.display = "block";
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            setTimeout(() => {
+              errorDiv.style.display = "none";
+            }, 3000);
+          });
         });
 
       // If already logged in as admin, redirect

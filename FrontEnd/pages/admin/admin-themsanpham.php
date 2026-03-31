@@ -656,10 +656,17 @@
             // Show loading
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
             
+            // Create abort controller with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
             // Fetch categories from API
-            fetch('/WebBasic/BackEnd/api/categories.php')
+            fetch('/WebBasic/BackEnd/api/categories.php', {
+                signal: controller.signal
+            })
                 .then(response => response.json())
                 .then(data => {
+                    clearTimeout(timeoutId);
                     if (data.success && data.categories && data.categories.length > 0) {
                         tbody.innerHTML = data.categories.map(cat => `
                             <tr>
@@ -691,8 +698,13 @@
                     }
                 })
                 .catch(err => {
+                    clearTimeout(timeoutId);
                     console.error('Error loading categories:', err);
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Lỗi khi tải danh sách loại sản phẩm</td></tr>';
+                    if (err.name === 'AbortError') {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Kết nối timed out - Vui lòng tải lại trang</td></tr>';
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Lỗi khi tải danh sách loại sản phẩm</td></tr>';
+                    }
                 });
         }
 
