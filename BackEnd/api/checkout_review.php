@@ -1,29 +1,29 @@
 <?php
-require_once __DIR__ . '/../config/db_connect.php';
+session_start();
+header('Content-Type: application/json');
 
-$user_id = intval($_GET['user_id']);
+require_once __DIR__ . '/../models/OrderModel.php';
 
-$stmt = $conn->prepare("
-    SELECT p.name, p.price, c.quantity
-    FROM cart c
-    JOIN products p ON c.product_id = p.id
-    WHERE c.user_id = ?
-");
+// Lấy user từ session
+$userId = $_SESSION['user_id'] ?? null;
 
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$total = 0;
-$items = [];
-
-while ($row = $result->fetch_assoc()) {
-    $row['subtotal'] = $row['price'] * $row['quantity'];
-    $total += $row['subtotal'];
-    $items[] = $row;
+// Nếu chưa đăng nhập → trả rỗng
+if (!$userId) {
+    echo json_encode([
+        'success' => true,
+        'items' => [],
+        'total_price' => 0
+    ]);
+    exit;
 }
 
+// Gọi OrderModel
+$orderModel = new OrderModel();
+$result = $orderModel->previewOrder($userId);
+
+// Chuẩn hóa response cho frontend
 echo json_encode([
-    "items" => $items,
-    "total" => $total
+    'success' => true,
+    'items' => $result['items'] ?? [],
+    'total_price' => $result['total_price'] ?? 0
 ]);
