@@ -40,8 +40,14 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-    INSERT INTO users (first_name, last_name, email, password, is_admin)
-    VALUES ('Admin', 'System', 'admin', '123456', 1);
+    INSERT INTO users (first_name, last_name, email, password, phone, birth_date, province, is_admin)
+    VALUES 
+    ('Nguyễn', 'Vinh', 'vinhlhox2122006@gmail.com', 'ILOCKED!', '0923365944', '2026-03-10', 'hcm', 1),
+    ('Vinh', 'Nguyen', 'vinh', '$2y$10566qxPdWTX.0u/sEiYP7Hu2eAczLYFUil1Gho/gReaV...', NULL, NULL, NULL, 0),
+    ('Trung', 'Nguyen', 'trung', '$2y$10$aUWJLvKQTx9kWSge0laK.Ou6vqNWjgSUTy5xl$2lF9...', NULL, NULL, NULL, 0),
+    ('Tuấn', 'Nguyen', 'tuan', '$2y$10$71WFsZKhQ0lq.4vckY6XTux[bJ7cJQleWqqZVEiH03...', NULL, NULL, NULL, 0),
+    ('Quang', 'Nguyen', 'quang', '$2y$10$mkYftWQ4fr4.sZ/2WN2il.DI2yltV2IWqFGo/Fgl4...', NULL, NULL, NULL, 0),
+    ('Admin', 'System', 'admin', '123456', NULL, NULL, NULL, 1);
 
 CREATE TABLE cart (
     id INT PRIMARY KEY AUTO_INCREMENT,
