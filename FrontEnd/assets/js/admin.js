@@ -2040,7 +2040,20 @@ function addUser() {
             province: province
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('Invalid JSON response:', text);
+            throw new Error('Server returned invalid JSON. Response: ' + text);
+        }
+    })
     .then(result => {
         if (result.success) {
             alert('✓ Thêm khách hàng thành công!');
