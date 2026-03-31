@@ -67,11 +67,23 @@ function loadCustomers() {
             const customers = result.customers;
             
             if (customers.length === 0) {
-                grid.innerHTML = '<div class="empty-state">Chưa có khách hàng nào đăng ký.</div>';
+                grid.innerHTML = `
+                    <div style="margin-bottom:20px;">
+                        <button onclick="showAddUserModal()" style="padding:10px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
+                            <i class="fas fa-plus"></i> Thêm khách hàng
+                        </button>
+                    </div>
+                    <div class="empty-state">Chưa có khách hàng nào đăng ký.</div>
+                `;
                 return;
             }
             
             grid.innerHTML = `
+                <div style="margin-bottom:20px;">
+                    <button onclick="showAddUserModal()" style="padding:10px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
+                        <i class="fas fa-plus"></i> Thêm khách hàng
+                    </button>
+                </div>
                 <table class="customers-table" style="font-family:Arial,sans-serif;width:100%;table-layout:auto;border-collapse:collapse;">
                     <thead>
                         <tr style="background:#007bff;color:#fff;">
@@ -81,7 +93,7 @@ function loadCustomers() {
                             <th style="min-width:130px;padding:12px;text-align:left;border-bottom:2px solid #0056b3;">Tỉnh/TP</th>
                             <th style="min-width:100px;padding:12px;text-align:center;border-bottom:2px solid #0056b3;">Số đơn</th>
                             <th style="min-width:150px;padding:12px;text-align:right;border-bottom:2px solid #0056b3;">Tổng chi tiêu</th>
-                            <th style="min-width:200px;padding:12px;text-align:center;border-bottom:2px solid #0056b3;">Ngày đăng ký</th>
+                            <th style="min-width:300px;padding:12px;text-align:center;border-bottom:2px solid #0056b3;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,7 +105,11 @@ function loadCustomers() {
                                 <td style="padding:12px;">${u.province || '-'}</td>
                                 <td style="padding:12px;text-align:center;"><span style="background:#e7f3ff;padding:4px 8px;border-radius:4px;font-weight:600;">${u.order_count || 0}</span></td>
                                 <td style="padding:12px;text-align:right;"><strong>${formatPrice(u.total_spent || 0)} VNĐ</strong></td>
-                                <td style="padding:12px;text-align:center;">${formatDateVN(u.created_at)}</td>
+                                <td style="padding:12px;text-align:center;white-space:nowrap;">
+                                    <button onclick="showResetPasswordModal(${u.id}, '${u.first_name} ${u.last_name}')" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:#007bff;color:#fff;border:none;cursor:pointer;margin-right:4px;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-key"></i> Reset MK</button>
+                                    <button onclick="toggleLockUser(${u.id}, '${u.first_name} ${u.last_name}')" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:#ffc107;color:#000;border:none;cursor:pointer;margin-right:4px;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-lock"></i> Khóa</button>
+                                    <button onclick="deleteUser(${u.id}, '${u.first_name} ${u.last_name}')" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:#dc3545;color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-trash"></i> Xóa</button>
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -259,18 +275,24 @@ function addProduct() {
     if (!form) return false;
     
     const name = document.getElementById('productName').value.trim();
+    const code = document.getElementById('productCode').value.trim() || '';
     const brand = document.getElementById('productBrand').value.trim();
     const price = parseFloat(document.getElementById('productPrice').value);
+    const cost = parseFloat(document.getElementById('productCost').value || '0');
+    const margin = parseFloat(document.getElementById('productMargin').value || '10');
+    const stock = parseInt(document.getElementById('productStock').value || '0');
+    const unit = document.getElementById('productUnit').value.trim() || 'chiếc';
     const year = parseInt(document.getElementById('productYear').value);
     const fuel = document.getElementById('productFuel').value.trim();
     const transmission = document.getElementById('productTransmission').value.trim();
     const category = document.getElementById('productCategory').value.trim();
     const image = document.getElementById('productImageUrl').value.trim();
     const description = document.getElementById('productDescription').value.trim();
+    const status = document.getElementById('productStatus').checked ? 1 : 0;
     
     // Validate
     if (!name || !brand || !price) {
-        alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+        alert('Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Thương hiệu, Giá bán)!');
         return false;
     }
     
@@ -294,14 +316,21 @@ function addProduct() {
         },
         body: JSON.stringify({
             name: `${brand.charAt(0).toUpperCase() + brand.slice(1)} ${name}`,
+            product_code: code,
             brand: brand,
             price: price,
+            price_cost: cost,
+            profit_margin: margin,
+            stock: stock,
+            initial_stock: stock,
+            unit: unit,
             year: year,
             fuel: fuel,
             transmission: transmission,
             category: category,
             image: image || `/WebBasic/FrontEnd/assets/images/logo-${brand}.png`,
-            description: description
+            description: description,
+            status: status
         })
     })
     .then(response => response.json())
@@ -444,9 +473,8 @@ function loadProducts() {
                                     ${product.category ? `<span><i class="fas fa-tags"></i> ${product.category}</span>` : ''}
                                 </div>
                                 <div class="product-actions">
-                                    <button onclick="editProduct(${product.id})" class="edit-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-edit"></i> Sửa</button>
-                                    <button onclick="return false;" class="hide-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-eye-slash"></i> Ẩn</button>
-                                    <button onclick="return false;" class="delete-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-trash"></i> Xóa</button>
+                                    <button onclick="showEditProductModal(${product.id})" class="edit-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;background:#17a2b8;color:#fff;border:none;cursor:pointer;"><i class="fas fa-edit"></i> Sửa</button>
+                                    <button onclick="confirmDeleteProduct(${product.id})" class="delete-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;background:#dc3545;color:#fff;border:none;cursor:pointer;"><i class="fas fa-trash"></i> Xóa</button>
                                 </div>
                             </div>
                         </div>
@@ -1932,6 +1960,586 @@ function showSingleProduct() {
 window.showAddImportModal = showAddImportModal;
 window.closeAddImportModal = closeAddImportModal;
 window.addImportItemRow = addImportItemRow;
+
+// ========== USER MANAGEMENT FUNCTIONS ==========
+
+// Show modal to add new user
+function showAddUserModal() {
+    const html = `
+        <div id="addUserModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+            <div style="background:#fff;padding:30px;border-radius:12px;max-width:500px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.15);position:relative;">
+                <button onclick="document.getElementById('addUserModal').remove()" style="position:absolute;top:12px;right:12px;background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;">&times;</button>
+                <h3 style="margin-bottom:20px;">Thêm khách hàng mới</h3>
+                <form id="addUserForm" style="font-family:Arial,sans-serif;">
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Họ:</label>
+                        <input type="text" id="newUserFirstName" placeholder="Họ" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Tên:</label>
+                        <input type="text" id="newUserLastName" placeholder="Tên" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Email:</label>
+                        <input type="email" id="newUserEmail" placeholder="Email" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Mật khẩu:</label>
+                        <input type="password" id="newUserPassword" placeholder="Mật khẩu" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Điện thoại (tuỳ chọn):</label>
+                        <input type="tel" id="newUserPhone" placeholder="Điện thoại" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Tỉnh/TP (tuỳ chọn):</label>
+                        <input type="text" id="newUserProvince" placeholder="Tỉnh/TP" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;">
+                        <button type="button" onclick="document.getElementById('addUserModal').remove()" style="padding:10px 20px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;">Hủy</button>
+                        <button type="button" onclick="addUser()" style="padding:10px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Thêm khách hàng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// Add new user
+function addUser() {
+    const firstName = document.getElementById('newUserFirstName').value.trim();
+    const lastName = document.getElementById('newUserLastName').value.trim();
+    const email = document.getElementById('newUserEmail').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const phone = document.getElementById('newUserPhone').value.trim();
+    const province = document.getElementById('newUserProvince').value.trim();
+    
+    if (!firstName || !lastName || !email || !password) {
+        alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('Mật khẩu phải có ít nhất 6 ký tự!');
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/add_user.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            password: password,
+            phone: phone,
+            province: province
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Thêm khách hàng thành công!');
+            document.getElementById('addUserModal').remove();
+            loadCustomers();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể thêm khách hàng'));
+        }
+    })
+    .catch(error => {
+        console.error('Error adding user:', error);
+        alert('Lỗi: ' + error.message);
+    });
+}
+
+// Show modal to reset password
+function showResetPasswordModal(userId, userName) {
+    const newPassword = prompt(`Nhập mật khẩu mới cho ${userName}:`);
+    if (!newPassword) return;
+    
+    if (newPassword.length < 6) {
+        alert('Mật khẩu phải có ít nhất 6 ký tự!');
+        return;
+    }
+    
+    if (!confirm(`Bạn chắc chắn muốn reset mật khẩu cho ${userName}?`)) {
+        return;
+    }
+    
+    resetPassword(userId, newPassword);
+}
+
+// Reset user password
+function resetPassword(userId, newPassword) {
+    fetch('/WebBasic/BackEnd/api/admin/reset_password.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            new_password: newPassword
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Reset mật khẩu thành công!');
+            loadCustomers();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể reset mật khẩu'));
+        }
+    })
+    .catch(error => {
+        console.error('Error resetting password:', error);
+        alert('Lỗi: ' + error.message);
+    });
+}
+
+// Lock/Unlock user
+function toggleLockUser(userId, userName) {
+    if (!confirm(`Bạn chắc chắn muốn khóa tài khoản của ${userName}?`)) {
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/lock_user.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            locked: 1
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Khóa tài khoản thành công!');
+            loadCustomers();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể khóa tài khoản'));
+        }
+    })
+    .catch(error => {
+        console.error('Error locking user:', error);
+        alert('Lỗi: ' + error.message);
+    });
+}
+
+// Delete user
+function deleteUser(userId, userName) {
+    if (!confirm(`Bạn chắc chắn muốn xóa tài khoản của ${userName}?\n\nHành động này không thể hoàn tác!`)) {
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/delete_user.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Xóa tài khoản thành công!');
+            loadCustomers();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể xóa tài khoản'));
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting user:', error);
+        alert('Lỗi: ' + error.message);
+    });
+}
+
+// ========== CATEGORY MANAGEMENT FUNCTIONS ==========
+
+function loadCategories() {
+    const tbody = document.getElementById('categoriesTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
+    
+    fetch('/WebBasic/BackEnd/api/admin/get_categories.php', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success && result.data) {
+            tbody.innerHTML = '';
+            result.data.forEach(cat => {
+                const row = `
+                    <tr>
+                        <td style="padding:12px;text-align:left;">${cat.name}</td>
+                        <td style="padding:12px;text-align:center;"><strong>${cat.product_count}</strong></td>
+                        <td style="padding:12px;text-align:center;">
+                            <span style="padding:4px 8px;border-radius:4px;background:${cat.status == 1 ? '#d4edda' : '#f8d7da'};color:${cat.status == 1 ? '#155724' : '#721c24'};font-size:0.9em;">${cat.status_text}</span>
+                        </td>
+                        <td style="padding:12px;text-align:center;display:flex;gap:6px;justify-content:center;">
+                            <button onclick="showEditCategoryModal(${cat.id}, '${cat.name}', '${cat.description || ''}', ${cat.status})" class="edit-btn" style="padding:6px 12px;background:#007bff;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button onclick="deleteCategory(${cat.id}, '${cat.name}')" class="delete-btn" style="padding:6px 12px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Chưa có loại sản phẩm nào</td></tr>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading categories:', error);
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:red;">Lỗi tải dữ liệu</td></tr>';
+    });
+}
+
+function showAddCategoryModal() {
+    const html = `
+        <div id="addCategoryModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+            <div style="background:#fff;padding:30px;border-radius:12px;max-width:500px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h3 style="margin:0;">Thêm loại sản phẩm mới</h3>
+                    <button onclick="closeAddCategoryModal()" style="background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;">&times;</button>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Tên loại sản phẩm:</label>
+                    <input type="text" id="categoryName" placeholder="VD: Toyota, BMW..." required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-family:Arial,sans-serif;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Mô tả (tuỳ chọn):</label>
+                    <textarea id="categoryDescription" placeholder="Mô tả loại sản phẩm..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-family:Arial,sans-serif;" rows="3"></textarea>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" onclick="closeAddCategoryModal()" style="padding:10px 20px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;">Hủy</button>
+                    <button type="button" onclick="addCategory()" style="padding:10px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Thêm loại</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeAddCategoryModal() {
+    const modal = document.getElementById('addCategoryModal');
+    if (modal) modal.remove();
+}
+
+function addCategory() {
+    const name = document.getElementById('categoryName')?.value?.trim();
+    const description = document.getElementById('categoryDescription')?.value?.trim() || '';
+    
+    if (!name) {
+        alert('Vui lòng nhập tên loại sản phẩm');
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/add_category.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Thêm loại sản phẩm thành công!');
+            closeAddCategoryModal();
+            loadCategories();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể thêm loại'));
+        }
+    })
+    .catch(error => alert('Lỗi: ' + error.message));
+}
+
+function showEditCategoryModal(id, name, description, status) {
+    const html = `
+        <div id="editCategoryModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+            <div style="background:#fff;padding:30px;border-radius:12px;max-width:500px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h3 style="margin:0;">Chỉnh sửa loại sản phẩm</h3>
+                    <button onclick="closeEditCategoryModal()" style="background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;">&times;</button>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Tên:</label>
+                    <input type="text" id="editCategoryName" value="${name}" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Mô tả:</label>
+                    <textarea id="editCategoryDescription" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" rows="3">${description}</textarea>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Trạng thái:</label>
+                    <select id="editCategoryStatus" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        <option value="1" ${status == 1 ? 'selected' : ''}>Đang hiển thị</option>
+                        <option value="0" ${status == 0 ? 'selected' : ''}>Đang ẩn</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" onclick="closeEditCategoryModal()" style="padding:10px 20px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;">Hủy</button>
+                    <button type="button" onclick="submitEditCategory(${id})" style="padding:10px 20px;background:#17a2b8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Cập nhật</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeEditCategoryModal() {
+    const modal = document.getElementById('editCategoryModal');
+    if (modal) modal.remove();
+}
+
+function submitEditCategory(id) {
+    const name = document.getElementById('editCategoryName')?.value?.trim();
+    const description = document.getElementById('editCategoryDescription')?.value?.trim() || '';
+    const status = parseInt(document.getElementById('editCategoryStatus')?.value || '1');
+    
+    if (!name) {
+        alert('Vui lòng nhập tên loại sản phẩm');
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/edit_category.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, description, status })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Cập nhật loại sản phẩm thành công!');
+            closeEditCategoryModal();
+            loadCategories();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể cập nhật'));
+        }
+    })
+    .catch(error => alert('Lỗi: ' + error.message));
+}
+
+function deleteCategory(id, name) {
+    if (!confirm(`Bạn chắc chắn muốn xóa loại sản phẩm "${name}"?\n\nVui lòng chắc chắn loại này không còn sản phẩm nào!`)) {
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/delete_category.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Xóa loại sản phẩm thành công!');
+            loadCategories();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể xóa loại sản phẩm'));
+        }
+    })
+    .catch(error => alert('Lỗi: ' + error.message));
+}
+
+// ========== PRODUCT EDIT/DELETE FUNCTIONS ==========
+
+function showEditProductModal(id) {
+    fetch('/WebBasic/BackEnd/api/admin/get_product.php?id=' + id, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (!result.success) {
+            alert('Lỗi: ' + (result.message || 'Không thể tải sản phẩm'));
+            return;
+        }
+        
+        const p = result.data;
+        const html = `
+            <div id="editProductModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;overflow-y:auto;">
+                <div style="background:#fff;padding:30px;border-radius:12px;max-width:600px;width:100%;margin:20px auto;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                        <h3 style="margin:0;">Chỉnh sửa sản phẩm</h3>
+                        <button onclick="closeEditProductModal()" style="background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;">&times;</button>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Mã sản phẩm:</label>
+                            <input type="text" id="editProductCode" value="${p.product_code || ''}" placeholder="SKU..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Tên sản phẩm:</label>
+                            <input type="text" id="editProductName" value="${p.name}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Loại sản phẩm:</label>
+                            <select id="editProductCategory" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                                <option value="${p.category_id}">${p.category_name}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Đơn vị tính:</label>
+                            <input type="text" id="editProductUnit" value="${p.unit || 'chiếc'}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:15px;">
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Giá bán (VNĐ):</label>
+                            <input type="number" id="editProductPrice" value="${p.price}" required min="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Giá vốn (VNĐ):</label>
+                            <input type="number" id="editProductCost" value="${p.price_cost}" min="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Margin (%):</label>
+                            <input type="number" id="editProductMargin" value="${p.profit_margin}" min="0" step="0.1" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Số lượng tồn:</label>
+                            <input type="number" id="editProductStock" value="${p.stock}" required min="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Hình ảnh URL:</label>
+                            <input type="url" id="editProductImage" value="${p.image_url || ''}" placeholder="https://..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Mô tả:</label>
+                        <textarea id="editProductDescription" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" rows="3">${p.description || ''}</textarea>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Trạng thái:</label>
+                            <select id="editProductStatus" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                                <option value="1" ${p.status == 1 ? 'selected' : ''}>Đang bán</option>
+                                <option value="0" ${p.status == 0 ? 'selected' : ''}>Ẩn/Không bán</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex;gap:10px;justify-content:flex-end;">
+                        <button type="button" onclick="closeEditProductModal()" style="padding:10px 20px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;">Hủy</button>
+                        <button type="button" onclick="submitEditProduct(${id})" style="padding:10px 20px;background:#17a2b8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Cập nhật sản phẩm</button>
+                        ${p.has_stock_history ? '' : '<button type="button" onclick="confirmDeleteProduct(' + id + ')" style="padding:10px 20px;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;">Xóa sản phẩm</button>'}
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+    })
+    .catch(error => alert('Lỗi: ' + error.message));
+}
+
+function closeEditProductModal() {
+    const modal = document.getElementById('editProductModal');
+    if (modal) modal.remove();
+}
+
+function submitEditProduct(id) {
+    const name = document.getElementById('editProductName')?.value?.trim();
+    const code = document.getElementById('editProductCode')?.value?.trim() || '';
+    const category = parseInt(document.getElementById('editProductCategory')?.value || '1');
+    const price = parseFloat(document.getElementById('editProductPrice')?.value || '0');
+    const cost = parseFloat(document.getElementById('editProductCost')?.value || '0');
+    const margin = parseFloat(document.getElementById('editProductMargin')?.value || '0');
+    const stock = parseInt(document.getElementById('editProductStock')?.value || '0');
+    const unit = document.getElementById('editProductUnit')?.value?.trim() || 'chiếc';
+    const image = document.getElementById('editProductImage')?.value?.trim() || '';
+    const description = document.getElementById('editProductDescription')?.value?.trim() || '';
+    const status = parseInt(document.getElementById('editProductStatus')?.value || '1');
+    
+    if (!name || price <= 0) {
+        alert('Vui lòng nhập tên và giá bán hợp lệ');
+        return;
+    }
+    
+    fetch('/WebBasic/BackEnd/api/admin/edit_product.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id, name, product_code: code, category_id: category, price,
+            price_cost: cost, profit_margin: margin, stock, unit, image_url: image,
+            description, status
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Cập nhật sản phẩm thành công!');
+            closeEditProductModal();
+            loadProducts();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể cập nhật'));
+        }
+    })
+    .catch(error => alert('Lỗi: ' + error.message));
+}
+
+function confirmDeleteProduct(id) {
+    if (!confirm('Bạn chắc chắn muốn xóa sản phẩm này?\n\nNếu sản phẩm chưa có nhập hàng sẽ xóa hẳn, ngược lại sẽ chỉ ẩn!')) {
+        return;
+    }
+    deleteProduct(id);
+}
+
+function deleteProduct(id) {
+    fetch('/WebBasic/BackEnd/api/admin/delete_product.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ ' + result.message);
+            closeEditProductModal();
+            loadProducts();
+        } else {
+            alert('Lỗi: ' + (result.message || 'Không thể xóa sản phẩm'));
+        }
+    })
+    .catch(error => alert('Lỗi: ' + error.message));
+}
+
+// Export user management functions
+window.showAddUserModal = showAddUserModal;
+window.addUser = addUser;
+window.showResetPasswordModal = showResetPasswordModal;
+window.resetPassword = resetPassword;
+window.toggleLockUser = toggleLockUser;
+window.deleteUser = deleteUser;
 window.removeImportItemRow = removeImportItemRow;
 window.showSingleProduct = showSingleProduct;
 window.editProduct = editProduct;
@@ -1945,3 +2553,17 @@ window.loadOldStock = loadOldStock;
 window.initStockSection = loadOldStock;
 window.loadPricing = loadPricing;
 window.loadCategories = loadCategories;
+// Export category management functions
+window.showAddCategoryModal = showAddCategoryModal;
+window.closeAddCategoryModal = closeAddCategoryModal;
+window.addCategory = addCategory;
+window.showEditCategoryModal = showEditCategoryModal;
+window.closeEditCategoryModal = closeEditCategoryModal;
+window.submitEditCategory = submitEditCategory;
+window.deleteCategory = deleteCategory;
+// Export product edit/delete functions
+window.showEditProductModal = showEditProductModal;
+window.closeEditProductModal = closeEditProductModal;
+window.submitEditProduct = submitEditProduct;
+window.confirmDeleteProduct = confirmDeleteProduct;
+window.deleteProduct = deleteProduct;

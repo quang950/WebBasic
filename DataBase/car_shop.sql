@@ -84,6 +84,49 @@ ADD COLUMN profit_margin FLOAT DEFAULT 10;
 -- Cập nhật thử một ít dữ liệu để có giá
 UPDATE products SET price_cost = price * 0.9, profit_margin = 10;
 
+-- ========== MIGRATION: Thêm fields mới cho quản lý sản phẩm nâng cao ==========
+
+-- 1. Thêm fields vào categories table
+ALTER TABLE categories 
+ADD COLUMN description TEXT AFTER name,
+ADD COLUMN status TINYINT(1) DEFAULT 1 AFTER created_at,
+ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER status;
+
+-- 2. Thêm fields vào products table
+ALTER TABLE products 
+ADD COLUMN product_code VARCHAR(50) UNIQUE AFTER id,
+ADD COLUMN unit VARCHAR(50) DEFAULT 'chiếc' AFTER stock,
+ADD COLUMN initial_stock INT DEFAULT 0 AFTER unit,
+ADD COLUMN status TINYINT(1) DEFAULT 1 AFTER initial_stock,
+ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER status;
+
+-- 3. Tạo stock_history table để track nhập/xuất
+DROP TABLE IF EXISTS stock_history;
+
+CREATE TABLE stock_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    type VARCHAR(20) NOT NULL COMMENT 'import/export/adjustment',
+    quantity INT NOT NULL,
+    reason TEXT,
+    previous_stock INT,
+    new_stock INT,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_product_date (product_id, created_at)
+);
+
+-- 4. Generate product codes
+SET @counter = 1000;
+UPDATE products 
+SET product_code = CONCAT('SKU', DATE_FORMAT(NOW(), '%y%m'), LPAD(@counter := @counter + 1, 4, '0'))
+WHERE product_code IS NULL;
+
+-- 5. Set initial_stock = current stock
+UPDATE products SET initial_stock = stock;
+
 
 
 INSERT INTO categories (name) VALUES 

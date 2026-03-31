@@ -15,7 +15,7 @@ try {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'message' => 'Missing required fields'
+            'message' => 'Tên sản phẩm và giá bán là bắt buộc'
         ]);
         exit;
     }
@@ -23,6 +23,14 @@ try {
     // Sanitize inputs
     $name = trim($data['name']);
     $price = floatval($data['price']);
+    $product_code = trim($data['product_code'] ?? '');
+    $price_cost = floatval($data['price_cost'] ?? 0);
+    $profit_margin = floatval($data['profit_margin'] ?? 10);
+    $stock = intval($data['stock'] ?? 0);
+    $initial_stock = intval($data['initial_stock'] ?? $stock);
+    $unit = trim($data['unit'] ?? 'chiếc');
+    $status = isset($data['status']) ? intval($data['status']) : 1;
+    
     $brand = trim($data['brand'] ?? '');
     $year = intval($data['year'] ?? date('Y'));
     $fuel = trim($data['fuel'] ?? '');
@@ -44,24 +52,32 @@ try {
     }
     
     // Always use first category if not found
-    $stmt = $conn->prepare("SELECT id FROM categories LIMIT 1");
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $category_id = $row['id'];
+    if ($category_id === 1) {
+        $stmt = $conn->prepare("SELECT id FROM categories LIMIT 1");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $category_id = $row['id'];
+        }
     }
     
-    // Insert product
+    // Insert product with all new fields
     $stmt = $conn->prepare("
-        INSERT INTO products (name, category_id, price, description, image_url, stock)
-        VALUES (?, ?, ?, ?, ?, 10)
+        INSERT INTO products 
+        (name, product_code, category_id, price, price_cost, profit_margin, 
+         stock, initial_stock, unit, description, image_url, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
     
-    $stmt->bind_param("sids", $name, $category_id, $price, $description, $image);
+    $stmt->bind_param(
+        "ssidddiiissi",
+        $name, $product_code, $category_id, $price, $price_cost, $profit_margin,
+        $stock, $initial_stock, $unit, $description, $image, $status
+    );
     
     if (!$stmt->execute()) {
         throw new Exception("Insert failed: " . $stmt->error);
@@ -69,10 +85,11 @@ try {
     
     $product_id = $conn->insert_id;
     
+    http_response_code(201);
     echo json_encode([
         'success' => true,
         'product_id' => $product_id,
-        'message' => 'Product added successfully'
+        'message' => 'Thêm sản phẩm thành công'
     ]);
     
 } catch (Exception $e) {
@@ -83,3 +100,4 @@ try {
     ]);
 }
 ?>
+

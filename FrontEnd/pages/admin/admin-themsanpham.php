@@ -303,7 +303,12 @@
             <form id="addProductForm">
                 <div class="form-group">
                     <label for="productName">Tên sản phẩm:</label>
-                    <input type="text" id="productName" name="productName" required>
+                    <input type="text" id="productName" name="productName" required placeholder="VD: Camry, Vios, E-Class...">
+                </div>
+
+                <div class="form-group">
+                    <label for="productCode">Mã sản phẩm (SKU):</label>
+                    <input type="text" id="productCode" name="productCode" placeholder="VD: SKU202603001 (tự động sinh nếu để trống)">
                 </div>
                 
                 <div class="form-group">
@@ -323,8 +328,37 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="productPrice">Giá (VNĐ):</label>
-                    <input type="number" id="productPrice" name="productPrice" required min="0">
+                    <label for="productCategory">Loại sản phẩm:</label>
+                    <select id="productCategory" name="productCategory" required>
+                        <option value="">Chọn loại</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productPrice">Giá bán (VNĐ):</label>
+                    <input type="number" id="productPrice" name="productPrice" required min="0" placeholder="Giá bán cho khách">
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="productCost">Giá vốn (VNĐ):</label>
+                        <input type="number" id="productCost" name="productCost" min="0" placeholder="Giá nhập từ nhà cung cấp">
+                    </div>
+                    <div class="form-group">
+                        <label for="productMargin">Margin lợi nhuận (%):</label>
+                        <input type="number" id="productMargin" name="productMargin" value="10" min="0" step="0.1" placeholder="Mặc định: 10">
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="productStock">Số lượng tồn:</label>
+                        <input type="number" id="productStock" name="productStock" value="0" min="0" placeholder="Số lượng hiện có">
+                    </div>
+                    <div class="form-group">
+                        <label for="productUnit">Đơn vị tính:</label>
+                        <input type="text" id="productUnit" name="productUnit" value="chiếc" placeholder="VD: chiếc, bộ, cái...">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -353,13 +387,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="productCategory">Loại sản phẩm:</label>
-                    <select id="productCategory" name="productCategory">
-                        <option value="">Chọn loại</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label for="productImageUrl">URL Hình ảnh:</label>
                     <input type="url" id="productImageUrl" name="productImageUrl" placeholder="https://example.com/image.jpg" required>
                     <small style="color: #666;">Nhập đường dẫn URL hình ảnh sản phẩm</small>
@@ -367,7 +394,14 @@
 
                 <div class="form-group">
                     <label for="productDescription">Mô tả:</label>
-                    <textarea id="productDescription" name="productDescription" rows="4"></textarea>
+                    <textarea id="productDescription" name="productDescription" rows="3" placeholder="Mô tả chi tiết sản phẩm..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="productStatus" name="productStatus" checked>
+                        Hiển thị sản phẩm (nếu bỏ dấu sẽ ẩn khỏi website)
+                    </label>
                 </div>
 
                 <div class="modal-actions">
