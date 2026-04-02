@@ -1522,9 +1522,90 @@ function loadOldStock_original() {
     container.innerHTML = html;
 }
 
-// Function updateDiscount đã bị vô hiệu hóa (Prototype mode)
+// ========== Quản lý giá bán ==========
+function updateProductMargin(productId, productName) {
+    const marginInput = document.getElementById(`margin_${productId}`);
+    if (!marginInput) return;
+    
+    const newMargin = parseFloat(marginInput.value);
+    
+    if (isNaN(newMargin) || newMargin < 0 || newMargin > 500) {
+        showToast('Vui lòng nhập % lợi nhuận hợp lệ (0-500)', 3000, 'error');
+        return;
+    }
+    
+    // Xác nhận trước khi cập nhật
+    if (!confirm(`Cập nhật lợi nhuận cho "${productName}" thành ${newMargin.toFixed(1)}%?\n\nGiá bán sẽ được tính lại tự động.`)) {
+        return;
+    }
+    
+    marginInput.disabled = true;
+    const btn = document.querySelector(`button[onclick="updateProductMargin(${productId}"]`);
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...';
+    }
+    
+    fetch('/WebBasic/BackEnd/api/pricing.php', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            action: 'update_margin',
+            product_id: productId,
+            profit_margin: newMargin
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`✓ Cập nhật thành công!\nGiá bán mới: ${formatPrice(data.data.selling_price)}`, 2000, 'success');
+            setTimeout(() => loadPricing(), 1500);
+        } else {
+            showToast('❌ Lỗi: ' + (data.message || 'Cập nhật thất bại'), 3000, 'error');
+            marginInput.disabled = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật';
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        showToast('❌ Lỗi kết nối: ' + err.message, 3000, 'error');
+        marginInput.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật';
+        }
+    });
+}
 
-// Export function (không còn cần thiết)
+function showToast(message, duration = 2000, type = 'info') {
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3';
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: white;
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 // ========== Quản lý giá bán ==========
 function initPricingData() {
@@ -1590,186 +1671,196 @@ function loadPricing() {
     const pricingGrid = document.getElementById('pricingGrid');
     if (!pricingGrid) return;
     
-    const products = initPricingData();
-    const categories = JSON.parse(localStorage.getItem('categories')) || [];
+    pricingGrid.innerHTML = '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
     
-    // Cập nhật category filter
-    const categoryFilter = document.getElementById('pricingCategoryFilter');
-    if (categoryFilter) {
-        categoryFilter.innerHTML = '<option value="">Tất cả loại xe</option>' + 
-            categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
-    }
-    
-    if (!products.length) {
-        pricingGrid.innerHTML = '<div class="empty-state">Chưa có sản phẩm nào.</div>';
-        return;
-    }
-    
-    const html = `
-        <div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                <thead>
-                    <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
-                        <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
-                        <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Hãng</th>
-                        <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
-                        <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
-                        <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">% Lợi nhuận</th>
-                        <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${products.map((product, index) => {
-                        // Xử lý loại xe: nếu không tìm thấy trong categories thì gán mặc định
-                        let categoryName = 'Sedan'; // Mặc định
-                        if (product.category) {
-                            const cat = categories.find(c => c.id === product.category);
-                            if (cat) {
-                                categoryName = cat.name;
-                            } else {
-                                // Nếu category là string trực tiếp (sedan, suv, ...)
-                                categoryName = product.category.toUpperCase();
+    // Gọi API backend để lấy dữ liệu giá từ database
+    fetch('/WebBasic/BackEnd/api/pricing.php?action=list&limit=500')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success || !data.data || data.data.length === 0) {
+                pricingGrid.innerHTML = '<div class="empty-state">Chưa có sản phẩm nào.</div>';
+                return;
+            }
+            
+            const products = data.data;
+            const categories = JSON.parse(localStorage.getItem('categories')) || [];
+            
+                            if (categoryFilter) {
+                                categoryFilter.innerHTML = '<option value="">Tất cả loại xe</option>' + 
+                                    categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
                             }
-                        }
-                        
-                        const importPrice = product.price || 0;
-                        const profitMargin = product.profitMargin || 0;
-                        const sellingPrice = product.sellingPrice || (importPrice * (1 + profitMargin / 100));
-                        
-                        return `
-                        <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
-                            <td style="padding:12px;">
-                                <div style="font-weight:600;color:#333;margin-bottom:4px;">${product.name}</div>
-                                <div style="font-size:0.85em;color:#666;">ID: ${product.id}</div>
-                            </td>
-                            <td style="padding:12px;">
-                                <span style="display:inline-block;background:#e3f2fd;color:#1976d2;padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">
-                                    ${product.brand || 'N/A'}
-                                </span>
-                            </td>
-                            <td style="padding:12px;color:#555;">${categoryName}</td>
-                            <td style="padding:12px;text-align:right;font-weight:500;color:#333;">${formatPrice(importPrice)}</td>
-                            <td style="padding:12px;text-align:center;">
-                                <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-                                    <input type="number" value="${profitMargin.toFixed(1)}" min="0" max="100" step="0.1" 
-                                        style="width:70px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.95em;"
-                                        onchange="return false;">
-                                    <span style="font-weight:600;color:#2e7d32;">%</span>
-                                </div>
-                            </td>
-                            <td style="padding:12px;text-align:right;">
-                                <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
-                                <div style="font-size:0.85em;color:#28a745;margin-top:4px;">
-                                    +${formatPrice(sellingPrice - importPrice)}
-                                </div>
-                            </td>
-                        </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
     
-    pricingGrid.innerHTML = html;
+            if (!products.length) {
+                pricingGrid.innerHTML = '<div class="empty-state">Chưa có sản phẩm nào.</div>';
+                return;
+            }
+            
+            const html = `
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
+                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:140px;">% Lợi nhuận</th>
+                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:100px;">Tồn kho</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Cập nhật</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.map((product, index) => {
+                                const costPrice = product.cost_price || 0;
+                                const profitMargin = product.profit_margin || 0;
+                                const sellingPrice = product.selling_price || 0;
+                                const stock = product.stock || 0;
+                                const categoryName = product.category_name || 'N/A';
+                                const profitAmount = sellingPrice - costPrice;
+                                
+                                return `
+                                <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+                                    <td style="padding:12px;">
+                                        <div style="font-weight:600;color:#333;margin-bottom:4px;">${product.name}</div>
+                                        <div style="font-size:0.85em;color:#666;">ID: ${product.id}</div>
+                                    </td>
+                                    <td style="padding:12px;color:#555;">${categoryName}</td>
+                                    <td style="padding:12px;text-align:right;font-weight:500;color:#333;">${formatPrice(costPrice)}</td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;">
+                                            <input type="number" id="margin_${product.id}" value="${profitMargin.toFixed(1)}" min="0" max="500" step="0.1" 
+                                                style="width:60px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.9em;">
+                                            <span style="font-weight:600;color:#2e7d32;">%</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:12px;text-align:right;">
+                                        <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
+                                        <div style="font-size:0.85em;color:#28a745;margin-top:4px;">+${formatPrice(profitAmount)}</div>
+                                    </td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <span style="display:inline-block;background:#${stock > 0 ? 'e8f5e9;color:#2e7d32' : 'ffebee;color:#c62828'};padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">${stock} chiếc</span>
+                                    </td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <button type="button" style="background:#4CAF50;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;transition:background 0.2s;"
+                                            onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'"
+                                            onclick="updateProductMargin(${product.id}, '${product.name}')">
+                                            <i class="fas fa-save"></i> Cập nhật
+                                        </button>
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            pricingGrid.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Error loading pricing data:', err);
+            pricingGrid.innerHTML = '<div style="color:red;padding:20px;">Lỗi khi tải dữ liệu giá. Vui lòng kiểm tra kết nối.</div>';
+        });
 }
 
 function filterPricing() {
     const searchInput = document.getElementById('pricingSearchProduct')?.value.toLowerCase() || '';
     const categoryFilter = document.getElementById('pricingCategoryFilter')?.value || '';
-    
     const pricingGrid = document.getElementById('pricingGrid');
     if (!pricingGrid) return;
     
-    let products = initPricingData();
-    const categories = JSON.parse(localStorage.getItem('categories')) || [];
+    pricingGrid.innerHTML = '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
     
-    // Lọc theo tên sản phẩm
+    // Gọi API backend với tham số lọc
+    let apiUrl = '/WebBasic/BackEnd/api/pricing.php?action=list&limit=500';
     if (searchInput) {
-        products = products.filter(p => {
-            const fullName = `${p.brand || ''} ${p.name}`.toLowerCase();
-            return fullName.includes(searchInput);
-        });
+        apiUrl += '&search=' + encodeURIComponent(searchInput);
     }
-    
-    // Lọc theo loại xe
     if (categoryFilter) {
-        products = products.filter(p => p.category === categoryFilter);
+        apiUrl += '&categoryId=' + encodeURIComponent(categoryFilter);
     }
     
-    if (!products.length) {
-        pricingGrid.innerHTML = '<div class="empty-state">Không tìm thấy sản phẩm phù hợp.</div>';
-        return;
-    }
-    
-    // Render lại bảng với dữ liệu đã lọc
-    const html = `
-        <div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                <thead>
-                    <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
-                        <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
-                        <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Hãng</th>
-                        <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
-                        <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
-                        <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">% Lợi nhuận</th>
-                        <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${products.map((product, index) => {
-                        // Xử lý loại xe: nếu không tìm thấy trong categories thì gán mặc định
-                        let categoryName = 'Sedan'; // Mặc định
-                        if (product.category) {
-                            const cat = categories.find(c => c.id === product.category);
-                            if (cat) {
-                                categoryName = cat.name;
-                            } else {
-                                // Nếu category là string trực tiếp (sedan, suv, ...)
-                                categoryName = product.category.toUpperCase();
-                            }
-                        }
-                        
-                        const importPrice = product.price || 0;
-                        const profitMargin = product.profitMargin || 0;
-                        const sellingPrice = product.sellingPrice || (importPrice * (1 + profitMargin / 100));
-                        
-                        return `
-                        <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
-                            <td style="padding:12px;">
-                                <div style="font-weight:600;color:#333;margin-bottom:4px;">${product.name}</div>
-                                <div style="font-size:0.85em;color:#666;">ID: ${product.id}</div>
-                            </td>
-                            <td style="padding:12px;">
-                                <span style="display:inline-block;background:#e3f2fd;color:#1976d2;padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">
-                                    ${product.brand || 'N/A'}
-                                </span>
-                            </td>
-                            <td style="padding:12px;color:#555;">${categoryName}</td>
-                            <td style="padding:12px;text-align:right;font-weight:500;color:#333;">${formatPrice(importPrice)}</td>
-                            <td style="padding:12px;text-align:center;">
-                                <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-                                    <input type="number" value="${profitMargin.toFixed(1)}" min="0" max="100" step="0.1" 
-                                        style="width:70px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.95em;"
-                                        onchange="return false;">
-                                    <span style="font-weight:600;color:#2e7d32;">%</span>
-                                </div>
-                            </td>
-                            <td style="padding:12px;text-align:right;">
-                                <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
-                                <div style="font-size:0.85em;color:#28a745;margin-top:4px;">
-                                    +${formatPrice(sellingPrice - importPrice)}
-                                </div>
-                            </td>
-                        </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    pricingGrid.innerHTML = html;
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success || !data.data || data.data.length === 0) {
+                pricingGrid.innerHTML = '<div class="empty-state">Không tìm thấy sản phẩm phù hợp.</div>';
+                return;
+            }
+            
+            const products = data.data;
+            
+            if (!products.length) {
+                pricingGrid.innerHTML = '<div class="empty-state">Không tìm thấy sản phẩm phù hợp.</div>';
+                return;
+            }
+            
+            const html = `
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
+                                <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
+                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:140px;">% Lợi nhuận</th>
+                                <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:100px;">Tồn kho</th>
+                                <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Cập nhật</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.map((product, index) => {
+                                const costPrice = product.cost_price || 0;
+                                const profitMargin = product.profit_margin || 0;
+                                const sellingPrice = product.selling_price || 0;
+                                const stock = product.stock || 0;
+                                const categoryName = product.category_name || 'N/A';
+                                const profitAmount = sellingPrice - costPrice;
+                                
+                                return `
+                                <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+                                    <td style="padding:12px;">
+                                        <div style="font-weight:600;color:#333;margin-bottom:4px;">${product.name}</div>
+                                        <div style="font-size:0.85em;color:#666;">ID: ${product.id}</div>
+                                    </td>
+                                    <td style="padding:12px;color:#555;">${categoryName}</td>
+                                    <td style="padding:12px;text-align:right;font-weight:500;color:#333;">${formatPrice(costPrice)}</td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;">
+                                            <input type="number" id="margin_${product.id}" value="${profitMargin.toFixed(1)}" min="0" max="500" step="0.1" 
+                                                style="width:60px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.9em;">
+                                            <span style="font-weight:600;color:#2e7d32;">%</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:12px;text-align:right;">
+                                        <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
+                                        <div style="font-size:0.85em;color:#28a745;margin-top:4px;">+${formatPrice(profitAmount)}</div>
+                                    </td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <span style="display:inline-block;background:#${stock > 0 ? 'e8f5e9;color:#2e7d32' : 'ffebee;color:#c62828'};padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">${stock} chiếc</span>
+                                    </td>
+                                    <td style="padding:12px;text-align:center;">
+                                        <button type="button" style="background:#4CAF50;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;transition:background 0.2s;"
+                                            onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'"
+                                            onclick="updateProductMargin(${product.id}, '${product.name}')">
+                                            <i class="fas fa-save"></i> Cập nhật
+                                        </button>
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            pricingGrid.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Error filtering pricing data:', err);
+            pricingGrid.innerHTML = '<div style="color:red;padding:20px;">Lỗi khi tải dữ liệu giá. Vui lòng kiểm tra kết nối.</div>';
+        });
 }
 
 // Export functions (chỉ giữ load và filter)

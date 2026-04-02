@@ -146,6 +146,7 @@ if ($method === 'GET') {
         $row['cost_price'] = floatval($row['cost_price'] ?? 0);
         $row['profit_margin'] = floatval($row['profit_margin'] ?? 0);
         $row['selling_price'] = floatval($row['selling_price'] ?? 0);
+        $row['stock'] = intval($row['stock'] ?? 0);
         $row['profit_amount'] = $row['selling_price'] - $row['cost_price'];
     }
     unset($row);

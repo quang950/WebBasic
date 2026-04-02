@@ -514,11 +514,11 @@
                     <div style="border:2px dashed #0d6efd;padding:16px;border-radius:8px;background:#f8f9ff;">
                         <h4 style="margin:0 0 12px 0;color:#0d6efd;">🔍 Thêm Sản Phẩm Vào Phiếu</h4>
                         
-                        <div style="display:grid;grid-template-columns:1fr 0.6fr 0.6fr auto;gap:10px;margin-bottom:12px;position:relative;">
+                        <div style="display:grid;grid-template-columns:1fr 0.6fr 0.6fr auto;gap:10px;margin-bottom:12px;position:relative;align-items:end;">
                             <div style="position:relative;">
                                 <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Tìm sản phẩm</label>
                                 <input type="text" id="searchProductForImport" placeholder="Nhập tên hoặc mã..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
-                                <div id="productSearchResults" style="position:absolute;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:150px;overflow-y:auto;display:none;width:100%;z-index:2000;top:100%;left:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                                <div id="productSearchResults" style="position:absolute;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;display:none;width:100%;z-index:99999;top:100%;left:0;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
                                     <!-- Results hiển thị ở đây -->
                                 </div>
                             </div>
@@ -530,11 +530,11 @@
                                 <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Giá nhập</label>
                                 <input type="number" id="importPrice" min="0" step="0.01" value="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
                             </div>
-                            <div style="display:flex;align-items:flex-end;">
+                            <div>
                                 <button type="button" onclick="addProductToTicket()" style="background:#0d6efd;color:#fff;border:none;padding:8px 14px;border-radius:4px;cursor:pointer;font-weight:600;white-space:nowrap;">➕ Thêm</button>
                             </div>
                         </div>
-                        <small style="color:#666;">Ghi chú: Nhập số lượng & giá mua, rồi bấm nút Thêm</small>
+                        <small style="color:#666;">Ghi chú: Nhập tên xe, chọn loại, nhập số lượng & giá mua, rồi bấm nút Thêm</small>
                     </div>
 
                     <!-- Bảng sản phẩm đã thêm -->
@@ -603,7 +603,7 @@
                         <div style="position:relative;">
                             <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Tìm sản phẩm</label>
                             <input type="text" id="searchProductForDetail" placeholder="Nhập tên hoặc mã..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
-                            <div id="productSearchResultsDetail" style="position:absolute;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:150px;overflow-y:auto;display:none;width:100%;z-index:2002;top:100%;left:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></div>
+                            <div id="productSearchResultsDetail" style="position:absolute;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;display:none;width:100%;z-index:99999;top:100%;left:0;box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div>
                             <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:#666;">Số lượng</label>
@@ -1031,7 +1031,7 @@
     // ==========================================  
     // IMPORT MANAGEMENT FUNCTIONS
     // ==========================================
-    const API_BASE = '../../../BackEnd/api/';
+    const API_BASE = '/WebBasic/BackEnd/api/';
     const PRICING_API = `${API_BASE}pricing.php`;
     let currentImportTicketId = null;
     let ticketItemsForCreate = [];
@@ -1153,34 +1153,85 @@
         `;
     }
 
-    async function loadPricing() {
+    // Load dữ liệu giá bán từ backend API
+    function loadPricing() {
         const pricingGrid = document.getElementById('pricingGrid');
         if (!pricingGrid) return;
         
-        // Tính năng đang được cập nhật
-        pricingGrid.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">Tính năng này đang được cập nhật...</div>';
-        return;
-
-        try {
-            await loadPricingCategories();
-
-            const params = new URLSearchParams({ action: 'list', limit: '500' });
-            if (search) params.set('search', search);
-            if (categoryId) params.set('categoryId', categoryId);
-
-            const response = await fetch(`${PRICING_API}?${params.toString()}`);
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Không tải được dữ liệu giá bán');
-            }
-
-            pricingData = result.data || [];
-            renderPricingTable(pricingData);
-        } catch (error) {
-            console.error('Load pricing error:', error);
-            pricingGrid.innerHTML = `<div style="text-align:center;color:#dc3545;padding:20px;">${escapeHtml(error.message || 'Lỗi tải dữ liệu giá bán')}</div>`;
-        }
+        pricingGrid.innerHTML = '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
+        
+        // Gọi API backend để lấy dữ liệu giá từ database
+        fetch('/WebBasic/BackEnd/api/pricing.php?action=list&limit=500')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success || !data.data || data.data.length === 0) {
+                    pricingGrid.innerHTML = '<div class="empty-state">Chưa có sản phẩm nào.</div>';
+                    return;
+                }
+                
+                const products = data.data;
+                const html = `
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                            <thead>
+                                <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
+                                    <th style="padding:14px;text-align:left;font-weight:600;min-width:200px;">Tên sản phẩm</th>
+                                    <th style="padding:14px;text-align:left;font-weight:600;min-width:120px;">Loại xe</th>
+                                    <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
+                                    <th style="padding:14px;text-align:center;font-weight:600;min-width:140px;">% Lợi nhuận</th>
+                                    <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
+                                    <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Cập nhật</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${products.map((product, index) => {
+                                    const costPrice = product.cost_price || 0;
+                                    const profitMargin = product.profit_margin || 0;
+                                    const sellingPrice = product.selling_price || 0;
+                                    const stock = product.stock || 0;
+                                    const categoryName = product.category_name || 'N/A';
+                                    const profitAmount = sellingPrice - costPrice;
+                                    
+                                    return `
+                                    <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+                                        <td style="padding:12px;">
+                                            <div style="font-weight:600;color:#333;margin-bottom:4px;">${product.name}</div>
+                                            <div style="font-size:0.85em;color:#666;">ID: ${product.id}</div>
+                                        </td>
+                                        <td style="padding:12px;color:#555;">${categoryName}</td>
+                                        <td style="padding:12px;text-align:right;font-weight:500;color:#333;">${formatPrice(costPrice)}</td>
+                                        <td style="padding:12px;text-align:center;">
+                                            <div style="display:flex;align-items:center;justify-content:center;gap:8px;">
+                                                <input type="number" id="margin_${product.id}" value="${profitMargin.toFixed(1)}" min="0" max="500" step="0.1" 
+                                                    style="width:60px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;text-align:center;font-weight:600;font-size:0.9em;">
+                                                <span style="font-weight:600;color:#2e7d32;">%</span>
+                                            </div>
+                                        </td>
+                                        <td style="padding:12px;text-align:right;">
+                                            <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
+                                            <div style="font-size:0.85em;color:#28a745;margin-top:4px;">+${formatPrice(profitAmount)}</div>
+                                        </td>
+                                        <td style="padding:12px;text-align:center;">
+                                            <button type="button" style="background:#4CAF50;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;transition:background 0.2s;"
+                                                onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'"
+                                                onclick="updateProductMargin(${product.id}, '${product.name}')">
+                                                <i class="fas fa-save"></i> Cập nhật
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                pricingGrid.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Error loading pricing data:', err);
+                pricingGrid.innerHTML = '<div style="color:red;padding:20px;">Lỗi khi tải dữ liệu giá. Vui lòng kiểm tra kết nối.</div>';
+            });
     }
 
     function searchPricingProduct() {
@@ -1191,44 +1242,6 @@
     function loadPricingData() {
         loadPricing();
         return false;
-    }
-
-    async function updateProductProfitMargin(productId) {
-        const input = document.getElementById(`pricing-margin-${productId}`);
-        if (!input) return;
-
-        const marginValue = parseFloat(input.value);
-        if (Number.isNaN(marginValue) || marginValue < 0 || marginValue > 500) {
-            alert('❌ % lợi nhuận phải từ 0 đến 500');
-            input.focus();
-            return;
-        }
-
-        try {
-            input.disabled = true;
-
-            const response = await fetch(PRICING_API, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'update_margin',
-                    product_id: productId,
-                    profit_margin: marginValue
-                })
-            });
-
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Cập nhật % lợi nhuận thất bại');
-            }
-
-            await loadPricing();
-        } catch (error) {
-            console.error('Update margin error:', error);
-            alert('❌ ' + (error.message || 'Lỗi cập nhật % lợi nhuận'));
-        } finally {
-            input.disabled = false;
-        }
     }
 
     window.loadPricing = loadPricing;
@@ -1264,7 +1277,7 @@
         const resultsDiv = document.getElementById('productSearchResults');
         const query = searchInput.value.trim();
 
-        if (query.length < 2) {
+        if (query.length < 1) {
             resultsDiv.style.display = 'none';
             return;
         }
@@ -1279,13 +1292,37 @@
                 return;
             }
 
-            resultsDiv.innerHTML = data.data.map(product => `
-                <div onclick="selectProductForImport(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${product.price || 0})" 
-                     style="padding:10px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;">
-                    <strong>${product.name}</strong><br>
-                    <small style="color:#666;">ID: ${product.id} | Giá: ₫${parseFloat(product.price || 0).toLocaleString('vi-VN')}</small>
+            resultsDiv.innerHTML = data.data.map(product => {
+                const costPrice = parseFloat(product.cost_price || product.price_cost || 0);
+                const sellingPrice = parseFloat(product.selling_price || 0);
+                const profitMargin = parseFloat(product.profit_margin || 0);
+                
+                return `
+                <div onclick="selectProductForImport(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${costPrice})" 
+                     style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;hover:background:#f0f0f0;"
+                     onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='#f9f9f9'">
+                    <div style="font-weight:600;color:#0d6efd;margin-bottom:4px;">🚗 ${product.name}</div>
+                    <div style="color:#666;margin-bottom:6px;">
+                        <span style="margin-right:12px;">ID: ${product.id}</span>
+                        <span>${product.category_name || ''}</span>
+                    </div>
+                    <table style="width:100%;font-size:10px;color:#333;">
+                        <tr>
+                            <td style="padding-bottom:2px;">💰 Giá nhập:</td>
+                            <td style="text-align:right;font-weight:600;color:#2e7d32;">₫${parseFloat(costPrice).toLocaleString('vi-VN')}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom:2px;">📊 Giá bán:</td>
+                            <td style="text-align:right;font-weight:600;color:#d32f2f;">₫${parseFloat(sellingPrice).toLocaleString('vi-VN')}</td>
+                        </tr>
+                        <tr>
+                            <td>📈 Lợi nhuận:</td>
+                            <td style="text-align:right;font-weight:600;color:#ff9800;">${parseFloat(profitMargin).toFixed(1)}%</td>
+                        </tr>
+                    </table>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             resultsDiv.style.display = 'block';
         } catch (err) {
             console.error('Error searching products:', err);
@@ -1655,7 +1692,7 @@
         const resultsDiv = document.getElementById('productSearchResultsDetail');
         const query = searchInput.value.trim();
 
-        if (query.length < 2) {
+        if (query.length < 1) {
             resultsDiv.style.display = 'none';
             return;
         }
@@ -1670,13 +1707,37 @@
                 return;
             }
 
-            resultsDiv.innerHTML = data.data.map(product => `
-                <div onclick="selectProductForDetail(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${product.price || 0})"
-                     style="padding:10px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;">
-                    <strong>${escapeHtml(product.name)}</strong><br>
-                    <small style="color:#666;">ID: ${product.id} | Giá: ₫${formatMoney(product.price || 0)}</small>
+            resultsDiv.innerHTML = data.data.map(product => {
+                const costPrice = parseFloat(product.cost_price || product.price_cost || 0);
+                const sellingPrice = parseFloat(product.selling_price || 0);
+                const profitMargin = parseFloat(product.profit_margin || 0);
+                
+                return `
+                <div onclick="selectProductForDetail(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${costPrice})"
+                     style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;"
+                     onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='#f9f9f9'">
+                    <div style="font-weight:600;color:#0d6efd;margin-bottom:4px;">🚗 ${escapeHtml(product.name)}</div>
+                    <div style="color:#666;margin-bottom:6px;">
+                        <span style="margin-right:12px;">ID: ${product.id}</span>
+                        <span>${product.category_name || ''}</span>
+                    </div>
+                    <table style="width:100%;font-size:10px;color:#333;">
+                        <tr>
+                            <td style="padding-bottom:2px;">💰 Giá nhập:</td>
+                            <td style="text-align:right;font-weight:600;color:#2e7d32;">₫${parseFloat(costPrice).toLocaleString('vi-VN')}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom:2px;">📊 Giá bán:</td>
+                            <td style="text-align:right;font-weight:600;color:#d32f2f;">₫${parseFloat(sellingPrice).toLocaleString('vi-VN')}</td>
+                        </tr>
+                        <tr>
+                            <td>📈 Lợi nhuận:</td>
+                            <td style="text-align:right;font-weight:600;color:#ff9800;">${parseFloat(profitMargin).toFixed(1)}%</td>
+                        </tr>
+                    </table>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             resultsDiv.style.display = 'block';
         } catch (err) {
             console.error('Search detail product error:', err);
