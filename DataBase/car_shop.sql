@@ -133,7 +133,34 @@ WHERE product_code IS NULL;
 -- 5. Set initial_stock = current stock
 UPDATE products SET initial_stock = stock;
 
+-- 6. Tạo bảng import_tickets và import_items
+DROP TABLE IF EXISTS import_items;
+DROP TABLE IF EXISTS import_tickets;
 
+CREATE TABLE import_tickets (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ticket_number VARCHAR(50) UNIQUE NOT NULL,
+    import_date DATE NOT NULL,
+    status ENUM('draft', 'completed') DEFAULT 'draft',
+    total_import_price DECIMAL(15, 2) DEFAULT 0,
+    notes TEXT,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE import_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    import_ticket_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    import_price DECIMAL(15, 2) NOT NULL,
+    total_price DECIMAL(15, 2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (import_ticket_id) REFERENCES import_tickets(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
 
 INSERT INTO categories (name) VALUES 
 ('Toyota'),
