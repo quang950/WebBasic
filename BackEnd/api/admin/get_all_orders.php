@@ -23,6 +23,8 @@ try {
     $dateFrom = $_GET['dateFrom'] ?? '';
     $dateTo = $_GET['dateTo'] ?? '';
     $status = $_GET['status'] ?? '';
+    $ward = $_GET['ward'] ?? ''; // Thêm filter phường
+    $sortBy = $_GET['sortBy'] ?? 'created_at'; // Default sort
     
     // Build query
     $where = [];
@@ -43,7 +45,22 @@ try {
         $params[] = $status;
     }
     
+    if (!empty($ward)) {
+        $where[] = "orders.shipping_address LIKE ?";
+        $params[] = '%' . $ward . '%';
+    }
+    
     $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+    
+    // Xử lý logic sắp xếp
+    $orderBy = "ORDER BY orders.created_at DESC";
+    if ($sortBy === 'ward') {
+        // Khá khó để tách chính xác Phường bằng SQL nếu nhập tự do, 
+        // ta sẽ sort theo chuỗi shipping_address để tạm tối ưu theo địa chỉ chứa phường.
+        // Hoặc ta lấy toàn bộ rồi sort trong PHP (an toàn hơn).
+        // Ở đây ta cứ sort theo shipping_address
+        $orderBy = "ORDER BY orders.shipping_address ASC";
+    }
     
     // Get all orders with user info
     $sql = "
@@ -61,8 +78,12 @@ try {
         FROM orders
         LEFT JOIN users ON orders.user_id = users.id
         $whereClause
-        ORDER BY orders.created_at DESC
+        $orderBy
     ";
+    
+    if (!$conn) {
+        throw new Exception("Database connection failed");
+    }
     
     $stmt = $conn->prepare($sql);
     
@@ -79,6 +100,7 @@ try {
         $orderId = $row['id'];
         
         // Get items for this order
+        if (!$conn) throw new Exception("Database error");
         $stmtItems = $conn->prepare("
             SELECT p.name as product_name, od.quantity, od.price as unit_price
             FROM order_details od
@@ -99,17 +121,22 @@ try {
         $orders[] = $row;
     }
     
+    // TRẢ VỀ CHUẨN JSON CỦA RULE:
     echo json_encode([
-        'success' => true,
-        'orders' => $orders,
-        'count' => count($orders)
+        'status' => 'success',
+        'message' => 'Lấy dữ liệu thành công',
+        'data' => [
+            'orders' => $orders,
+            'count' => count($orders)
+        ]
     ]);
     
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
+        'status' => 'error',
+        'message' => $e->getMessage(),
+        'data' => null
     ]);
 }
 ?>

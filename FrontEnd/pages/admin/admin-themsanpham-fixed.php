@@ -871,5 +871,5 @@
         window.searchCategories = searchCategories;
         window.loadCategoriesData = loadCategoriesData;
     </script>
-    <script>
-    async function loadProducts(page = 1) {
+</body>
+</html>

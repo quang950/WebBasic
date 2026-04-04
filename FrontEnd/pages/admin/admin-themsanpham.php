@@ -41,7 +41,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#stock" onclick="return showSection('stock')">
+                            <a href="#stock" onclick="onStockTabSelect(); return showSection('stock')">
                                 <i class="fas fa-boxes"></i> Quản lý tồn kho
                             </a>
                         </li>
@@ -75,19 +75,26 @@
                     <div class="section-header">
                         <h2>Quản lý đơn hàng</h2>
                     </div>
-                    <div style="margin-bottom:18px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
-                        <label>Ngày đặt: <input type="date" id="orderDateFrom"></label>
-                        <label>đến: <input type="date" id="orderDateTo"></label>
+                    <div style="margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                        <label>Từ ngày: <input type="date" id="orderDateFrom" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;"></label>
+                        <label>Đến ngày: <input type="date" id="orderDateTo" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;"></label>
                         <label>Tình trạng: 
-                            <select id="orderStatusFilter">
+                            <select id="orderStatusFilter" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;">
                                 <option value="">Tất cả</option>
-                                <option value="new">Mới đặt</option>
-                                <option value="processing">Đã xử lý</option>
-                                <option value="delivered">Đã giao</option>
-                                <option value="cancelled">Hủy</option>
+                                <option value="new">Mới đặt (Chưa xử lý)</option>
+                                <option value="processing">Đã xác nhận (Đang xử lý)</option>
+                                <option value="delivered">Đã giao thành công</option>
+                                <option value="cancelled">Đã hủy</option>
                             </select>
                         </label>
-                        <button onclick="filterAdminOrders()" class="search-btn"><i class="fas fa-search"></i> Lọc</button>
+                        <label>Lọc theo Phường: <input type="text" id="orderWardFilter" placeholder="VD: Phường 5" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;width:150px;"></label>
+                        <label>Sắp xếp:
+                            <select id="orderSortBy" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;">
+                                <option value="created_at">Mới nhất trước</option>
+                                <option value="ward">Theo tên Phường (A-Z)</option>
+                            </select>
+                        </label>
+                        <button onclick="filterAdminOrders()" class="search-btn" style="padding:6px 14px;background:#0d6efd;color:white;border:none;border-radius:4px;cursor:pointer;"><i class="fas fa-search"></i> Lọc & Sắp xếp</button>
                     </div>
                     <div id="adminOrdersGrid"></div>
                 </section>
@@ -137,10 +144,10 @@
                     <!-- Tra cứu nhập-xuất-tồn -->
                     <div style="background:#f8f9fa;padding:20px;border-radius:8px;border:1px solid #dee2e6;margin-bottom:20px;">
                         <h3 style="color:#0d279d;margin-bottom:16px;font-size:1.1rem;">
-                            <i class="fas fa-clipboard-list"></i> Tra cứu nhập-xuất-tồn của sản phẩm
+                            <i class="fas fa-clipboard-list"></i> Báo cáo tổng số lượng nhập - xuất của sản phẩm 
                         </h3>
                         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-                            <input type="text" id="inventorySearchProduct" placeholder="Nhập mã xe hoặc tên xe" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:300px;font-size:14px;">
+                            <input type="text" id="inventorySearchProduct" placeholder="Nhập mã xe (SKU...) hoặc tên" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:300px;font-size:14px;">
                             <input type="date" id="inventoryFromDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
                             <span style="color:#666;font-weight:600;">đến</span>
                             <input type="date" id="inventoryToDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
@@ -148,32 +155,36 @@
                         </div>
                         <div id="inventoryResult" style="margin-top:16px;display:none;">
                             <div style="background:#fff;padding:16px;border-radius:6px;border:1px solid #ddd;">
-                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;">
-                                    <div style="text-align:center;padding:12px;background:#e3f2fd;border-radius:6px;">
-                                        <div style="color:#1976d2;font-size:0.9em;margin-bottom:4px;font-weight:600;">Tồn đầu kỳ</div>
-                                        <div style="color:#0d47a1;font-size:1.5em;font-weight:700;">15</div>
-                                    </div>
-                                    <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:6px;">
-                                        <div style="color:#2e7d32;font-size:0.9em;margin-bottom:4px;font-weight:600;">Số lượng nhập</div>
-                                        <div style="color:#1b5e20;font-size:1.5em;font-weight:700;">10</div>
-                                    </div>
-                                    <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:6px;">
-                                        <div style="color:#f57c00;font-size:0.9em;margin-bottom:4px;font-weight:600;">Số lượng xuất</div>
-                                        <div style="color:#e65100;font-size:1.5em;font-weight:700;">8</div>
-                                    </div>
-                                    <div style="text-align:center;padding:12px;background:#f3e5f5;border-radius:6px;">
-                                        <div style="color:#7b1fa2;font-size:0.9em;margin-bottom:4px;font-weight:600;">Tồn cuối kỳ</div>
-                                        <div style="color:#4a148c;font-size:1.5em;font-weight:700;">17</div>
-                                    </div>
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;" id="inventoryDataList">
+                                    <!-- Render data JS load vô đây -->
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Lịch sử số lượng tồn của 1 loại sản phẩm tại 1 thời điểm -->
+                    <div style="background:#fff;padding:20px;border-radius:8px;border:1px solid #dee2e6;margin-bottom:20px;">
+                        <h3 style="color:#17a2b8;margin-bottom:16px;font-size:1.1rem;">
+                            <i class="fas fa-history"></i> Tra cứu số lượng tồn tại 1 thời điểm
+                        </h3>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <input type="text" id="historyProductId" placeholder="Mã sp hoặc Tên sản phẩm" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:300px;font-size:14px;">
+                            <input type="datetime-local" id="historyDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
+                            <button onclick="searchStockHistory()" class="search-btn" style="padding:9px 16px;background:#17a2b8;color:white;border:none;"><i class="fas fa-search"></i> Xem tồn kho</button>
+                        </div>
+                        <div id="historyResult" style="margin-top:20px;display:none;background:#f1f8f9;padding:15px;border-radius:6px;border-left:4px solid #17a2b8;">
+                            <!-- Render data js -->
+                        </div>
+                    </div>
+
                     <!-- Xe sắp hết hàng -->
                     <div style="background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:20px;">
-                        <h3 style="color:#ff9800;margin-bottom:16px;font-size:1.2rem;">
-                            <i class="fas fa-exclamation-circle"></i> Cảnh báo: Sản phẩm sắp hết hàng (Số lượng ≤ 1)
+                        <h3 style="color:#ff9800;margin-bottom:16px;font-size:1.2rem;display:flex;justify-content:space-between;align-items:center;">
+                            <span><i class="fas fa-exclamation-circle"></i> Cảnh báo: Sản phẩm sắp hết hàng</span>
+                            <div style="font-size:0.9rem;font-weight:normal;color:#333;">
+                                Ngưỡng cảnh báo: <input type="number" id="alertThreshold" value="2" min="1" max="100" style="width:60px;padding:4px 8px;border-radius:4px;border:1px solid #ccc;text-align:center;">
+                                <button onclick="loadLowStockAlert()" style="padding:4px 10px;background:#ff9800;color:#fff;border:none;border-radius:4px;cursor:pointer;">Cập nhật</button>
+                            </div>
                         </h3>
                         <div id="lowStockList"></div>
                     </div>

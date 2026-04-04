@@ -9,6 +9,7 @@ define('DB_PASS', '');
 define('DB_NAME', 'car_shop');
 
 $conn = null;
+$pdo = null;
 $dbConnected = false;
 $dbError = null;
 
@@ -23,6 +24,14 @@ if (class_exists('mysqli')) {
         } else {
             $dbError = $tmpConn ? $tmpConn->connect_error : 'Unknown DB connection error';
         }
+        
+        // Init PDO theo rule.md
+        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        
     } catch (Throwable $e) {
         $dbError = $e->getMessage();
     }

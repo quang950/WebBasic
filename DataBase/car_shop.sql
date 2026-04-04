@@ -73,7 +73,14 @@ CREATE TABLE orders (
 
 ALTER TABLE orders 
 CHANGE address shipping_address TEXT,
-ADD COLUMN shipping_phone VARCHAR(20);
+ADD COLUMN shipping_phone VARCHAR(20),
+ADD COLUMN shipping_ward VARCHAR(100),
+ADD COLUMN shipping_district VARCHAR(100),
+ADD COLUMN shipping_province VARCHAR(100);
+
+-- Cập nhật lại cột status cho chuẩn với luồng mới
+ALTER TABLE orders 
+MODIFY COLUMN status ENUM('new', 'processing', 'delivered', 'cancelled') DEFAULT 'new';
 
 CREATE TABLE order_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
