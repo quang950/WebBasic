@@ -51,7 +51,7 @@ try {
             throw new Exception("Vui lòng cung cấp mã/tên sản phẩm và thời gian cần tra cứu.");
         }
 
-        // Tìm Id sản phẩm trước tiên để đảm bảo chính xác
+        // Tìm Id sản phẩm trước tiên để đảm bảo chính xác b
         $stmtSearch = $pdo->prepare("SELECT id, name, stock FROM products WHERE product_code = :kw OR name LIKE :kwLIKE LIMIT 1");
         $stmtSearch->execute([':kw' => $productId, ':kwLIKE' => "%$productId%"]);
         $productInfo = $stmtSearch->fetch();

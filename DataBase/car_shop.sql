@@ -97,7 +97,7 @@ ADD COLUMN profit_margin FLOAT DEFAULT 10;
 -- Cập nhật thử một ít dữ liệu để có giá
 UPDATE products SET price_cost = price * 0.9, profit_margin = 10;
 
--- ========== MIGRATION: Thêm fields mới cho quản lý sản phẩm nâng cao ==========
+-- ========== MIGRATION: Thêm fields mới cho quản lý sản phẩm nâng cao ==========.
 
 -- 1. Thêm fields vào categories table
 ALTER TABLE categories 
