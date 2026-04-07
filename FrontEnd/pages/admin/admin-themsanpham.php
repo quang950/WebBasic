@@ -895,7 +895,9 @@
 
         // Tìm kiếm sản phẩm giá bán
         function searchPricingProduct() {
-            if (typeof window.loadPricing === 'function') {
+            if (typeof window.filterPricing === 'function') {
+                window.filterPricing();
+            } else if (typeof window.loadPricing === 'function') {
                 window.loadPricing();
             }
             return false;
@@ -1129,7 +1131,11 @@
     }
 
     function searchPricingProduct() {
-        loadPricing();
+        if (typeof window.filterPricing === 'function') {
+            window.filterPricing();
+        } else {
+            loadPricing();
+        }
         return false;
     }
 
@@ -1142,6 +1148,21 @@
     window.searchPricingProduct = searchPricingProduct;
     window.loadPricingData = loadPricingData;
     window.updateProductProfitMargin = updateProductProfitMargin;
+
+    const pricingSearchInput = document.getElementById('pricingSearchProduct');
+    if (pricingSearchInput) {
+        pricingSearchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchPricingProduct();
+            }
+        });
+    }
+
+    const pricingCategoryFilter = document.getElementById('pricingCategoryFilter');
+    if (pricingCategoryFilter) {
+        pricingCategoryFilter.addEventListener('change', () => searchPricingProduct());
+    }
 
     function searchImportTickets() {
         const search = document.getElementById('searchImportInput')?.value || '';

@@ -14,7 +14,31 @@ if (!$dbConnected) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-function refreshTicketTotal($conn, $ticketId) {
+function hasColumn($conn, $table, $column) {
+    $table = $conn->real_escape_string($table);
+    $column = $conn->real_escape_string($column);
+    $result = $conn->query("SHOW COLUMNS FROM `{$table}` LIKE '{$column}'");
+    return $result && $result->num_rows > 0;
+}
+
+function normalizedTicketStatus($ticket, $hasStatusColumn) {
+    if ($hasStatusColumn && isset($ticket['status'])) {
+        return $ticket['status'];
+    }
+
+    return !empty($ticket['completed_at']) ? 'completed' : 'draft';
+}
+
+$hasTicketStatusColumn = hasColumn($conn, 'import_tickets', 'status');
+$ticketTotalColumn = hasColumn($conn, 'import_tickets', 'total_import_price')
+    ? 'total_import_price'
+    : (hasColumn($conn, 'import_tickets', 'total_amount') ? 'total_amount' : null);
+
+function refreshTicketTotal($conn, $ticketId, $ticketTotalColumn) {
+    if (!$ticketTotalColumn) {
+        return true;
+    }
+
     $sumStmt = $conn->prepare("SELECT COALESCE(SUM(total_price), 0) AS total FROM import_items WHERE import_ticket_id = ?");
     if (!$sumStmt) {
         return false;
@@ -27,7 +51,7 @@ function refreshTicketTotal($conn, $ticketId) {
 
     $total = floatval($sumResult['total'] ?? 0);
 
-    $updateStmt = $conn->prepare("UPDATE import_tickets SET total_import_price = ? WHERE id = ?");
+    $updateStmt = $conn->prepare("UPDATE import_tickets SET `{$ticketTotalColumn}` = ? WHERE id = ?");
     if (!$updateStmt) {
         return false;
     }
@@ -64,8 +88,13 @@ if ($method === 'GET') {
         $dateFrom = $_GET['dateFrom'] ?? '';
         $dateTo = $_GET['dateTo'] ?? '';
         
+        $statusExpr = $hasTicketStatusColumn
+            ? "t.status"
+            : "CASE WHEN t.completed_at IS NULL THEN 'draft' ELSE 'completed' END";
+        $totalExpr = $ticketTotalColumn ? "t.`{$ticketTotalColumn}`" : "0";
+
         $query = "
-            SELECT t.*, COALESCE(s.total, t.total_import_price, 0) AS total_import_price
+            SELECT t.*, {$statusExpr} AS status, COALESCE(s.total, {$totalExpr}, 0) AS total_import_price
             FROM import_tickets t
             LEFT JOIN (
                 SELECT import_ticket_id, SUM(total_price) AS total
@@ -84,9 +113,15 @@ if ($method === 'GET') {
         }
         
         if ($status) {
-            $query .= " AND t.status = ?";
-            $params[] = $status;
-            $types .= 's';
+            if ($hasTicketStatusColumn) {
+                $query .= " AND t.status = ?";
+                $params[] = $status;
+                $types .= 's';
+            } elseif ($status === 'draft') {
+                $query .= " AND t.completed_at IS NULL";
+            } elseif ($status === 'completed') {
+                $query .= " AND t.completed_at IS NOT NULL";
+            }
         }
         
         if ($dateFrom) {
@@ -104,6 +139,12 @@ if ($method === 'GET') {
         $query .= " ORDER BY t.id DESC";
         
         $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error preparing ticket list query']);
+            exit;
+        }
+
         if ($params) {
             $stmt->bind_param($types, ...$params);
         }
@@ -126,10 +167,17 @@ if ($method === 'GET') {
         
         // Lấy info phiếu
         $stmt = $conn->prepare("SELECT * FROM import_tickets WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error loading ticket detail']);
+            exit;
+        }
         $stmt->bind_param('i', $ticketId);
         $stmt->execute();
         $ticket = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        $ticket['status'] = normalizedTicketStatus($ticket, $hasTicketStatusColumn);
         
         if (!$ticket) {
             http_response_code(404);
@@ -187,11 +235,24 @@ if ($method === 'POST') {
         $nextSeq = intval($seqRow['total'] ?? 0) + 1;
         $ticketNumber = $prefix . str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
         
-        $stmt = $conn->prepare("
-            INSERT INTO import_tickets (ticket_number, import_date, status, notes, created_by)
-            VALUES (?, ?, 'draft', ?, ?)
-        ");
-        
+        if ($hasTicketStatusColumn) {
+            $stmt = $conn->prepare("
+                INSERT INTO import_tickets (ticket_number, import_date, status, notes, created_by)
+                VALUES (?, ?, 'draft', ?, ?)
+            ");
+        } else {
+            $stmt = $conn->prepare("
+                INSERT INTO import_tickets (ticket_number, import_date, notes, created_by)
+                VALUES (?, ?, ?, ?)
+            ");
+        }
+
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error preparing create ticket query']);
+            exit;
+        }
+
         $stmt->bind_param('sssi', $ticketNumber, $importDate, $notes, $createdBy);
         
         if ($stmt->execute()) {
@@ -226,13 +287,21 @@ if ($method === 'POST') {
         }
         
         // Kiểm tra phiếu chưa hoàn thành
-        $stmt = $conn->prepare("SELECT status FROM import_tickets WHERE id = ?");
+        $statusSelect = $hasTicketStatusColumn ? 'status, completed_at' : 'completed_at';
+        $stmt = $conn->prepare("SELECT {$statusSelect} FROM import_tickets WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error validating ticket status']);
+            exit;
+        }
         $stmt->bind_param('i', $ticketId);
         $stmt->execute();
         $ticket = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        $ticketStatus = $ticket ? normalizedTicketStatus($ticket, $hasTicketStatusColumn) : null;
         
-        if (!$ticket || $ticket['status'] === 'completed') {
+        if (!$ticket || $ticketStatus === 'completed') {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Cannot edit completed ticket']);
             exit;
@@ -270,7 +339,7 @@ if ($method === 'POST') {
         if ($stmt->execute()) {
             $stmt->close();
 
-            if (!refreshTicketTotal($conn, $ticketId)) {
+            if (!refreshTicketTotal($conn, $ticketId, $ticketTotalColumn)) {
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Item added but failed to refresh ticket total']);
                 exit;
@@ -304,13 +373,21 @@ if ($method === 'PUT') {
         }
         
         // Kiểm tra phiếu chưa hoàn thành
-        $stmt = $conn->prepare("SELECT status FROM import_tickets WHERE id = ?");
+        $statusSelect = $hasTicketStatusColumn ? 'status, completed_at' : 'completed_at';
+        $stmt = $conn->prepare("SELECT {$statusSelect} FROM import_tickets WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error validating ticket status']);
+            exit;
+        }
         $stmt->bind_param('i', $ticketId);
         $stmt->execute();
         $ticket = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        $ticketStatus = $ticket ? normalizedTicketStatus($ticket, $hasTicketStatusColumn) : null;
         
-        if (!$ticket || $ticket['status'] === 'completed') {
+        if (!$ticket || $ticketStatus === 'completed') {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Cannot edit completed ticket']);
             exit;
@@ -340,11 +417,19 @@ if ($method === 'PUT') {
         }
 
         // Chỉ cho hoàn thành phiếu nháp
-        $stmt = $conn->prepare("SELECT status FROM import_tickets WHERE id = ?");
+        $statusSelect = $hasTicketStatusColumn ? 'status, completed_at' : 'completed_at';
+        $stmt = $conn->prepare("SELECT {$statusSelect} FROM import_tickets WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error validating ticket status']);
+            exit;
+        }
         $stmt->bind_param('i', $ticketId);
         $stmt->execute();
         $ticket = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        $ticketStatus = $ticket ? normalizedTicketStatus($ticket, $hasTicketStatusColumn) : null;
 
         if (!$ticket) {
             http_response_code(404);
@@ -352,7 +437,7 @@ if ($method === 'PUT') {
             exit;
         }
 
-        if ($ticket['status'] === 'completed') {
+        if ($ticketStatus === 'completed') {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Ticket already completed']);
             exit;
@@ -439,12 +524,35 @@ if ($method === 'PUT') {
             $stmt->close();
             
             // Cập nhật status phiếu thành completed
+            $completeSetSql = [];
+            $completeTypes = '';
+            $completeParams = [];
+
+            if ($hasTicketStatusColumn) {
+                $completeSetSql[] = "status = 'completed'";
+            }
+
+            if ($ticketTotalColumn) {
+                $completeSetSql[] = "`{$ticketTotalColumn}` = ?";
+                $completeTypes .= 'd';
+                $completeParams[] = $totalPrice;
+            }
+
+            $completeSetSql[] = "completed_at = NOW()";
+
             $stmt = $conn->prepare("
                 UPDATE import_tickets 
-                SET status = 'completed', total_import_price = ?, completed_at = NOW()
+                SET " . implode(', ', $completeSetSql) . "
                 WHERE id = ?
             ");
-            $stmt->bind_param('di', $totalPrice, $ticketId);
+            if (!$stmt) {
+                throw new Exception('Cannot prepare complete ticket query');
+            }
+
+            $completeTypes .= 'i';
+            $completeParams[] = $ticketId;
+
+            $stmt->bind_param($completeTypes, ...$completeParams);
             $stmt->execute();
             $stmt->close();
             
@@ -478,13 +586,21 @@ if ($method === 'DELETE') {
         }
         
         // Kiểm tra phiếu chưa hoàn thành
-        $stmt = $conn->prepare("SELECT status FROM import_tickets WHERE id = ?");
+        $statusSelect = $hasTicketStatusColumn ? 'status, completed_at' : 'completed_at';
+        $stmt = $conn->prepare("SELECT {$statusSelect} FROM import_tickets WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error validating ticket status']);
+            exit;
+        }
         $stmt->bind_param('i', $ticketId);
         $stmt->execute();
         $ticket = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        $ticketStatus = $ticket ? normalizedTicketStatus($ticket, $hasTicketStatusColumn) : null;
         
-        if (!$ticket || $ticket['status'] === 'completed') {
+        if (!$ticket || $ticketStatus === 'completed') {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Cannot edit completed ticket']);
             exit;
@@ -496,7 +612,7 @@ if ($method === 'DELETE') {
         if ($stmt->execute()) {
             $stmt->close();
 
-            if (!refreshTicketTotal($conn, $ticketId)) {
+            if (!refreshTicketTotal($conn, $ticketId, $ticketTotalColumn)) {
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Item deleted but failed to refresh ticket total']);
                 exit;
@@ -518,11 +634,19 @@ if ($method === 'DELETE') {
         }
 
         // Chỉ cho xóa phiếu nháp
-        $stmt = $conn->prepare("SELECT status FROM import_tickets WHERE id = ?");
+        $statusSelect = $hasTicketStatusColumn ? 'status, completed_at' : 'completed_at';
+        $stmt = $conn->prepare("SELECT {$statusSelect} FROM import_tickets WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error validating ticket status']);
+            exit;
+        }
         $stmt->bind_param('i', $ticketId);
         $stmt->execute();
         $ticket = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        $ticketStatus = $ticket ? normalizedTicketStatus($ticket, $hasTicketStatusColumn) : null;
 
         if (!$ticket) {
             http_response_code(404);
@@ -530,7 +654,7 @@ if ($method === 'DELETE') {
             exit;
         }
 
-        if ($ticket['status'] === 'completed') {
+        if ($ticketStatus === 'completed') {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Cannot delete completed ticket']);
             exit;
