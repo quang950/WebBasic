@@ -50,6 +50,16 @@ try {
         $row['year'] = date('Y');
         $row['fuel'] = 'Xăng';
         $row['transmission'] = 'Tự động';
+        
+        // Đảm bảo hình ảnh có đường dẫn tuyệt đối - chỉ lấy tên file nếu có đường dẫn sai
+        if (!empty($row['image'])) {
+            // Extract filename from any path
+            $filename = basename($row['image']);
+            $row['image'] = '/WebBasic/FrontEnd/assets/images/' . $filename;
+        } else {
+            $row['image'] = '/WebBasic/FrontEnd/assets/images/1.jpg';
+        }
+        
         $products[] = $row;
     }
     

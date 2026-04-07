@@ -5,12 +5,47 @@
  */
 session_start();
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Chỉ chấp nhận POST request'
+    ]);
+    exit;
+}
+
 require_once __DIR__ . '/../../config/db_connect.php';
+
+if (!$conn) {
+    http_response_code(503);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Lỗi kết nối cơ sở dữ liệu'
+    ]);
+    exit;
+}
 
 try {
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // Validate
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Dữ liệu JSON không hợp lệ'
+        ]);
+        exit;
+    }
+    
     if (!isset($data['id'])) {
         http_response_code(400);
         echo json_encode([
@@ -24,6 +59,10 @@ try {
     
     // Check product exists
     $stmt = $conn->prepare("SELECT id FROM products WHERE id = ? LIMIT 1");
+    if (!$stmt) {
+        throw new Exception($conn->error);
+    }
+    
     $stmt->bind_param('i', $id);
     $stmt->execute();
     if ($stmt->get_result()->num_rows === 0) {
@@ -34,88 +73,77 @@ try {
         ]);
         exit;
     }
+    $stmt->close();
     
     // Extract data
-    $name = trim($data['name'] ?? '');
-    $product_code = trim($data['product_code'] ?? '');
-    $category_id = intval($data['category_id'] ?? 1);
-    $price = floatval($data['price'] ?? 0);
-    $price_cost = floatval($data['price_cost'] ?? 0);
-    $profit_margin = floatval($data['profit_margin'] ?? 0);
-    $stock = intval($data['stock'] ?? 0);
-    $unit = trim($data['unit'] ?? 'chiếc');
-    $description = trim($data['description'] ?? '');
-    $image_url = trim($data['image_url'] ?? '');
-    $status = isset($data['status']) ? intval($data['status']) : 1;
+    $name = isset($data['name']) ? trim($data['name']) : null;
+    $brand = isset($data['brand']) ? trim($data['brand']) : null;
+    $category_id = isset($data['category_id']) ? intval($data['category_id']) : null;
+    $price = isset($data['price']) ? floatval($data['price']) : null;
+    $cost_price = isset($data['cost_price']) ? floatval($data['cost_price']) : null;
+    $profit_margin = isset($data['profit_margin']) ? floatval($data['profit_margin']) : null;
+    $stock = isset($data['stock']) ? intval($data['stock']) : null;
+    $description = isset($data['description']) ? trim($data['description']) : null;
+    $image_url = isset($data['image_url']) ? trim($data['image_url']) : null;
     
     // Build update query
     $update_fields = [];
     $update_values = [];
     $bind_types = '';
     
-    if (!empty($name)) {
+    if ($name !== null) {
         $update_fields[] = 'name = ?';
         $update_values[] = $name;
         $bind_types .= 's';
     }
     
-    if (!empty($product_code)) {
-        $update_fields[] = 'product_code = ?';
-        $update_values[] = $product_code;
+    if ($brand !== null) {
+        $update_fields[] = 'brand = ?';
+        $update_values[] = $brand;
         $bind_types .= 's';
     }
     
-    if ($category_id > 0) {
+    if ($category_id !== null) {
         $update_fields[] = 'category_id = ?';
         $update_values[] = $category_id;
         $bind_types .= 'i';
     }
     
-    if ($price > 0) {
+    if ($price !== null) {
         $update_fields[] = 'price = ?';
         $update_values[] = $price;
         $bind_types .= 'd';
     }
     
-    if ($price_cost >= 0) {
-        $update_fields[] = 'price_cost = ?';
-        $update_values[] = $price_cost;
+    if ($cost_price !== null) {
+        $update_fields[] = 'cost_price = ?';
+        $update_values[] = $cost_price;
         $bind_types .= 'd';
     }
     
-    if ($profit_margin >= 0) {
+    if ($profit_margin !== null) {
         $update_fields[] = 'profit_margin = ?';
         $update_values[] = $profit_margin;
         $bind_types .= 'd';
     }
     
-    if (isset($data['stock'])) {
+    if ($stock !== null) {
         $update_fields[] = 'stock = ?';
         $update_values[] = $stock;
         $bind_types .= 'i';
     }
     
-    if (!empty($unit)) {
-        $update_fields[] = 'unit = ?';
-        $update_values[] = $unit;
-        $bind_types .= 's';
-    }
-    
-    if (!empty($description)) {
+    if ($description !== null) {
         $update_fields[] = 'description = ?';
         $update_values[] = $description;
         $bind_types .= 's';
     }
     
-    if (!empty($image_url)) {
+    if ($image_url !== null) {
         $update_fields[] = 'image_url = ?';
         $update_values[] = $image_url;
         $bind_types .= 's';
     }
-    
-    $update_fields[] = 'status = ?';
-    $update_values[] = $status;
-    $bind_types .= 'i';
     
     if (empty($update_fields)) {
         http_response_code(400);
@@ -133,17 +161,22 @@ try {
     $sql = "UPDATE products SET " . implode(', ', $update_fields) . " WHERE id = ?";
     $stmt = $conn->prepare($sql);
     
-    $stmt->bind_param($bind_types, ...$update_values);
-    
-    if ($stmt->execute()) {
-        http_response_code(200);
-        echo json_encode([
-            'success' => true,
-            'message' => 'Cập nhật sản phẩm thành công'
-        ]);
-    } else {
+    if (!$stmt) {
         throw new Exception($conn->error);
     }
+    
+    $stmt->bind_param($bind_types, ...$update_values);
+    
+    if (!$stmt->execute()) {
+        throw new Exception($stmt->error);
+    }
+    
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Cập nhật sản phẩm thành công'
+    ]);
+    $stmt->close();
     
 } catch (Exception $e) {
     http_response_code(500);

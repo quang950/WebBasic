@@ -120,6 +120,13 @@ class ProductModel {
 			$result = $stmt->get_result();
 			$items = [];
 			while ($row = $result->fetch_assoc()) {
+				// Đảm bảo hình ảnh có đường dẫn tuyệt đối - chỉ lấy tên file nếu có đường dẫn sai
+				if (!empty($row['image_url'])) {
+					$filename = basename($row['image_url']);
+					$row['image_url'] = '/WebBasic/FrontEnd/assets/images/' . $filename;
+				} else {
+					$row['image_url'] = '/WebBasic/FrontEnd/assets/images/1.jpg';
+				}
 				$items[] = $row;
 			}
 			$stmt->close();
@@ -161,6 +168,16 @@ class ProductModel {
 
 		$total = count($filtered);
 		$items = array_slice($filtered, $offset, $limit);
+		
+		// Đảm bảo hình ảnh có đường dẫn tuyệt đối
+		$items = array_map(function($item) {
+			if (!empty($item['image']) && strpos($item['image'], 'http') === false && strpos($item['image'], '/') !== 0) {
+				$item['image'] = '/WebBasic/FrontEnd/assets/images/' . ltrim($item['image'], '/');
+			} elseif (empty($item['image'])) {
+				$item['image'] = '/WebBasic/FrontEnd/assets/images/1.jpg';
+			}
+			return $item;
+		}, $items);
 
 		return [
 			'success' => true,
@@ -202,6 +219,14 @@ class ProductModel {
 			if (!$product) {
 				return ['success' => false, 'message' => 'Không tìm thấy sản phẩm'];
 			}
+			
+			// Đảm bảo hình ảnh có đường dẫn tuyệt đối - chỉ lấy tên file nếu có đường dẫn sai
+			if (!empty($product['image_url'])) {
+				$filename = basename($product['image_url']);
+				$product['image_url'] = '/WebBasic/FrontEnd/assets/images/' . $filename;
+			} else {
+				$product['image_url'] = '/WebBasic/FrontEnd/assets/images/1.jpg';
+			}
 
 			return ['success' => true, 'data' => $product, 'storage' => 'database'];
 		}
@@ -209,6 +234,13 @@ class ProductModel {
 		$all = $this->loadProductsFromFile();
 		foreach ($all as $item) {
 			if ((int)($item['id'] ?? 0) === $productId) {
+				// Đảm bảo hình ảnh có đường dẫn tuyệt đối - chỉ lấy tên file nếu có đường dẫn sai
+				if (!empty($item['image'])) {
+					$filename = basename($item['image']);
+					$item['image'] = '/WebBasic/FrontEnd/assets/images/' . $filename;
+				} else {
+					$item['image'] = '/WebBasic/FrontEnd/assets/images/1.jpg';
+				}
 				return ['success' => true, 'data' => $item, 'storage' => 'file'];
 			}
 		}

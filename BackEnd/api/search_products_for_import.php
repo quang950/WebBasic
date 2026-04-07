@@ -47,6 +47,17 @@ $result = $stmt->get_result();
 $products = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
+// Đảm bảo hình ảnh có đường dẫn tuyệt đối
+$products = array_map(function($product) {
+    if (!empty($product['image_url'])) {
+        $filename = basename($product['image_url']);
+        $product['image_url'] = '/WebBasic/FrontEnd/assets/images/' . $filename;
+    } else {
+        $product['image_url'] = '/WebBasic/FrontEnd/assets/images/1.jpg';
+    }
+    return $product;
+}, $products);
+
 echo json_encode([
     'success' => true,
     'data' => $products,

@@ -780,7 +780,7 @@
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
                     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                        <img src="../../assets/images/toyota-fortuner.jpg" alt="Toyota Fortuner" style="width:100%;height:180px;object-fit:cover;border-radius:6px;margin-bottom:12px;">
+                        <img src="/WebBasic/FrontEnd/assets/images/toyota-fortuner.jpg" alt="Toyota Fortuner" style="width:100%;height:180px;object-fit:cover;border-radius:6px;margin-bottom:12px;">
                         <h4 style="color:#333;margin-bottom:8px;">Toyota Fortuner 2023</h4>
                         <div style="color:#666;font-size:0.9em;margin-bottom:6px;">
                             <strong>MÃ£:</strong> TK001

@@ -2,13 +2,27 @@
 /**
  * Admin API: Delete product
  * POST /BackEnd/api/admin/delete_product.php
- * 
- * Logic:
- * - If product has NO stock history (never imported) → DELETE completely
- * - If product HAS stock history (already imported) → Mark as hidden (status = 0)
  */
 session_start();
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Chỉ chấp nhận POST request'
+    ]);
+    exit;
+}
+
 require_once __DIR__ . '/../../config/db_connect.php';
 
 try {
@@ -26,7 +40,11 @@ try {
     $id = intval($data['id']);
     
     // Check product exists
-    $stmt = $conn->prepare("SELECT id, name, status FROM products WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, name FROM products WHERE id = ? LIMIT 1");
+    if (!$stmt) {
+        throw new Exception($conn->error);
+    }
+    
     $stmt->bind_param('i', $id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -37,48 +55,32 @@ try {
             'success' => false,
             'message' => 'Sản phẩm không tồn tại'
         ]);
+        $stmt->close();
         exit;
     }
     
     $product = $result->fetch_assoc();
+    $stmt->close();
     
-    // Check if product has stock history (imports)
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_history WHERE product_id = ?");
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $has_history = $stmt->get_result()->fetch_assoc()['count'] > 0;
-    
-    if ($has_history) {
-        // Mark as hidden instead of deleting
-        $stmt = $conn->prepare("UPDATE products SET status = 0 WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        
-        if ($stmt->execute()) {
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Sản phẩm "' . $product['name'] . '" đã được ẩn khỏi website (vì đã có nhập hàng)',
-                'action' => 'hidden'
-            ]);
-        } else {
-            throw new Exception($conn->error);
-        }
-    } else {
-        // No history, delete completely from database
-        $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        
-        if ($stmt->execute()) {
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Xóa sản phẩm "' . $product['name'] . '" thành công',
-                'action' => 'deleted'
-            ]);
-        } else {
-            throw new Exception($conn->error);
-        }
+    // Delete product
+    $delete_stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
+    if (!$delete_stmt) {
+        throw new Exception($conn->error);
     }
+    
+    $delete_stmt->bind_param('i', $id);
+    
+    if (!$delete_stmt->execute()) {
+        throw new Exception($delete_stmt->error);
+    }
+    
+    $delete_stmt->close();
+    
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Xóa sản phẩm "' . $product['name'] . '" thành công'
+    ]);
     
 } catch (Exception $e) {
     http_response_code(500);

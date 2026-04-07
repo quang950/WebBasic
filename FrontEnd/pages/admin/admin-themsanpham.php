@@ -417,7 +417,7 @@
 
                 <div class="modal-actions">
                     <button type="button" onclick="closeAddProductModal()" class="cancel-btn">Hủy</button>
-                    <button type="submit" class="save-btn" onclick="addProduct()">Lưu sản phẩm</button>
+                    <button type="button" class="save-btn" onclick="addProduct(event)">Lưu sản phẩm</button>
                 </div>
             </form>
         </div>
@@ -655,7 +655,7 @@
         </div>
     </div>
 
-        <script src="../../assets/js/admin.js"></script>
+        <script src="/WebBasic/FrontEnd/assets/js/admin.js"></script>
     <script>
         // Function để quay về trang chủ
         function goToHomePage() {
@@ -919,126 +919,9 @@
         window.loadCategoriesData = loadCategoriesData;
     </script>
     <script>
-    async function loadProducts(page = 1) {
-        try {
-            const res = await fetch(`/api/products.php?page=${page}`);
-            const data = await res.json();
-
-            if (!data.success) {
-                console.error(data.message);
-                return;
-            }
-
-            let html = '';
-            data.data.forEach(p => {
-                html += `
-                    <tr>
-                        <td>${p.id}</td>
-                        <td>${p.name}</td>
-                        <td>${p.price}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('product-list').innerHTML = html;
-
-        } catch (err) {
-            console.error("Lỗi gọi API:", err);
-        }
-    }
-
-    // load khi mở trang
-    loadProducts();
-
-    // ==========================================  
-    // PRODUCT MANAGEMENT FUNCTIONS
-    // ==========================================
-    function addProduct() {
-        const formData = new FormData();
-
-        formData.append('name', document.getElementById('productName').value);
-        formData.append('price', document.getElementById('productPrice').value);
-        formData.append('description', document.getElementById('productDescription').value);
-        formData.append('category', document.getElementById('productBrand').value);
-        formData.append('year', document.getElementById('productYear').value);
-        formData.append('fuel', document.getElementById('productFuel').value);
-        formData.append('transmission', document.getElementById('productTransmission').value);
-        formData.append('image_url', document.getElementById('productImageUrl').value);
-
-        fetch('../../../BackEnd/api/products.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Thêm sản phẩm thành công');
-                closeAddProductModal();
-                loadProducts();
-            } else {
-                alert('Lỗi: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Lỗi kết nối: ' + err.message);
-        });
-    }
-
-    function deleteProduct(id) {
-        if (!confirm('Bạn chắc chắn muốn xoá sản phẩm này?')) return;
-
-        const formData = new FormData();
-        formData.append('id', id);
-        formData.append('action', 'delete');
-
-        fetch('../../../BackEnd/api/products.php', {
-            method: 'DELETE',
-            body: new URLSearchParams({id: id})
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Đã xoá sản phẩm');
-                loadProducts();
-            } else {
-                alert('Lỗi: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Lỗi kết nối: ' + err.message);
-        });
-    }
-
-    function updateProduct(id) {
-        const price = document.getElementById(`price-${id}`).value;
-        const name = document.getElementById(`name-${id}`).value;
-
-        const formData = new FormData();
-        formData.append('id', id);
-        formData.append('price', price);
-        formData.append('name', name);
-
-        fetch('../../../BackEnd/api/products.php', {
-            method: 'PUT',
-            body: new URLSearchParams({id: id, price: price, name: name})
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Cập nhật sản phẩm thành công');
-                loadProducts();
-            } else {
-                alert('Lỗi: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Lỗi kết nối: ' + err.message);
-        });
-    }
-
+    // NOTE: All product functions now in /FrontEnd/assets/js/admin.js
+    // Old loadProducts function removed to avoid conflicts
+    
     // ==========================================  
     // IMPORT MANAGEMENT FUNCTIONS
     // ==========================================

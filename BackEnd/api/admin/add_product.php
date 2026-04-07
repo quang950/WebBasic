@@ -5,10 +5,49 @@
  */
 session_start();
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Only allow POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Phương thức không được hỗ trợ. Chỉ chấp nhận POST request.'
+    ]);
+    exit;
+}
+
 require_once __DIR__ . '/../../config/db_connect.php';
+
+// Check database connection
+if (!$conn || !$dbConnected) {
+    http_response_code(503);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Lỗi kết nối cơ sở dữ liệu: ' . ($dbError ?? 'Unknown error')
+    ]);
+    exit;
+}
 
 try {
     $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Dữ liệu JSON không hợp lệ'
+        ]);
+        exit;
+    }
     
     // Validate required fields
     if (!isset($data['name']) || !isset($data['price'])) {
@@ -23,21 +62,13 @@ try {
     // Sanitize inputs
     $name = trim($data['name']);
     $price = floatval($data['price']);
-    $product_code = trim($data['product_code'] ?? '');
-    $price_cost = floatval($data['price_cost'] ?? 0);
+    $cost_price = floatval($data['cost_price'] ?? 0);
     $profit_margin = floatval($data['profit_margin'] ?? 10);
     $stock = intval($data['stock'] ?? 0);
-    $initial_stock = intval($data['initial_stock'] ?? $stock);
-    $unit = trim($data['unit'] ?? 'chiếc');
-    $status = isset($data['status']) ? intval($data['status']) : 1;
-    
     $brand = trim($data['brand'] ?? '');
-    $year = intval($data['year'] ?? date('Y'));
-    $fuel = trim($data['fuel'] ?? '');
-    $transmission = trim($data['transmission'] ?? '');
     $category = trim($data['category'] ?? '');
     $description = trim($data['description'] ?? '');
-    $image = trim($data['image'] ?? '');
+    $image_url = trim($data['image_url'] ?? '');
     
     // Get category_id from category name
     $category_id = 1; // Default to first category
@@ -61,12 +92,11 @@ try {
         }
     }
     
-    // Insert product with all new fields
+    // Insert product
     $stmt = $conn->prepare("
         INSERT INTO products 
-        (name, product_code, category_id, price, price_cost, profit_margin, 
-         stock, initial_stock, unit, description, image_url, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (name, brand, category_id, price, cost_price, profit_margin, stock, description, image_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
     if (!$stmt) {
@@ -74,9 +104,8 @@ try {
     }
     
     $stmt->bind_param(
-        "ssidddiiissi",
-        $name, $product_code, $category_id, $price, $price_cost, $profit_margin,
-        $stock, $initial_stock, $unit, $description, $image, $status
+        "ssidddiss",
+        $name, $brand, $category_id, $price, $cost_price, $profit_margin, $stock, $description, $image_url
     );
     
     if (!$stmt->execute()) {

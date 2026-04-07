@@ -23,18 +23,15 @@ try {
         SELECT 
             p.id,
             p.name,
-            p.product_code,
+            p.brand,
             p.category_id,
             c.name as category_name,
             p.price,
-            p.price_cost,
+            p.cost_price,
             p.profit_margin,
             p.stock,
-            p.unit,
             p.description,
             p.image_url,
-            p.status,
-            p.initial_stock,
             p.created_at,
             p.updated_at
         FROM products p
@@ -57,12 +54,7 @@ try {
     }
     
     $product = $result->fetch_assoc();
-    
-    // Check if has stock history
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_history WHERE product_id = ?");
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $product['has_stock_history'] = $stmt->get_result()->fetch_assoc()['count'] > 0;
+    $stmt->close();
     
     http_response_code(200);
     echo json_encode([

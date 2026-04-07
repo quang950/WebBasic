@@ -277,7 +277,7 @@
             <div
               class="hero-slide active"
               style="
-                background-image: url(&quot;assets/images/merc-amg.jpg&quot;);
+                background-image: url(&quot;/WebBasic/FrontEnd/assets/images/merc-amg.jpg&quot;);
               "
             >
               <div class="slide-content">
@@ -304,7 +304,7 @@
             <!-- Slide 2 -->
             <div
               class="hero-slide"
-              style="background-image: url(&quot;assets/images/1.jpg&quot;)"
+              style="background-image: url(&quot;/WebBasic/FrontEnd/assets/images/1.jpg&quot;)"
             >
               <div class="slide-content">
                 <p class="slide-model">Toyota · 2025</p>
@@ -329,7 +329,7 @@
             <div
               class="hero-slide"
               style="
-                background-image: url(&quot;assets/images/slide3.jpg&quot;);
+                background-image: url(&quot;/WebBasic/FrontEnd/assets/images/slide3.jpg&quot;);
               "
             >
               <div class="slide-content">
@@ -358,7 +358,7 @@
             <div
               class="hero-slide"
               style="
-                background-image: url(&quot;assets/images/slide4.jpg&quot;);
+                background-image: url(&quot;/WebBasic/FrontEnd/assets/images/slide4.jpg&quot;);
               "
             >
               <div class="slide-content">
@@ -387,7 +387,7 @@
             <div
               class="hero-slide"
               style="
-                background-image: url(&quot;assets/images/slide5.jpg&quot;);
+                background-image: url(&quot;/WebBasic/FrontEnd/assets/images/slide5.jpg&quot;);
               "
             >
               <div class="slide-content">
@@ -707,7 +707,7 @@
                 data-engine="2.4L Diesel"
                 data-desc="Bán tải mạnh mẽ, bền bỉ, chở hàng tốt."
               >
-                <img src="assets/images/toyota-hilux.jpg" alt="Toyota Hilux" />
+                <img src="/WebBasic/FrontEnd/assets/images/toyota-hilux.jpg" alt="Toyota Hilux" />
                 <h3>Toyota Hilux</h3>
                 <p class="price">706.000.000 VNĐ</p>
                 <div class="button-container">
@@ -734,7 +734,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-mercedes.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-mercedes.png"
                 alt="Mercedes Logo"
                 class="brand-logo"
               />
@@ -763,7 +763,7 @@
                 data-desc="Sedan hạng C sang trọng, vận hành linh hoạt và tiết kiệm."
               >
                 <img
-                  src="assets/images/mercedes-c200.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-c200.jpg"
                   alt="Mercedes C200"
                 />
                 <h3>Mercedes C200</h3>
@@ -791,7 +791,7 @@
                 data-desc="Sedan hạng E êm ái, nhiều công nghệ an toàn và tiện nghi."
               >
                 <img
-                  src="assets/images/mercedes-e200.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-e200.jpg"
                   alt="Mercedes E200"
                 />
                 <h3>Mercedes E200</h3>
@@ -819,7 +819,7 @@
                 data-desc="SUV 5 chỗ cao cấp, vận hành ổn định và tiết kiệm."
               >
                 <img
-                  src="assets/images/mercedes-glc200.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-glc200.jpg"
                   alt="Mercedes GLC200"
                 />
                 <h3>Mercedes GLC200</h3>
@@ -847,7 +847,7 @@
                 data-desc="SUV hạng sang, thiết kế thể thao và tiện nghi hiện đại."
               >
                 <img
-                  src="assets/images/mercedes-glc300.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-glc300.jpg"
                   alt="Mercedes GLC300"
                 />
                 <h3>Maybach GLC300</h3>
@@ -875,7 +875,7 @@
                 data-desc="SUV hạng sang mạnh mẽ, không gian rộng và êm ái."
               >
                 <img
-                  src="assets/images/mercedes-gle450.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-gle450.jpg"
                   alt="Mercedes GLE450"
                 />
                 <h3>Maybach GLE450</h3>
@@ -903,7 +903,7 @@
                 data-desc="SUV 7 chỗ siêu sang, tiện nghi đỉnh cao và êm ái."
               >
                 <img
-                  src="assets/images/mercedes-maybach-GLS600.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-maybach-GLS600.jpg"
                   alt="Mercedes Maybach GLS600"
                 />
                 <h3>Maybach GLS600</h3>
@@ -931,7 +931,7 @@
                 data-desc="Sedan siêu sang, tiện nghi đẳng cấp và cách âm tuyệt vời."
               >
                 <img
-                  src="assets/images/mercedes-maybach-S450.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-maybach-S450.jpg"
                   alt="Mercedes Maybach S450"
                 />
                 <h3>Maybach S450</h3>
@@ -959,7 +959,7 @@
                 data-desc="Sedan siêu sang với công nghệ tối tân và nội thất xa xỉ."
               >
                 <img
-                  src="assets/images/mercedes-maybach-S480.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-maybach-S480.jpg"
                   alt="Mercedes Maybach S480"
                 />
                 <h3>Maybach S480</h3>
@@ -987,7 +987,7 @@
                 data-desc="Đỉnh cao sang trọng, vận hành êm ái và quyền lực."
               >
                 <img
-                  src="assets/images/mercedes-maybach-S650.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-maybach-S650.jpg"
                   alt="Mercedes Maybach S650"
                 />
                 <h3>Maybach S650</h3>
@@ -1015,7 +1015,7 @@
                 data-desc="Sedan siêu sang đầu bảng, đẳng cấp thượng lưu."
               >
                 <img
-                  src="assets/images/mercedes-maybach-S680.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/mercedes-maybach-S680.jpg"
                   alt="Mercedes Maybach S680"
                 />
                 <h3>Maybach S680</h3>
@@ -1044,7 +1044,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-bmw.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-bmw.png"
                 alt="BMW Logo"
                 class="brand-logo"
               />
@@ -1072,7 +1072,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan thể thao cân bằng giữa thoải mái và hiệu suất."
               >
-                <img src="assets/images/bmw-320i.jpg" alt="BMW 320i" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-320i.jpg" alt="BMW 320i" />
                 <h3>BMW 320i</h3>
                 <p class="price">1.399.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1097,7 +1097,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan thể thao mạnh mẽ hơn, cảm giác lái hứng khởi."
               >
-                <img src="assets/images/bmw-330i.jpg" alt="BMW 330i" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-330i.jpg" alt="BMW 330i" />
                 <h3>BMW 330i</h3>
                 <p class="price">1.719.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1122,7 +1122,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Coupe 4 chỗ, thiết kế thể thao và hiện đại."
               >
-                <img src="assets/images/bmw-430i.jpg" alt="BMW 430i" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-430i.jpg" alt="BMW 430i" />
                 <h3>BMW 430i</h3>
                 <p class="price">3.399.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1147,7 +1147,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan hạng E sang trọng, êm ái và an toàn."
               >
-                <img src="assets/images/bmw-520i.jpg" alt="BMW 520i" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-520i.jpg" alt="BMW 520i" />
                 <h3>BMW 520i</h3>
                 <p class="price">1.979.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1172,7 +1172,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan hạng E hiệu suất cao, nhiều công nghệ hiện đại."
               >
-                <img src="assets/images/bmw-530i.jpg" alt="BMW 530i" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-530i.jpg" alt="BMW 530i" />
                 <h3>BMW 530i</h3>
                 <p class="price">2.499.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1197,7 +1197,7 @@
                 data-engine="3.0L I6"
                 data-desc="Sedan hạng sang cỡ lớn, êm ái và tiện nghi cao cấp."
               >
-                <img src="assets/images/bmw-730li.jpg" alt="BMW 730Li" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-730li.jpg" alt="BMW 730Li" />
                 <h3>BMW 730Li</h3>
                 <p class="price">4.369.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1222,7 +1222,7 @@
                 data-engine="3.0L I6"
                 data-desc="SUV hạng sang rộng rãi, mạnh mẽ và an toàn."
               >
-                <img src="assets/images/bmw-x5.jpg" alt="BMW X5" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-x5.jpg" alt="BMW X5" />
                 <h3>BMW X5</h3>
                 <p class="price">4.479.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1247,7 +1247,7 @@
                 data-engine="3.0L I6"
                 data-desc="SUV full-size 7 chỗ đẳng cấp, nội thất xa xỉ."
               >
-                <img src="assets/images/bmw-x7.jpg" alt="BMW X7" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-x7.jpg" alt="BMW X7" />
                 <h3>BMW X7</h3>
                 <p class="price">6.889.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1272,7 +1272,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Roadster 2 chỗ mui trần, phong cách và cảm xúc."
               >
-                <img src="assets/images/bmw-z4.jpg" alt="BMW Z4" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-z4.jpg" alt="BMW Z4" />
                 <h3>BMW Z4</h3>
                 <p class="price">4.239.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1297,7 +1297,7 @@
                 data-engine="4.4L V8"
                 data-desc="Siêu phẩm hiệu suất cao, tăng tốc ấn tượng và sang trọng."
               >
-                <img src="assets/images/bmw-m8.jpg" alt="BMW M8" />
+                <img src="/WebBasic/FrontEnd/assets/images/bmw-m8.jpg" alt="BMW M8" />
                 <h3>BMW M8</h3>
                 <p class="price">3.660.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1324,7 +1324,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-audi.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-audi.png"
                 alt="Audi Logo"
                 class="brand-logo"
               />
@@ -1352,7 +1352,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan hạng C sang trọng, cách âm tốt và êm ái."
               >
-                <img src="assets/images/audi-a4.jpg" alt="Audi A4" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-a4.jpg" alt="Audi A4" />
                 <h3>Audi A4</h3>
                 <p class="price">1.046.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1377,7 +1377,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan hạng E tinh tế, nhiều công nghệ mới."
               >
-                <img src="assets/images/audi-a6.jpg" alt="Audi A6" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-a6.jpg" alt="Audi A6" />
                 <h3>Audi A6</h3>
                 <p class="price">1.510.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1402,7 +1402,7 @@
                 data-engine="3.0L V6"
                 data-desc="Sedan hạng sang cỡ lớn, tiện nghi đỉnh cao."
               >
-                <img src="assets/images/audi-a8.jpg" alt="Audi A8" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-a8.jpg" alt="Audi A8" />
                 <h3>Audi A8</h3>
                 <p class="price">5.299.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1428,7 +1428,7 @@
                 data-desc="SUV cỡ nhỏ cao cấp, đa dụng trong đô thị."
               >
                 <img
-                  src="assets/images/audi-q3.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/audi-q3.jpg"
                   alt="Audi Q3"
                   class="audi-q3-img"
                 />
@@ -1456,7 +1456,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="SUV hạng sang 5 chỗ, vận hành êm ái và an toàn."
               >
-                <img src="assets/images/audi-q5.jpg" alt="Audi Q5" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-q5.jpg" alt="Audi Q5" />
                 <h3>Audi Q5</h3>
                 <p class="price">2.039.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1481,7 +1481,7 @@
                 data-engine="3.0L V6"
                 data-desc="SUV 7 chỗ sang trọng, rộng rãi và mạnh mẽ."
               >
-                <img src="assets/images/audi-q7.jpg" alt="Audi Q7" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-q7.jpg" alt="Audi Q7" />
                 <h3>Audi Q7</h3>
                 <p class="price">3.300.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1506,7 +1506,7 @@
                 data-engine="4.0L V8"
                 data-desc="Dòng RS hiệu suất cao, thiết kế thể thao cực kỳ ấn tượng."
               >
-                <img src="assets/images/audi-rs.jpg" alt="Audi RS" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-rs.jpg" alt="Audi RS" />
                 <h3>Audi RS</h3>
                 <p class="price">4.750.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1531,7 +1531,7 @@
                 data-engine="4.0L V8"
                 data-desc="Sportback hiệu suất cao, sang trọng và cá tính."
               >
-                <img src="assets/images/audi-rs7.jpg" alt="Audi RS7" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-rs7.jpg" alt="Audi RS7" />
                 <h3>Audi RS7</h3>
                 <p class="price">2.300.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1556,7 +1556,7 @@
                 data-engine="3.0L V6"
                 data-desc="Coupe thể thao tinh tế, khả năng vận hành ấn tượng."
               >
-                <img src="assets/images/audi-s5.jpg" alt="Audi S5" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-s5.jpg" alt="Audi S5" />
                 <h3>Audi S5</h3>
                 <p class="price">2.670.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1581,7 +1581,7 @@
                 data-engine="4.0L V8"
                 data-desc="Sedan hiệu suất cao đầu bảng, sang trọng và mạnh mẽ."
               >
-                <img src="assets/images/audi-s8.jpg" alt="Audi S8" />
+                <img src="/WebBasic/FrontEnd/assets/images/audi-s8.jpg" alt="Audi S8" />
                 <h3>Audi S8</h3>
                 <p class="price">3.100.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1608,7 +1608,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-lexus.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-lexus.png"
                 alt="Lexus Logo"
                 class="brand-logo"
               />
@@ -1636,7 +1636,7 @@
                 data-engine="2.5L"
                 data-desc="Sedan hạng sang êm ái, hướng đến sự thoải mái."
               >
-                <img src="assets/images/lexus-es250.jpg" alt="Lexus ES250" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-es250.jpg" alt="Lexus ES250" />
                 <h3>Lexus ES250</h3>
                 <p class="price">2.360.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1661,7 +1661,7 @@
                 data-engine="3.5L V6"
                 data-desc="SUV hạng sang bền bỉ, tiện nghi cao cấp và êm ái."
               >
-                <img src="assets/images/lexus-rx350.jpg" alt="Lexus RX350" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-rx350.jpg" alt="Lexus RX350" />
                 <h3>Lexus RX350</h3>
                 <p class="price">3.430.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1686,7 +1686,7 @@
                 data-engine="2.5L Hybrid"
                 data-desc="SUV hybrid tiết kiệm, vận hành mượt mà và êm ái."
               >
-                <img src="assets/images/lexus-nx350h.jpg" alt="Lexus NX350h" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-nx350h.jpg" alt="Lexus NX350h" />
                 <h3>Lexus NX350h</h3>
                 <p class="price">3.420.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1711,7 +1711,7 @@
                 data-engine="2.4L Turbo Hybrid"
                 data-desc="SUV hybrid hiệu suất cao, công nghệ hiện đại."
               >
-                <img src="assets/images/lexus-rx500h.jpg" alt="Lexus RX500h" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-rx500h.jpg" alt="Lexus RX500h" />
                 <h3>Lexus RX500h</h3>
                 <p class="price">4.940.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1736,7 +1736,7 @@
                 data-engine="3.4L V6 Turbo"
                 data-desc="SUV địa hình hạng sang, khỏe khoắn và bền bỉ."
               >
-                <img src="assets/images/lexus-gx550m.jpg" alt="Lexus GX550M" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-gx550m.jpg" alt="Lexus GX550M" />
                 <h3>Lexus GX550M</h3>
                 <p class="price">6.200.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1761,7 +1761,7 @@
                 data-engine="3.5L V6"
                 data-desc="Sedan flagship sang trọng, cách âm tuyệt vời."
               >
-                <img src="assets/images/lexus-ls500.jpg" alt="Lexus LS500" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-ls500.jpg" alt="Lexus LS500" />
                 <h3>Lexus LS500</h3>
                 <p class="price">7.650.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1786,7 +1786,7 @@
                 data-engine="3.5L V6"
                 data-desc="SUV full-size hạng sang, mạnh mẽ và bền bỉ."
               >
-                <img src="assets/images/lexus-lx600.jpg" alt="Lexus LX600" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-lx600.jpg" alt="Lexus LX600" />
                 <h3>Lexus LX600</h3>
                 <p class="price">9.000.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1811,7 +1811,7 @@
                 data-engine="5.0L V8"
                 data-desc="Coupe GT sang trọng, âm thanh động cơ đầy cảm xúc."
               >
-                <img src="assets/images/lexus-lc500.jpg" alt="Lexus LC500" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-lc500.jpg" alt="Lexus LC500" />
                 <h3>Lexus LC500</h3>
                 <p class="price">2.500.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1836,7 +1836,7 @@
                 data-engine="2.4L Turbo Hybrid"
                 data-desc="MPV siêu sang, không gian đỉnh cao và cực kỳ êm ái."
               >
-                <img src="assets/images/lexus-lm500h.jpg" alt="Lexus LM500h" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-lm500h.jpg" alt="Lexus LM500h" />
                 <h3>Lexus LM500h</h3>
                 <p class="price">8.710.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1861,7 +1861,7 @@
                 data-engine="2.0L Hybrid"
                 data-desc="Crossover hạng sang nhỏ gọn, tiết kiệm và linh hoạt."
               >
-                <img src="assets/images/lexus-ux.jpg" alt="Lexus UX" />
+                <img src="/WebBasic/FrontEnd/assets/images/lexus-ux.jpg" alt="Lexus UX" />
                 <h3>Lexus UX</h3>
                 <p class="price">2.600.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1888,7 +1888,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-honda.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-honda.png"
                 alt="Honda Logo"
                 class="brand-logo"
               />
@@ -1916,7 +1916,7 @@
                 data-engine="1.5L"
                 data-desc="Sedan hạng B tiết kiệm, bền bỉ và dễ lái."
               >
-                <img src="assets/images/honda-city.jpg" alt="Honda City" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-city.jpg" alt="Honda City" />
                 <h3>Honda City</h3>
                 <p class="price">568.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1941,7 +1941,7 @@
                 data-engine="1.5L Turbo"
                 data-desc="Sedan hạng C thể thao, cảm giác lái phấn khích."
               >
-                <img src="assets/images/honda-civic.jpg" alt="Honda Civic" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-civic.jpg" alt="Honda Civic" />
                 <h3>Honda Civic</h3>
                 <p class="price">889.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1966,7 +1966,7 @@
                 data-engine="1.5L Turbo"
                 data-desc="SUV 7 chỗ tiện nghi, rộng rãi cho gia đình."
               >
-                <img src="assets/images/honda-crv.jpg" alt="Honda CR-V" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-crv.jpg" alt="Honda CR-V" />
                 <h3>Honda CR-V</h3>
                 <p class="price">1.259.000.000 VNĐ</p>
                 <div class="button-container">
@@ -1991,7 +1991,7 @@
                 data-engine="1.5L"
                 data-desc="MPV 7 chỗ thực dụng, kinh tế và bền bỉ."
               >
-                <img src="assets/images/honda-brv.jpg" alt="Honda BR-V" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-brv.jpg" alt="Honda BR-V" />
                 <h3>Honda BR-V</h3>
                 <p class="price">705.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2016,7 +2016,7 @@
                 data-engine="1.5L"
                 data-desc="Crossover đô thị linh hoạt, tiết kiệm và hiện đại."
               >
-                <img src="assets/images/honda-hrv.jpg" alt="Honda HR-V" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-hrv.jpg" alt="Honda HR-V" />
                 <h3>Honda HR-V</h3>
                 <p class="price">869.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2041,7 +2041,7 @@
                 data-engine="3.5L V6 Hybrid"
                 data-desc="Siêu xe hybrid, hiệu suất cao và công nghệ tiên tiến."
               >
-                <img src="assets/images/honda-nsx.jpg" alt="Honda NSX" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-nsx.jpg" alt="Honda NSX" />
                 <h3>Honda NSX</h3>
                 <p class="price">4.883.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2066,7 +2066,7 @@
                 data-engine="1.5L Turbo"
                 data-desc="Sedan hạng D rộng rãi, êm ái và an toàn."
               >
-                <img src="assets/images/honda-accord.jpg" alt="Honda Accord" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-accord.jpg" alt="Honda Accord" />
                 <h3>Honda Accord</h3>
                 <p class="price">1.319.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2092,7 +2092,7 @@
                 data-desc="MPV cao cấp 7-8 chỗ, rộng rãi và tiện nghi đầy đủ cho gia đình."
               >
                 <img
-                  src="assets/images/honda-odyssey.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/honda-odyssey.jpg"
                   alt="Honda Odyssey"
                 />
                 <h3>Honda Odyssey</h3>
@@ -2119,7 +2119,7 @@
                 data-engine="1.5L"
                 data-desc="Hatchback 5 chỗ nhỏ gọn, tiết kiệm nhiên liệu và linh hoạt trong đô thị."
               >
-                <img src="assets/images/honda-jazz.jpg" alt="Honda Jazz" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-jazz.jpg" alt="Honda Jazz" />
                 <h3>Honda Jazz</h3>
                 <p class="price">624.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2144,7 +2144,7 @@
                 data-engine="3.5L V6"
                 data-desc="SUV cỡ lớn 7 chỗ, tiện nghi và an toàn cao."
               >
-                <img src="assets/images/honda-pilot.jpg" alt="Honda Pilot" />
+                <img src="/WebBasic/FrontEnd/assets/images/honda-pilot.jpg" alt="Honda Pilot" />
                 <h3>Honda Pilot</h3>
                 <p class="price">1.012.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2171,7 +2171,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-hyundai.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-hyundai.png"
                 alt="Hyundai Logo"
                 class="brand-logo"
               />
@@ -2200,7 +2200,7 @@
                 data-desc="Sedan hạng C hiện đại, trang bị phong phú."
               >
                 <img
-                  src="assets/images/hyundai-elantra.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-elantra.jpg"
                   alt="Hyundai Elantra"
                 />
                 <h3>Hyundai Elantra</h3>
@@ -2228,7 +2228,7 @@
                 data-desc="Sedan hạng B tiết kiệm và nhiều tiện nghi."
               >
                 <img
-                  src="assets/images/hyundai-accent.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-accent.jpg"
                   alt="Hyundai Accent"
                 />
                 <h3>Hyundai Accent</h3>
@@ -2256,7 +2256,7 @@
                 data-desc="SUV cỡ B thời trang, phù hợp đô thị."
               >
                 <img
-                  src="assets/images/hyundai-creta.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-creta.jpg"
                   alt="Huyndai Creta"
                 />
                 <h3>Huyndai Creta</h3>
@@ -2284,7 +2284,7 @@
                 data-desc="Crossover hạng C rộng rãi, nhiều công nghệ."
               >
                 <img
-                  src="assets/images/hyundai-tucson.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-tucson.jpg"
                   alt="Hyundai Tucson"
                 />
                 <h3>Hyundai Tucson</h3>
@@ -2312,7 +2312,7 @@
                 data-desc="SUV 7 chỗ cao cấp, thiết kế mới ấn tượng."
               >
                 <img
-                  src="assets/images/hyundai-santafe.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-santafe.jpg"
                   alt="Hyundai Santafe"
                 />
                 <h3>Hyundai Santafe</h3>
@@ -2340,7 +2340,7 @@
                 data-desc="Xe đô thị nhỏ gọn, linh hoạt và tiết kiệm."
               >
                 <img
-                  src="assets/images/hyundai-grand.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-grand.jpg"
                   alt="Hyundai Grand"
                 />
                 <h3>Hyundai Grand</h3>
@@ -2368,7 +2368,7 @@
                 data-desc="SUV 7 chỗ cỡ lớn, sang trọng và mạnh mẽ."
               >
                 <img
-                  src="assets/images/hyundai-palisade.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-palisade.jpg"
                   alt="Hyundai Palisade"
                 />
                 <h3>Hyundai Palisade</h3>
@@ -2396,7 +2396,7 @@
                 data-desc="MPV 7 chỗ gia đình, tiện nghi và giá hợp lý."
               >
                 <img
-                  src="assets/images/hyundai-stargazer.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-stargazer.jpg"
                   alt="Hyundai Stargazer"
                 />
                 <h3>Hyundai Stargazer</h3>
@@ -2424,7 +2424,7 @@
                 data-desc="Sedan hạng D trẻ trung, nhiều công nghệ tiện ích."
               >
                 <img
-                  src="assets/images/hyundai-sonata.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-sonata.jpg"
                   alt="Hyundai Sonata"
                 />
                 <h3>Hyundai Sonata</h3>
@@ -2452,7 +2452,7 @@
                 data-desc="MPV 7 chỗ cao cấp, rộng rãi và thoải mái."
               >
                 <img
-                  src="assets/images/hyundai-custin.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/hyundai-custin.jpg"
                   alt="Hyundai Custin"
                 />
                 <h3>Hyundai Custin</h3>
@@ -2481,7 +2481,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-kia.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-kia.png"
                 alt="KIA Logo"
                 class="brand-logo"
               />
@@ -2509,7 +2509,7 @@
                 data-engine="1.2L"
                 data-desc="Hatchback đô thị nhỏ gọn, tiết kiệm và linh hoạt."
               >
-                <img src="assets/images/kia-morning.jpg" alt="KIA Morning" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-morning.jpg" alt="KIA Morning" />
                 <h3>KIA Morning</h3>
                 <p class="price">424.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2534,7 +2534,7 @@
                 data-engine="1.4L"
                 data-desc="Sedan hạng B giá tốt, thực dụng và tiết kiệm."
               >
-                <img src="assets/images/kia-soluto.jpg" alt="KIA Soluto" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-soluto.jpg" alt="KIA Soluto" />
                 <h3>KIA Soluto</h3>
                 <p class="price">482.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2559,7 +2559,7 @@
                 data-engine="1.5L"
                 data-desc="SUV cỡ B trẻ trung, trang bị phong phú."
               >
-                <img src="assets/images/kia-sonet.jpg" alt="KIA Sonet" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-sonet.jpg" alt="KIA Sonet" />
                 <h3>KIA Sonet</h3>
                 <p class="price">624.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2584,7 +2584,7 @@
                 data-engine="2.2L Diesel"
                 data-desc="MPV 7 chỗ cỡ lớn, êm ái và tiện nghi."
               >
-                <img src="assets/images/kia-carnival.jpg" alt="KIA Carnival" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-carnival.jpg" alt="KIA Carnival" />
                 <h3>KIA Carnival</h3>
                 <p class="price">1.589.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2609,7 +2609,7 @@
                 data-engine="2.2L Diesel/2.5L"
                 data-desc="SUV 7 chỗ cao cấp, thiết kế hiện đại và tiện nghi."
               >
-                <img src="assets/images/kia-sorento.jpg" alt="KIA Sorento" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-sorento.jpg" alt="KIA Sorento" />
                 <h3>KIA Sorento</h3>
                 <p class="price">1.184.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2634,7 +2634,7 @@
                 data-engine="1.6L Turbo"
                 data-desc="SUV hạng C thể thao, nhiều công nghệ."
               >
-                <img src="assets/images/kia-sportage.jpg" alt="KIA Sportage" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-sportage.jpg" alt="KIA Sportage" />
                 <h3>KIA Sportage</h3>
                 <p class="price">879.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2659,7 +2659,7 @@
                 data-engine="1.5L/1.4L Turbo"
                 data-desc="MPV 5+2 linh hoạt, phù hợp gia đình trẻ."
               >
-                <img src="assets/images/kia-carens.jpg" alt="KIA Carens" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-carens.jpg" alt="KIA Carens" />
                 <h3>KIA Carens</h3>
                 <p class="price">769.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2684,7 +2684,7 @@
                 data-engine="1.6L/2.0L"
                 data-desc="Sedan hạng C rộng rãi, vận hành mượt mà."
               >
-                <img src="assets/images/kia-cerato.jpg" alt="KIA Cerato" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-cerato.jpg" alt="KIA Cerato" />
                 <h3>KIA Cerato</h3>
                 <p class="price">685.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2709,7 +2709,7 @@
                 data-engine="1.6L"
                 data-desc="Sedan hạng C thiết kế trẻ trung, tiết kiệm."
               >
-                <img src="assets/images/kia-k3.jpg" alt="KIA K3" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-k3.jpg" alt="KIA K3" />
                 <h3>KIA K3</h3>
                 <p class="price">819.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2734,7 +2734,7 @@
                 data-engine="2.0L"
                 data-desc="Sedan hạng D cao cấp, nhiều công nghệ an toàn."
               >
-                <img src="assets/images/kia-k5.jpg" alt="KIA K5" />
+                <img src="/WebBasic/FrontEnd/assets/images/kia-k5.jpg" alt="KIA K5" />
                 <h3>KIA K5</h3>
                 <p class="price">1.069.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2761,7 +2761,7 @@
           <div class="brand-header">
             <div class="brand-title">
               <img
-                src="assets/images/logo-vinfast.png"
+                src="/WebBasic/FrontEnd/assets/images/logo-vinfast.png"
                 alt="Vinfast Logo"
                 class="brand-logo"
               />
@@ -2790,7 +2790,7 @@
                 data-desc="SUV tiện nghi với hiệu suất cao, nội thất thoải mái và công nghệ an toàn hiện đại."
               >
                 <img
-                  src="assets/images/vinfast-vfe34.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/vinfast-vfe34.jpg"
                   alt="Vinfast VF e34"
                 />
                 <h3>Vinfast VF e34</h3>
@@ -2817,7 +2817,7 @@
                 data-engine="Môtơ điện"
                 data-desc="Xe đô thị cỡ nhỏ, linh hoạt, tiết kiệm chi phí vận hành."
               >
-                <img src="assets/images/vinfast-vf3.jpg" alt="Vinfast VF3" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-vf3.jpg" alt="Vinfast VF3" />
                 <h3>Vinfast VF3</h3>
                 <p class="price">315.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2842,7 +2842,7 @@
                 data-engine="Môtơ điện"
                 data-desc="Crossover đô thị hiện đại, phù hợp di chuyển hằng ngày."
               >
-                <img src="assets/images/vinfast-vf5.jpg" alt="Vinfast VF5" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-vf5.jpg" alt="Vinfast VF5" />
                 <h3>Vinfast VF5</h3>
                 <p class="price">529.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2867,7 +2867,7 @@
                 data-engine="Môtơ điện"
                 data-desc="SUV cỡ nhỏ với hiệu suất cao và công nghệ hỗ trợ lái."
               >
-                <img src="assets/images/vinfast-vf6.jpg" alt="Vinfast VF6" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-vf6.jpg" alt="Vinfast VF6" />
                 <h3>Vinfast VF6</h3>
                 <p class="price">689.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2892,7 +2892,7 @@
                 data-engine="Môtơ điện"
                 data-desc="SUV hạng C thiết kế cá tính, nhiều tiện nghi."
               >
-                <img src="assets/images/vinfast-vf7.jpg" alt="Vinfast VF7" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-vf7.jpg" alt="Vinfast VF7" />
                 <h3>Vinfast VF7</h3>
                 <p class="price">949.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2917,7 +2917,7 @@
                 data-engine="Môtơ điện"
                 data-desc="SUV 5 chỗ vận hành êm ái, nội thất rộng rãi."
               >
-                <img src="assets/images/vinfast-vf8.jpg" alt="Vinfast VF8" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-vf8.jpg" alt="Vinfast VF8" />
                 <h3>Vinfast VF8</h3>
                 <p class="price">1.215.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2942,7 +2942,7 @@
                 data-engine="Môtơ điện"
                 data-desc="SUV 7 chỗ cao cấp, phù hợp gia đình, nhiều công nghệ an toàn."
               >
-                <img src="assets/images/vinfast-vf9.jpg" alt="Vinfast VF9" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-vf9.jpg" alt="Vinfast VF9" />
                 <h3>Vinfast VF9</h3>
                 <p class="price">1.680.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2967,7 +2967,7 @@
                 data-engine="2.0L Turbo"
                 data-desc="Sedan tiện nghi với khả năng vận hành mạnh mẽ và ổn định."
               >
-                <img src="assets/images/vinfast-luxa.jpg" alt="Vinfast Lux A" />
+                <img src="/WebBasic/FrontEnd/assets/images/vinfast-luxa.jpg" alt="Vinfast Lux A" />
                 <h3>Vinfast Lux A</h3>
                 <p class="price">781.000.000 VNĐ</p>
                 <div class="button-container">
@@ -2993,7 +2993,7 @@
                 data-desc="SUV hiệu suất cao, sang trọng và đẳng cấp."
               >
                 <img
-                  src="assets/images/vinfast-president.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/vinfast-president.jpg"
                   alt="Vinfast President"
                 />
                 <h3>Vinfast President</h3>
@@ -3021,7 +3021,7 @@
                 data-desc="Hatchback đô thị gọn gàng, linh hoạt và tiết kiệm."
               >
                 <img
-                  src="assets/images/vinfast-fadil.jpg"
+                  src="/WebBasic/FrontEnd/assets/images/vinfast-fadil.jpg"
                   alt="Vinfast Fadil"
                 />
                 <h3>Vinfast Fadil</h3>

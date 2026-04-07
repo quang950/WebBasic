@@ -169,7 +169,7 @@ function initSampleOrders() {
             name: "Camry 2024",
             price: 1200000000,
             quantity: 1,
-            image: "assets/images/toyota-camry.jpg",
+            image: "/WebBasic/FrontEnd/assets/images/toyota-camry.jpg",
           },
         ],
         total: 1200000000,
@@ -191,7 +191,7 @@ function initSampleOrders() {
             name: "City RS 2024",
             price: 569000000,
             quantity: 1,
-            image: "assets/images/honda-city.jpg",
+            image: "/WebBasic/FrontEnd/assets/images/honda-city.jpg",
           },
         ],
         total: 569000000,
@@ -269,7 +269,7 @@ function showAddProductModal() {
   // Reset về chế độ thêm mới
   form.dataset.editId = "";
   submitBtn.textContent = "Lưu sản phẩm";
-  submitBtn.setAttribute("onclick", "return false;");
+  submitBtn.onclick = addProduct;
   modalTitle.textContent = "Thêm sản phẩm mới";
 
   modal.style.display = "block";
@@ -291,15 +291,21 @@ function closeAddProductModal() {
   // Reset về chế độ thêm mới
   form.dataset.editId = "";
   submitBtn.textContent = "Lưu sản phẩm";
-  submitBtn.setAttribute("onclick", "return false;");
+  submitBtn.onclick = addProduct;
   modalTitle.textContent = "Thêm sản phẩm mới";
 }
 
 // Add product function
-function addProduct() {
+function addProduct(event) {
+  // Prevent form submission
+  if (event) {
+    event.preventDefault();
+  }
+  
   const form = document.getElementById("addProductForm");
   if (!form) return false;
 
+  const editId = form.dataset.editId;
   const name = document.getElementById("productName").value.trim();
   const code = document.getElementById("productCode").value.trim() || "";
   const brand = document.getElementById("productBrand").value.trim();
@@ -341,50 +347,83 @@ function addProduct() {
   submitBtn.disabled = true;
   submitBtn.textContent = "Đang lưu...";
 
+  // Determine which API to call based on edit mode
+  const apiUrl = editId 
+    ? "/WebBasic/BackEnd/api/admin/edit_product.php"
+    : "/WebBasic/BackEnd/api/admin/add_product.php";
+
+  const requestBody = {
+    name: `${brand.charAt(0).toUpperCase() + brand.slice(1)} ${name}`,
+    product_code: code,
+    brand: brand,
+    price: price,
+    price_cost: cost,
+    profit_margin: margin,
+    stock: stock,
+    initial_stock: stock,
+    unit: unit,
+    year: year,
+    fuel: fuel,
+    transmission: transmission,
+    category: category,
+    image: image || `/WebBasic/FrontEnd/assets/images/logo-${brand}.png`,
+    description: description,
+    status: status,
+  };
+
+  // Add ID for edit
+  if (editId) {
+    requestBody.id = editId;
+  }
+
+  console.log("Sending product data:", requestBody);
+  console.log("API URL:", apiUrl);
+
   // Send to API
-  fetch("/WebBasic/BackEnd/api/admin/add_product.php", {
+  fetch(apiUrl, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      name: `${brand.charAt(0).toUpperCase() + brand.slice(1)} ${name}`,
-      product_code: code,
-      brand: brand,
-      price: price,
-      price_cost: cost,
-      profit_margin: margin,
-      stock: stock,
-      initial_stock: stock,
-      unit: unit,
-      year: year,
-      fuel: fuel,
-      transmission: transmission,
-      category: category,
-      image: image || `/WebBasic/FrontEnd/assets/images/logo-${brand}.png`,
-      description: description,
-      status: status,
-    }),
+    body: JSON.stringify(requestBody),
   })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("Add product result:", result);
+    .then((response) => {
+      console.log("Response status:", response.status, response.statusText);
+      
+      // Check if response is OK
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return response.text(); // Get raw response first
+    })
+    .then((text) => {
+      console.log("Raw response:", text);
+      
+      try {
+        const result = JSON.parse(text);
+        console.log("Parsed result:", result);
 
-      if (result.success) {
-        alert("✓ Thêm sản phẩm thành công!");
-        closeAddProductModal();
+        if (result.success) {
+          const message = editId ? "✓ Cập nhật sản phẩm thành công!" : "✓ Thêm sản phẩm thành công!";
+          alert(message);
+          closeAddProductModal();
 
-        // Reload products list
-        if (typeof loadProducts === "function") {
-          loadProducts();
+          // Reload products list
+          if (typeof loadProducts === "function") {
+            loadProducts();
+          }
+        } else {
+          alert("Lỗi: " + (result.message || "Không thể lưu sản phẩm"));
         }
-      } else {
-        alert("Lỗi: " + (result.message || "Không thể thêm sản phẩm"));
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        alert("Lỗi server: " + text);
       }
     })
     .catch((error) => {
-      console.error("Error adding product:", error);
+      console.error("Fetch error:", error);
       alert("Lỗi: " + error.message);
     })
     .finally(() => {
@@ -447,7 +486,8 @@ document
   .getElementById("addProductForm")
   .addEventListener("submit", function (e) {
     e.preventDefault();
-    // Chức năng thêm sản phẩm đã bị vô hiệu hóa (Prototype mode)
+    // Call addProduct when form is submitted
+    addProduct(e);
     return false;
   });
 
@@ -497,20 +537,47 @@ function loadProducts() {
                 <div class="products-list">
                     ${productsList
                       .map(
-                        (product) => `
+                        (product) => {
+                          // Extract brand and model from name to find matching image
+                          // Example: "Toyota Camry" -> "toyota-camry.jpg"
+                          let imageUrl = product.image || product.image_url;
+                          
+                          // Clean up image URL - remove any relative path prefix that's already there
+                          if (imageUrl) {
+                            // Remove 'assets/images/' if it's in the path
+                            imageUrl = imageUrl.replace(/^.*assets\/images\//, '');
+                          }
+                          
+                          // Ensure image URL is absolute
+                          if (imageUrl && !imageUrl.startsWith('/WebBasic')) {
+                            imageUrl = '/WebBasic/FrontEnd/assets/images/' + imageUrl;
+                          } else if (!imageUrl) {
+                            imageUrl = '/WebBasic/FrontEnd/assets/images/1.jpg';
+                          }
+                          
+                          // If still no image, try to build from product name
+                          if (!imageUrl || imageUrl.includes('undefined')) {
+                            const nameParts = (product.name || '').toLowerCase().trim().split(/\s+/);
+                            if (nameParts.length >= 2) {
+                              const brand = nameParts[0];
+                              const model = nameParts.slice(1).join('-');
+                              imageUrl = `/WebBasic/FrontEnd/assets/images/${brand}-${model}.jpg`;
+                            } else {
+                              imageUrl = '/WebBasic/FrontEnd/assets/images/1.jpg';
+                            }
+                          }
+                          
+                          return `
                         <div class="product-card" data-id="${product.id}">
                             <div class="product-image">
-                                <img src="${product.image}" alt="${product.name}" onerror="this.src='/WebBasic/FrontEnd/assets/images/logo-${product.brand}.png'">
+                                <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/WebBasic/FrontEnd/assets/images/1.jpg'" style="width:100%;height:200px;object-fit:cover;">
                             </div>
                             <div class="product-info">
                                 <h3>${product.name}</h3>
-                                <p class="brand">${product.brand.toUpperCase()}</p>
+                                <p class="brand">${product.category ? product.category.toUpperCase() : 'XE'}</p>
                                 <p class="price">${formatPrice(product.price)} VNĐ</p>
                                 <div class="product-details">
-                                    <span><i class="fas fa-calendar"></i> ${product.year || ""}</span>
-                                    <span><i class="fas fa-gas-pump"></i> ${product.fuel || ""}</span>
-                                    <span><i class="fas fa-cogs"></i> ${product.transmission || ""}</span>
-                                    ${product.category ? `<span><i class="fas fa-tags"></i> ${product.category}</span>` : ""}
+                                    ${product.stock !== undefined ? `<span><i class="fas fa-boxes"></i> Tồn: ${product.stock}</span>` : ""}
                                 </div>
                                 <div class="product-actions">
                                     <button onclick="showEditProductModal(${product.id})" class="edit-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;background:#17a2b8;color:#fff;border:none;cursor:pointer;"><i class="fas fa-edit"></i> Sửa</button>
@@ -518,7 +585,8 @@ function loadProducts() {
                                 </div>
                             </div>
                         </div>
-                    `,
+                    `;
+                        }
                       )
                       .join("")}
                 </div>
@@ -553,7 +621,7 @@ function editProduct(productId) {
       year: 2025,
       fuel: "Xăng",
       transmission: "Tự động (AT)",
-      image: "assets/images/toyota-camry.jpg",
+      image: "/WebBasic/FrontEnd/assets/images/toyota-camry.jpg",
       category: "sedan",
       description: "Sedan hạng D êm ái, tiện nghi, tiết kiệm.",
     };
@@ -574,10 +642,10 @@ function editProduct(productId) {
   const form = document.getElementById("addProductForm");
   form.dataset.editId = productId;
 
-  // Thay đổi nút submit - thêm onclick="return false;" để không lưu
+  // Thay đổi nút submit để gọi addProduct
   const submitBtn = form.querySelector(".save-btn");
   submitBtn.textContent = "Cập nhật sản phẩm";
-  submitBtn.setAttribute("onclick", "return false;");
+  submitBtn.onclick = addProduct;
 
   // Thay đổi tiêu đề modal
   document.querySelector("#addProductModal .modal-header h3").textContent =
@@ -661,7 +729,7 @@ function loadAdminOrders() {
             name: item.product_name,
             quantity: item.quantity,
             price: item.unit_price,
-            img: "assets/images/default-car.jpg", // Default image if API doesn't return
+            img: "/WebBasic/FrontEnd/assets/images/1.jpg", // Default image if API doesn't return
           })),
           total: order.total_price,
         }));
@@ -734,7 +802,7 @@ function filterAdminOrders() {
             name: item.product_name,
             quantity: item.quantity,
             price: item.unit_price,
-            img: "assets/images/default-car.jpg",
+            img: "/WebBasic/FrontEnd/assets/images/1.jpg",
           })),
           total: order.total_price,
         }));
@@ -1124,52 +1192,7 @@ function onStockTabSelect() {
   loadLowStockAlert();
 }
 
-function initCategories() {
-  // Nếu lần đầu chưa có categories thì tạo vài loại cơ bản
-  if (!categories || !categories.length) {
-    categories = [
-      { id: 1, name: "SUV", slug: "suv", hidden: false },
-      { id: 2, name: "Sedan", slug: "sedan", hidden: false },
-      { id: 3, name: "MPV", slug: "mpv", hidden: false },
-      { id: 4, name: "Hatchback", slug: "hatchback", hidden: false },
-      { id: 5, name: "Bán tải", slug: "pickup", hidden: false },
-    ];
-    localStorage.setItem("categories", JSON.stringify(categories));
-  }
-}
-
-function loadCategories() {
-  const grid = document.getElementById("categories-grid");
-  if (!grid) return;
-  if (!categories.length) {
-    grid.innerHTML =
-      '<div class="empty-state">Chưa có loại sản phẩm nào.</div>';
-    return;
-  }
-  grid.innerHTML = categories
-    .map(
-      (c) => `
-        <div class="product-card" data-id="${c.id}">
-            <div class="product-info">
-                <h3>${c.name}</h3>
-                <p class="brand">/${c.slug}</p>
-                <div class="product-actions">
-                    <button onclick="return false;" class="edit-btn" style="opacity:0.5;cursor:not-allowed;">
-                        <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button onclick="return false;" class="${c.hidden ? "unhide-btn" : "hide-btn"}" style="opacity:0.5;cursor:not-allowed;">
-                        <i class="fas ${c.hidden ? "fa-eye" : "fa-eye-slash"}"></i> ${c.hidden ? "Hiện" : "Ẩn"}
-                    </button>
-                    <button onclick="return false;" class="delete-btn" style="opacity:0.5;cursor:not-allowed;">
-                        <i class="fas fa-trash"></i> Xóa
-                    </button>
-                </div>
-            </div>
-        </div>
-    `,
-    )
-    .join("");
-}
+// Hàm loadCategories được định nghĩa dưới đây (line 2703+) để gọi API backend
 
 // Các chức năng thêm/sửa/xóa danh mục đã bị vô hiệu hóa (Prototype mode)
 
@@ -1434,7 +1457,7 @@ function initOldStockData() {
         quantity: 3,
         lowStock: false,
         reason: "Ít người mua do giá cao",
-        image: "assets/images/toyota-fortuner.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/toyota-fortuner.jpg",
       },
       {
         id: "TK002",
@@ -1449,7 +1472,7 @@ function initOldStockData() {
         quantity: 2,
         lowStock: false,
         reason: "Màu sắc ít phổ biến",
-        image: "assets/images/honda-accord.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/honda-accord.jpg",
       },
       {
         id: "TK003",
@@ -1464,7 +1487,7 @@ function initOldStockData() {
         quantity: 5,
         lowStock: false,
         reason: "Model cũ, sắp có phiên bản mới",
-        image: "assets/images/mazda-cx8.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/mazda-cx8.jpg",
       },
       {
         id: "TK004",
@@ -1479,7 +1502,7 @@ function initOldStockData() {
         quantity: 1,
         lowStock: true,
         reason: "Bán chạy, sắp hết hàng",
-        image: "assets/images/hyundai-santafe.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/hyundai-santafe.jpg",
       },
       {
         id: "TK005",
@@ -1494,7 +1517,7 @@ function initOldStockData() {
         quantity: 1,
         lowStock: true,
         reason: "Nhu cầu cao, cần nhập thêm",
-        image: "assets/images/kia-sorento.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/kia-sorento.jpg",
       },
       {
         id: "TK006",
@@ -1509,7 +1532,7 @@ function initOldStockData() {
         quantity: 1,
         lowStock: true,
         reason: "Xe hot, gần hết hàng",
-        image: "assets/images/ford-everest.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/ford-everest.jpg",
       },
       {
         id: "TK007",
@@ -1524,7 +1547,7 @@ function initOldStockData() {
         quantity: 1,
         lowStock: true,
         reason: "Xe bán chạy nhất phân khúc",
-        image: "assets/images/toyota-vios.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/toyota-vios.jpg",
       },
       {
         id: "TK008",
@@ -1540,7 +1563,7 @@ function initOldStockData() {
         lowStock: false,
         normalStock: true,
         reason: "Xe sedan hạng B phổ biến",
-        image: "assets/images/honda-city.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/honda-city.jpg",
       },
       {
         id: "TK009",
@@ -1556,7 +1579,7 @@ function initOldStockData() {
         lowStock: false,
         normalStock: true,
         reason: "SUV 5 chỗ được ưa chuộng",
-        image: "assets/images/mazda-cx5.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/mazda-cx5.jpg",
       },
       {
         id: "TK010",
@@ -1572,7 +1595,7 @@ function initOldStockData() {
         lowStock: false,
         normalStock: true,
         reason: "Thiết kế hiện đại, tiện nghi",
-        image: "assets/images/hyundai-tucson.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/hyundai-tucson.jpg",
       },
       {
         id: "TK011",
@@ -1588,7 +1611,7 @@ function initOldStockData() {
         lowStock: false,
         normalStock: true,
         reason: "Bán tải bán chạy nhất",
-        image: "assets/images/ford-ranger.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/ford-ranger.jpg",
       },
       {
         id: "TK012",
@@ -1604,7 +1627,7 @@ function initOldStockData() {
         lowStock: false,
         normalStock: true,
         reason: "MPV 7 chỗ tiết kiệm",
-        image: "assets/images/mitsubishi-xpander.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/mitsubishi-xpander.jpg",
       },
     ];
     localStorage.setItem("oldStock", JSON.stringify(sampleOldStock));
@@ -1952,7 +1975,7 @@ function initPricingData() {
         price: 1235000000,
         profitMargin: 8.5,
         sellingPrice: 1339975000,
-        image: "assets/images/toyota-camry.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/toyota-camry.jpg",
       },
       {
         id: 2,
@@ -1962,7 +1985,7 @@ function initPricingData() {
         price: 1029000000,
         profitMargin: 10,
         sellingPrice: 1131900000,
-        image: "assets/images/honda-crv.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/honda-crv.jpg",
       },
       {
         id: 3,
@@ -1972,7 +1995,7 @@ function initPricingData() {
         price: 669000000,
         profitMargin: 12,
         sellingPrice: 749280000,
-        image: "assets/images/mazda3.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/mazda3.jpg",
       },
       {
         id: 4,
@@ -1982,7 +2005,7 @@ function initPricingData() {
         price: 999000000,
         profitMargin: 7,
         sellingPrice: 1068930000,
-        image: "assets/images/vinfast-vf8.jpg",
+        image: "/WebBasic/FrontEnd/assets/images/vinfast-vf8.jpg",
       },
     ];
     return sampleProducts;
@@ -2376,7 +2399,7 @@ function showSingleProduct() {
         <div class="products-list">
             <div class="product-card">
                 <div class="product-image">
-                    <img src="assets/images/toyota-camry.jpg" alt="Toyota Camry">
+                    <img src="/WebBasic/FrontEnd/assets/images/toyota-camry.jpg" alt="Toyota Camry">
                 </div>
                 <div class="product-info">
                     <h3>Toyota Camry</h3>
@@ -2832,9 +2855,11 @@ function deleteCategory(id, name) {
       } else {
         alert("Lỗi: " + (result.message || "Không thể xóa loại sản phẩm"));
       }
-    })
-    .catch((error) => alert("Lỗi: " + error.message));
+    });
 }
+
+// Alias for compatibility with admin-themsanpham.php
+window.updateProductProfitMargin = updateProductMargin;
 
 // ========== PRODUCT EDIT/DELETE FUNCTIONS ==========
 
@@ -2861,12 +2886,12 @@ function showEditProductModal(id) {
                     
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
                         <div>
-                            <label style="display:block;margin-bottom:5px;font-weight:600;">Mã sản phẩm:</label>
-                            <input type="text" id="editProductCode" value="${p.product_code || ""}" placeholder="SKU..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
-                        </div>
-                        <div>
                             <label style="display:block;margin-bottom:5px;font-weight:600;">Tên sản phẩm:</label>
                             <input type="text" id="editProductName" value="${p.name}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Hãng (Brand):</label>
+                            <input type="text" id="editProductBrand" value="${p.brand}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
                         </div>
                     </div>
                     
@@ -2877,10 +2902,6 @@ function showEditProductModal(id) {
                                 <option value="${p.category_id}">${p.category_name}</option>
                             </select>
                         </div>
-                        <div>
-                            <label style="display:block;margin-bottom:5px;font-weight:600;">Đơn vị tính:</label>
-                            <input type="text" id="editProductUnit" value="${p.unit || "chiếc"}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
-                        </div>
                     </div>
                     
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:15px;">
@@ -2890,7 +2911,7 @@ function showEditProductModal(id) {
                         </div>
                         <div>
                             <label style="display:block;margin-bottom:5px;font-weight:600;">Giá vốn (VNĐ):</label>
-                            <input type="number" id="editProductCost" value="${p.price_cost}" min="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                            <input type="number" id="editProductCost" value="${p.cost_price}" min="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="display:block;margin-bottom:5px;font-weight:600;">Margin (%):</label>
@@ -2914,20 +2935,10 @@ function showEditProductModal(id) {
                         <textarea id="editProductDescription" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" rows="3">${p.description || ""}</textarea>
                     </div>
                     
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
-                        <div>
-                            <label style="display:block;margin-bottom:5px;font-weight:600;">Trạng thái:</label>
-                            <select id="editProductStatus" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
-                                <option value="1" ${p.status == 1 ? "selected" : ""}>Đang bán</option>
-                                <option value="0" ${p.status == 0 ? "selected" : ""}>Ẩn/Không bán</option>
-                            </select>
-                        </div>
-                    </div>
-                    
                     <div style="display:flex;gap:10px;justify-content:flex-end;">
                         <button type="button" onclick="closeEditProductModal()" style="padding:10px 20px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;">Hủy</button>
                         <button type="button" onclick="submitEditProduct(${id})" style="padding:10px 20px;background:#17a2b8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Cập nhật sản phẩm</button>
-                        ${p.has_stock_history ? "" : '<button type="button" onclick="confirmDeleteProduct(' + id + ')" style="padding:10px 20px;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;">Xóa sản phẩm</button>'}
+                        <button type="button" onclick="confirmDeleteProduct(${id})" style="padding:10px 20px;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;">Xóa sản phẩm</button>
                     </div>
                 </div>
             </div>
@@ -2944,7 +2955,7 @@ function closeEditProductModal() {
 
 function submitEditProduct(id) {
   const name = document.getElementById("editProductName")?.value?.trim();
-  const code = document.getElementById("editProductCode")?.value?.trim() || "";
+  const brand = document.getElementById("editProductBrand")?.value?.trim();
   const category = parseInt(
     document.getElementById("editProductCategory")?.value || "1",
   );
@@ -2960,18 +2971,13 @@ function submitEditProduct(id) {
   const stock = parseInt(
     document.getElementById("editProductStock")?.value || "0",
   );
-  const unit =
-    document.getElementById("editProductUnit")?.value?.trim() || "chiếc";
   const image =
     document.getElementById("editProductImage")?.value?.trim() || "";
   const description =
     document.getElementById("editProductDescription")?.value?.trim() || "";
-  const status = parseInt(
-    document.getElementById("editProductStatus")?.value || "1",
-  );
 
-  if (!name || price <= 0) {
-    alert("Vui lòng nhập tên và giá bán hợp lệ");
+  if (!name || !brand || price <= 0) {
+    alert("Vui lòng nhập tên, hãng và giá bán hợp lệ");
     return;
   }
 
@@ -2982,16 +2988,14 @@ function submitEditProduct(id) {
     body: JSON.stringify({
       id,
       name,
-      product_code: code,
+      brand,
       category_id: category,
       price,
-      price_cost: cost,
+      cost_price: cost,
       profit_margin: margin,
       stock,
-      unit,
       image_url: image,
       description,
-      status,
     }),
   })
     .then((response) => response.json())
