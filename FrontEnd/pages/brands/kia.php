@@ -259,8 +259,8 @@
         </div>
     </div>
 
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/brand-page.js"></script>
+    <script src="../../assets/js/main.js?v=20260408-1"></script>
+    <script src="../../assets/js/brand-page.js?v=20260408-1"></script>
 </body>
 </html>
 

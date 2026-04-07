@@ -17,6 +17,104 @@ function showToast(message, redirectUrl) {
   }, 2000);
 }
 
+function formatPrice(price) {
+  return new Intl.NumberFormat("vi-VN").format(Number(price) || 0);
+}
+
+let apiBasePromise = null;
+const productLookupCache = new Map();
+
+async function resolveApiBase() {
+  if (apiBasePromise) return apiBasePromise;
+
+  apiBasePromise = (async () => {
+    const origin = window.location.origin;
+    const candidates = [
+      `${origin}/WebBasic/BackEnd/api`,
+      `${origin}/BackEnd/api`,
+      `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`,
+      "http://localhost:8000/BackEnd/api",
+      "http://127.0.0.1:8000/BackEnd/api",
+    ];
+
+    for (const base of candidates) {
+      try {
+        const response = await fetch(`${base}/test.php`);
+        const text = await response.text();
+        if (response.ok && text.includes('"test"')) {
+          return base;
+        }
+      } catch (_err) {
+        // Continue trying next base URL
+      }
+    }
+
+    throw new Error("Khong tim thay API backend");
+  })();
+
+  return apiBasePromise;
+}
+
+function buildPriceSearchTerm(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\b(2024|2025|2026|2023|2022|2021|2020)\b/g, "")
+    .replace(/\b(toyota|mercedes|bmw|audi|lexus|honda|hyundai|kia|vinfast|maybach|benz)\b/g, "")
+    .replace(/[^a-z0-9\u00c0-\u1ef9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function fetchProductBySearchTerm(searchTerm) {
+  const normalizedTerm = buildPriceSearchTerm(searchTerm);
+  if (!normalizedTerm) return null;
+
+  if (productLookupCache.has(normalizedTerm)) {
+    return productLookupCache.get(normalizedTerm);
+  }
+
+  const promise = (async () => {
+    const apiBase = await resolveApiBase();
+    const response = await fetch(`${apiBase}/products.php?name=${encodeURIComponent(normalizedTerm)}&limit=20`);
+    const data = await response.json();
+
+    if (!response.ok || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
+      return null;
+    }
+
+    const lowerTerm = normalizedTerm.toLowerCase();
+    return data.data.find((item) => buildPriceSearchTerm(item.name).includes(lowerTerm)) || data.data[0] || null;
+  })();
+
+  productLookupCache.set(normalizedTerm, promise);
+  return promise;
+}
+
+async function syncCardPricesFromDatabase() {
+  const cards = Array.from(document.querySelectorAll(".car-card"));
+  if (cards.length === 0) return;
+
+  try {
+    await Promise.all(cards.map(async (card) => {
+      const nameNode = card.querySelector("h3");
+      const priceNode = card.querySelector(".price");
+
+      if (!nameNode || !priceNode) return;
+
+      const productName = buildPriceSearchTerm(nameNode.textContent.trim());
+      if (!productName) return;
+
+      const matchedProduct = await fetchProductBySearchTerm(productName);
+      const updatedPrice = Number(matchedProduct?.price || 0);
+      if (updatedPrice > 0) {
+        priceNode.textContent = `${formatPrice(updatedPrice)} VNĐ`;
+      }
+    }));
+  } catch (error) {
+    console.warn("[brand-page] Khong dong bo duoc gia tu API:", error.message);
+  }
+}
+
 // Kiểm tra trạng thái đăng nhập và hiển thị thông tin user/admin
 function checkUserLoginStatus() {
   const isUserLoggedIn = localStorage.getItem("userLoggedIn") === "true";
@@ -101,6 +199,7 @@ function checkLoginAndGoToCart() {
 document.addEventListener("DOMContentLoaded", function () {
   checkUserLoginStatus();
   initPagination();
+  syncCardPricesFromDatabase();
 });
 
 // ===== PAGINATION =====

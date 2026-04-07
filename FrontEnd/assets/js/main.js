@@ -47,7 +47,126 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('cart-body')) {
         loadCart();
     }
+
+    syncDisplayedPricesFromDatabase();
 });
+
+let priceApiBasePromise = null;
+const productLookupCache = new Map();
+
+function formatDbPrice(value) {
+    try {
+        return new Intl.NumberFormat('vi-VN').format(Number(value) || 0) + ' VNĐ';
+    } catch (e) {
+        return (Number(value) || 0) + ' VNĐ';
+    }
+}
+
+function normalizePriceKey(text) {
+    return String(text || '')
+        .toLowerCase()
+        .replace(/\b(2024|2025|2026|2023|2022|2021|2020)\b/g, '')
+        .replace(/[^a-z0-9\u00c0-\u1ef9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+async function resolvePriceApiBase() {
+    if (priceApiBasePromise) return priceApiBasePromise;
+
+    priceApiBasePromise = (async () => {
+        const origin = window.location.origin;
+        const candidates = [
+            `${origin}/WebBasic/BackEnd/api`,
+            `${origin}/BackEnd/api`,
+            `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`,
+            'http://localhost:8000/BackEnd/api',
+            'http://127.0.0.1:8000/BackEnd/api'
+        ];
+
+        for (const base of candidates) {
+            try {
+                const response = await fetch(`${base}/test.php`);
+                const text = await response.text();
+                if (response.ok && text.includes('"test"')) {
+                    return base;
+                }
+            } catch (_err) {
+                continue;
+            }
+        }
+
+        throw new Error('Khong tim thay API backend');
+    })();
+
+    return priceApiBasePromise;
+}
+
+function buildPriceSearchTerm(text) {
+    return normalizePriceKey(text)
+        .replace(/\b(toyota|mercedes|bmw|audi|lexus|honda|hyundai|kia|vinfast|maybach|benz)\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+async function fetchProductBySearchTerm(searchTerm) {
+    const normalizedTerm = buildPriceSearchTerm(searchTerm);
+    if (!normalizedTerm) return null;
+
+    if (productLookupCache.has(normalizedTerm)) {
+        return productLookupCache.get(normalizedTerm);
+    }
+
+    const promise = (async () => {
+        const apiBase = await resolvePriceApiBase();
+        const response = await fetch(`${apiBase}/products.php?name=${encodeURIComponent(normalizedTerm)}&limit=20`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
+            return null;
+        }
+
+        const lowerTerm = normalizedTerm.toLowerCase();
+        return data.data.find((product) => normalizePriceKey(product.name).includes(lowerTerm)) || data.data[0] || null;
+    })();
+
+    productLookupCache.set(normalizedTerm, promise);
+    return promise;
+}
+
+async function syncDisplayedPricesFromDatabase() {
+    try {
+        document.querySelectorAll('.car-card').forEach((card) => {
+            const priceNode = card.querySelector('.price');
+            const titleNode = card.querySelector('h3');
+            if (!priceNode || !titleNode) return;
+
+            fetchProductBySearchTerm(titleNode.textContent).then((matchedProduct) => {
+                if (matchedProduct && Number(matchedProduct.price) > 0) {
+                    priceNode.textContent = formatDbPrice(matchedProduct.price);
+                }
+            });
+        });
+
+        document.querySelectorAll('.hero-slide').forEach((slide) => {
+            const priceNode = slide.querySelector('.slide-price strong');
+            if (!priceNode) return;
+
+            const lookupText = [
+                slide.querySelector('.slide-model')?.textContent || '',
+                slide.querySelector('.slide-name')?.textContent || ''
+            ].join(' ');
+
+            fetchProductBySearchTerm(lookupText).then((matchedProduct) => {
+                if (matchedProduct && Number(matchedProduct.price) > 0) {
+                    priceNode.textContent = formatDbPrice(matchedProduct.price);
+                }
+            });
+        });
+    } catch (error) {
+        console.warn('[main] Khong dong bo duoc gia tu DB:', error.message);
+    }
+}
 
 // ========================================
 // HELPER FUNCTIONS (cần thiết cho hiển thị)

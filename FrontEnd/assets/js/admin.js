@@ -2136,7 +2136,6 @@ function loadPricing() {
                                 <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
                                 <th style="padding:14px;text-align:center;font-weight:600;min-width:140px;">% Lợi nhuận</th>
                                 <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
-                                <th style="padding:14px;text-align:center;font-weight:600;min-width:100px;">Tồn kho</th>
                                 <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Cập nhật</th>
                             </tr>
                         </thead>
@@ -2146,7 +2145,6 @@ function loadPricing() {
                                 const costPrice = product.cost_price || 0;
                                 const profitMargin = product.profit_margin || 0;
                                 const sellingPrice = product.selling_price || 0;
-                                const stock = product.stock || 0;
                                 const categoryName =
                                   product.category_name || "N/A";
                                 const profitAmount = sellingPrice - costPrice;
@@ -2169,9 +2167,6 @@ function loadPricing() {
                                     <td style="padding:12px;text-align:right;">
                                         <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
                                         <div style="font-size:0.85em;color:#28a745;margin-top:4px;">+${formatPrice(profitAmount)}</div>
-                                    </td>
-                                    <td style="padding:12px;text-align:center;">
-                                        <span style="display:inline-block;background:#${stock > 0 ? "e8f5e9;color:#2e7d32" : "ffebee;color:#c62828"};padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">${stock} chiếc</span>
                                     </td>
                                     <td style="padding:12px;text-align:center;">
                                         <button type="button" style="background:#4CAF50;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;transition:background 0.2s;"
@@ -2245,7 +2240,6 @@ function filterPricing() {
                                 <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá nhập (VNĐ)</th>
                                 <th style="padding:14px;text-align:center;font-weight:600;min-width:140px;">% Lợi nhuận</th>
                                 <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Giá bán (VNĐ)</th>
-                                <th style="padding:14px;text-align:center;font-weight:600;min-width:100px;">Tồn kho</th>
                                 <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Cập nhật</th>
                             </tr>
                         </thead>
@@ -2255,7 +2249,6 @@ function filterPricing() {
                                 const costPrice = product.cost_price || 0;
                                 const profitMargin = product.profit_margin || 0;
                                 const sellingPrice = product.selling_price || 0;
-                                const stock = product.stock || 0;
                                 const categoryName =
                                   product.category_name || "N/A";
                                 const profitAmount = sellingPrice - costPrice;
@@ -2278,9 +2271,6 @@ function filterPricing() {
                                     <td style="padding:12px;text-align:right;">
                                         <div style="font-weight:600;color:#0d279d;font-size:1.05em;">${formatPrice(sellingPrice)}</div>
                                         <div style="font-size:0.85em;color:#28a745;margin-top:4px;">+${formatPrice(profitAmount)}</div>
-                                    </td>
-                                    <td style="padding:12px;text-align:center;">
-                                        <span style="display:inline-block;background:#${stock > 0 ? "e8f5e9;color:#2e7d32" : "ffebee;color:#c62828"};padding:6px 12px;border-radius:6px;font-weight:600;font-size:0.9em;">${stock} chiếc</span>
                                     </td>
                                     <td style="padding:12px;text-align:center;">
                                         <button type="button" style="background:#4CAF50;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;transition:background 0.2s;"

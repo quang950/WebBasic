@@ -3324,7 +3324,7 @@
       </defs>
     </svg>
 
-    <script src="assets/js/main.js"></script>
+    <script src="assets/js/main.js?v=20260408-1"></script>
     <script>
       // ===== HERO SLIDER =====
       (function () {

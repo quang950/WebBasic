@@ -168,24 +168,37 @@ if ($method === 'PUT') {
     }
 
     $action = $payload['action'] ?? 'update_margin';
-    if ($action !== 'update_margin') {
+    if (!in_array($action, ['update_margin', 'update_cost', 'update_pricing'], true)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Unsupported action']);
         exit;
     }
 
     $productId = intval($payload['product_id'] ?? 0);
-    $profitMargin = isset($payload['profit_margin']) ? floatval($payload['profit_margin']) : null;
+    $profitMargin = array_key_exists('profit_margin', $payload) ? floatval($payload['profit_margin']) : null;
+    $costPriceInput = array_key_exists('cost_price', $payload) ? floatval($payload['cost_price']) : null;
 
-    if ($productId <= 0 || $profitMargin === null) {
+    if ($productId <= 0) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Invalid product_id or profit_margin']);
+        echo json_encode(['success' => false, 'message' => 'Invalid product_id']);
         exit;
     }
 
-    if ($profitMargin < 0 || $profitMargin > 500) {
+    if ($action === 'update_margin' && $profitMargin === null) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'profit_margin must be between 0 and 500']);
+        echo json_encode(['success' => false, 'message' => 'profit_margin is required']);
+        exit;
+    }
+
+    if ($action === 'update_cost' && $costPriceInput === null) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'cost_price is required']);
+        exit;
+    }
+
+    if ($action === 'update_pricing' && $profitMargin === null && $costPriceInput === null) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'At least one of cost_price or profit_margin is required']);
         exit;
     }
 
@@ -198,7 +211,7 @@ if ($method === 'PUT') {
 
     $conn->begin_transaction();
     try {
-        $selectSql = "SELECT {$costColumn} AS cost_price FROM products WHERE id = ?";
+        $selectSql = "SELECT {$costColumn} AS cost_price, profit_margin FROM products WHERE id = ?";
         $stmt = $conn->prepare($selectSql);
         if (!$stmt) {
             throw new Exception('Failed to prepare select query');
@@ -213,15 +226,28 @@ if ($method === 'PUT') {
             throw new Exception('Product not found');
         }
 
-        $costPrice = floatval($product['cost_price'] ?? 0);
-        $sellingPrice = $costPrice * (1 + ($profitMargin / 100));
+        $currentCostPrice = floatval($product['cost_price'] ?? 0);
+        $currentProfitMargin = floatval($product['profit_margin'] ?? 0);
 
-        $updateStmt = $conn->prepare("UPDATE products SET profit_margin = ?, price = ? WHERE id = ?");
+        $newCostPrice = $costPriceInput !== null ? $costPriceInput : $currentCostPrice;
+        $newProfitMargin = $profitMargin !== null ? $profitMargin : $currentProfitMargin;
+
+        if ($newCostPrice < 0) {
+            throw new Exception('cost_price must be greater than or equal to 0');
+        }
+
+        if ($newProfitMargin < 0 || $newProfitMargin > 500) {
+            throw new Exception('profit_margin must be between 0 and 500');
+        }
+
+        $sellingPrice = $newCostPrice * (1 + ($newProfitMargin / 100));
+
+        $updateStmt = $conn->prepare("UPDATE products SET {$costColumn} = ?, profit_margin = ?, price = ? WHERE id = ?");
         if (!$updateStmt) {
             throw new Exception('Failed to prepare update query');
         }
 
-        $updateStmt->bind_param('ddi', $profitMargin, $sellingPrice, $productId);
+        $updateStmt->bind_param('dddi', $newCostPrice, $newProfitMargin, $sellingPrice, $productId);
         $updateStmt->execute();
         $updateStmt->close();
 
@@ -232,10 +258,10 @@ if ($method === 'PUT') {
             'message' => 'Updated pricing successfully',
             'data' => [
                 'product_id' => $productId,
-                'cost_price' => $costPrice,
-                'profit_margin' => $profitMargin,
+                'cost_price' => $newCostPrice,
+                'profit_margin' => $newProfitMargin,
                 'selling_price' => $sellingPrice,
-                'profit_amount' => $sellingPrice - $costPrice
+                'profit_amount' => $sellingPrice - $newCostPrice
             ]
         ]);
     } catch (Exception $e) {
