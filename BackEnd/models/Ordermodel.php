@@ -36,38 +36,95 @@ class OrderModel {
                 }
             } else {
                 // Sử dụng cart items từ frontend
-                // Cần lấy product_id từ database dựa trên product name hoặc ID
+                // Ưu tiên sử dụng product_id nếu có, nếu không thì lookup bằng name
                 $items = [];
                 foreach ($cart_items as $item) {
-                    // Tìm product_id từ product name
-                    $stmtProd = $this->conn->prepare("
-                        SELECT id, price FROM products WHERE name = ?
-                    ");
+                    $prod = null;
                     
-                    if (!$stmtProd) {
-                        throw new Exception("Prepare product lookup failed: " . $this->conn->error);
+                    // Try by product_id first if available
+                    if (!empty($item['product_id'])) {
+                        $stmtProd = $this->conn->prepare("
+                            SELECT id, price, name FROM products 
+                            WHERE id = ?
+                            LIMIT 1
+                        ");
+                        
+                        if (!$stmtProd) {
+                            throw new Exception("Prepare product lookup (ID) failed: " . $this->conn->error);
+                        }
+                        
+                        $stmtProd->bind_param("i", $item['product_id']);
+                        
+                        if (!$stmtProd->execute()) {
+                            throw new Exception("Execute product lookup (ID) failed: " . $stmtProd->error);
+                        }
+                        
+                        $prodResult = $stmtProd->get_result();
+                        $prod = ($prodResult->num_rows > 0) ? $prodResult->fetch_assoc() : null;
+                        $stmtProd->close();
                     }
                     
-                    $stmtProd->bind_param("s", $item['name']);
-                    
-                    if (!$stmtProd->execute()) {
-                        throw new Exception("Execute product lookup failed: " . $stmtProd->error);
+                    // If not found by ID, try by name (case-insensitive)
+                    if (!$prod) {
+                        $searchName = trim($item['name']);
+                        
+                        // Try exact match first (case-insensitive)
+                        $stmtProd = $this->conn->prepare("
+                            SELECT id, price, name FROM products 
+                            WHERE LOWER(name) = LOWER(?)
+                            LIMIT 1
+                        ");
+                        
+                        if (!$stmtProd) {
+                            throw new Exception("Prepare product lookup failed: " . $this->conn->error);
+                        }
+                        
+                        $stmtProd->bind_param("s", $searchName);
+                        
+                        if (!$stmtProd->execute()) {
+                            throw new Exception("Execute product lookup failed: " . $stmtProd->error);
+                        }
+                        
+                        $prodResult = $stmtProd->get_result();
+                        $prod = ($prodResult->num_rows > 0) ? $prodResult->fetch_assoc() : null;
+                        $stmtProd->close();
+                        
+                        // If still not found, try partial match with LIKE
+                        if (!$prod) {
+                            $searchPattern = "%{$searchName}%";
+                            $stmtProd = $this->conn->prepare("
+                                SELECT id, price, name FROM products 
+                                WHERE name LIKE ?
+                                LIMIT 1
+                            ");
+                            
+                            if (!$stmtProd) {
+                                throw new Exception("Prepare product lookup (partial) failed: " . $this->conn->error);
+                            }
+                            
+                            $stmtProd->bind_param("s", $searchPattern);
+                            
+                            if (!$stmtProd->execute()) {
+                                throw new Exception("Execute product lookup (partial) failed: " . $stmtProd->error);
+                            }
+                            
+                            $prodResult = $stmtProd->get_result();
+                            $prod = ($prodResult->num_rows > 0) ? $prodResult->fetch_assoc() : null;
+                            $stmtProd->close();
+                        }
                     }
                     
-                    $prodResult = $stmtProd->get_result();
-                    
-                    if ($prodResult->num_rows == 0) {
-                        throw new Exception("Sản phẩm '{$item['name']}' không tồn tại trong database");
+                    // If still not found, throw error
+                    if (!$prod) {
+                        throw new Exception("Sản phẩm '{$item['name']}' không tồn tại trong database. Vui lòng làm mới giỏ hàng và thử lại");
                     }
                     
-                    $prod = $prodResult->fetch_assoc();
                     $items[] = [
                         'product_id' => $prod['id'],
-                        'name' => $item['name'],
+                        'name' => $prod['name'],  // Use database name
                         'price' => $item['price'],
                         'quantity' => $item['quantity']
                     ];
-                    $stmtProd->close();
                 }
             }
 

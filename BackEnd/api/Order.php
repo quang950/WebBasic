@@ -13,32 +13,32 @@ if (!$userId) {
     http_response_code(401);
     echo json_encode([
         'success' => false,
-        'message' => 'User not logged in',
-        'sessionData' => $_SESSION
+        'message' => 'User not logged in'
     ]);
     exit;
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
+// Read input once and keep it in memory
+$rawInput = file_get_contents("php://input");
+$data = json_decode($rawInput, true);
 
-if (!$data) {
+if (!$data || !is_array($data)) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid JSON data',
-        'rawInput' => file_get_contents("php://input")
+        'message' => 'Invalid JSON data'
     ]);
     exit;
 }
 
-// ÉP user_id THEO SESSION
+// Force user_id from SESSION (security)
 $data['user_id'] = $userId;
 
 try {
     $controller = new OrderController();
     $result = $controller->create($data);
 
-    // Kiểm tra xem có lỗi hay không
+    // Check for errors
     if (is_array($result) && isset($result['error'])) {
         http_response_code(400);
         echo json_encode([
@@ -54,15 +54,13 @@ try {
         'order_id' => $result
     ]);
 } catch (Exception $e) {
-    // Ghi log lỗi
-    error_log("Order Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    // Log error
+    error_log("Order Error: " . $e->getMessage());
     
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Server error: ' . $e->getMessage(),
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString()
+        'message' => 'Server error: ' . $e->getMessage()
     ]);
 }
 ?>

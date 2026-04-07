@@ -471,7 +471,7 @@
                 data-desc="Sedan hạng D êm ái, tiện nghi, tiết kiệm."
               >
                 <img src="assets/images/toyota-camry.jpg" alt="Toyota Camry" />
-                <h3>Toyota Camry</h3>
+                <h3>Camry 2024</h3>
                 <p class="price">1.235.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -496,7 +496,7 @@
                 data-desc="Sedan đô thị bền bỉ, tiết kiệm nhiên liệu."
               >
                 <img src="assets/images/toyota-vios.jpg" alt="Toyota Vios" />
-                <h3>Toyota Vios</h3>
+                <h3>Vios 2024</h3>
                 <p class="price">592.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -524,7 +524,7 @@
                   src="assets/images/toyota-fortuner.jpg"
                   alt="Toyota Fortuner"
                 />
-                <h3>Toyota Fortuner</h3>
+                <h3>Fortuner 2024</h3>
                 <p class="price">1.350.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -549,7 +549,7 @@
                 data-desc="Crossover đô thị, vận hành mượt và tiết kiệm."
               >
                 <img src="assets/images/toyota-cross.jpg" alt="Toyota Cross" />
-                <h3>Toyota Cross</h3>
+                <h3>Cross 2024</h3>
                 <p class="price">820.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -577,7 +577,7 @@
                   src="assets/images/toyota-innova.jpg"
                   alt="Toyota Innova"
                 />
-                <h3>Toyota Innova</h3>
+                <h3>Innova 2024</h3>
                 <p class="price">755.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -602,7 +602,7 @@
                 data-desc="Hatchback linh hoạt, dễ lái, tiết kiệm."
               >
                 <img src="assets/images/toyota-yaris.jpg" alt="Toyota Yaris" />
-                <h3>Toyota Yaris</h3>
+                <h3>Yaris 2024</h3>
                 <p class="price">684.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -630,7 +630,7 @@
                   src="assets/images/toyota-corolla.jpg"
                   alt="Toyota Corolla"
                 />
-                <h3>Toyota Corolla</h3>
+                <h3>Corolla 2024</h3>
                 <p class="price">800.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -655,7 +655,7 @@
                 data-desc="SUV cỡ nhỏ cơ động, tiết kiệm nhiên liệu."
               >
                 <img src="assets/images/toyota-raize.jpg" alt="Toyota Raize" />
-                <h3>Toyota Raize</h3>
+                <h3>Raize 2024</h3>
                 <p class="price">510.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -683,7 +683,7 @@
                   src="assets/images/toyota-alphard.jpg"
                   alt="Toyota Alphard"
                 />
-                <h3>Toyota Alphard</h3>
+                <h3>Alphard 2024</h3>
                 <p class="price">4.370.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -708,7 +708,7 @@
                 data-desc="Bán tải mạnh mẽ, bền bỉ, chở hàng tốt."
               >
                 <img src="/WebBasic/FrontEnd/assets/images/toyota-hilux.jpg" alt="Toyota Hilux" />
-                <h3>Toyota Hilux</h3>
+                <h3>Hilux 2024</h3>
                 <p class="price">706.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -766,7 +766,7 @@
                   src="/WebBasic/FrontEnd/assets/images/mercedes-c200.jpg"
                   alt="Mercedes C200"
                 />
-                <h3>Mercedes C200</h3>
+                <h3>C200 2024</h3>
                 <p class="price">1.669.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -794,7 +794,7 @@
                   src="/WebBasic/FrontEnd/assets/images/mercedes-e200.jpg"
                   alt="Mercedes E200"
                 />
-                <h3>Mercedes E200</h3>
+                <h3>E200 2024</h3>
                 <p class="price">2.310.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -822,7 +822,7 @@
                   src="/WebBasic/FrontEnd/assets/images/mercedes-glc200.jpg"
                   alt="Mercedes GLC200"
                 />
-                <h3>Mercedes GLC200</h3>
+                <h3>GLC200 2024</h3>
                 <p class="price">1.859.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -850,7 +850,7 @@
                   src="/WebBasic/FrontEnd/assets/images/mercedes-glc300.jpg"
                   alt="Mercedes GLC300"
                 />
-                <h3>Maybach GLC300</h3>
+                <h3>GLC300 2024</h3>
                 <p class="price">2.639.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -878,7 +878,7 @@
                   src="/WebBasic/FrontEnd/assets/images/mercedes-gle450.jpg"
                   alt="Mercedes GLE450"
                 />
-                <h3>Maybach GLE450</h3>
+                <h3>GLE450 2024</h3>
                 <p class="price">4.409.000.000 VNĐ</p>
                 <div class="button-container">
                   <button
@@ -1073,7 +1073,7 @@
                 data-desc="Sedan thể thao cân bằng giữa thoải mái và hiệu suất."
               >
                 <img src="/WebBasic/FrontEnd/assets/images/bmw-320i.jpg" alt="BMW 320i" />
-                <h3>BMW 320i</h3>
+                <h3>320i 2024</h3>
                 <p class="price">1.399.000.000 VNĐ</p>
                 <div class="button-container">
                   <button

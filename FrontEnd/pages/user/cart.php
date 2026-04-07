@@ -297,13 +297,20 @@
             let receiverName, receiverPhone, receiverEmail, receiverAddress;
             
             if (addressType === 'account') {
-              receiverName = document.getElementById('accountName').value;
-              receiverPhone = document.getElementById('accountPhone').value;
-              receiverEmail = document.getElementById('accountEmail').value;
-              const street = document.getElementById('accountStreet').value;
-              const ward = document.getElementById('accountWard').value;
-              const district = document.getElementById('accountDistrict').value;
-              const province = document.getElementById('accountProvince').value;
+              receiverName = document.getElementById('accountName').value?.trim();
+              receiverPhone = document.getElementById('accountPhone').value?.trim();
+              receiverEmail = document.getElementById('accountEmail').value?.trim();
+              const street = document.getElementById('accountStreet').value?.trim();
+              const ward = document.getElementById('accountWard').value?.trim();
+              const district = document.getElementById('accountDistrict').value?.trim();
+              const province = document.getElementById('accountProvince').value?.trim();
+              
+              // Validate account address fields
+              if (!receiverName || !receiverPhone || !street || !ward || !district || !province) {
+                alert('Vui lòng điền đầy đủ thông tin địa chỉ tài khoản!');
+                return false;
+              }
+              
               receiverAddress = `${street}, ${ward}, ${district}, ${province}`;
             } else {
               receiverName = document.getElementById('newName').value;
@@ -329,6 +336,12 @@
               paymentMethod = 'Chuyển khoản ngân hàng';
             } else if (paymentType === 'online') {
               paymentMethod = 'Thanh toán trực tuyến (VNPay, Momo...)';
+            }
+            
+            // Validate receiver info
+            if (!receiverAddress || !receiverPhone || !paymentType) {
+              alert('Vui lòng điền đầy đủ thông tin đơn hàng!');
+              return false;
             }
             
             // Lấy giỏ hàng
@@ -359,6 +372,8 @@
               cart_items: normalizedCart
             };
             
+            console.log('Sending order data:', backendOrderData);
+            
             // Tạo đối tượng đơn hàng cho hiển thị
             const orderData = {
               orderId: 'DH' + Date.now().toString().slice(-6),
@@ -383,7 +398,12 @@
             })
             .then(response => {
               if (!response.ok) {
-                throw new Error('Lỗi gửi request: ' + response.status);
+                return response.json().catch(() => ({ 
+                  success: false, 
+                  message: 'HTTP ' + response.status + ' ' + response.statusText 
+                })).then(data => {
+                  throw new Error(data.message || 'HTTP ' + response.status);
+                });
               }
               return response.json();
             })
@@ -402,7 +422,7 @@
               }
             })
             .catch(error => {
-              console.error('Error:', error);
+              console.error('Order Error Details:', error);
               alert('Có lỗi xảy ra khi lưu đơn hàng: ' + error.message);
             });
             

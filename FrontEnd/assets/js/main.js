@@ -123,6 +123,8 @@ function extractCarDataFromCard(card) {
     const priceText = card.querySelector('.price')?.textContent || '';
     const price = parseCurrencyToNumber(priceText);
     const img = card.querySelector('img')?.getAttribute('src') || '';
+    // Get product ID from data attribute (data-id or data-product-id)
+    const productId = card.getAttribute('data-id') || card.getAttribute('data-product-id') || '';
 
     if (!name || !price) {
         return null;
@@ -132,6 +134,7 @@ function extractCarDataFromCard(card) {
         name,
         price,
         img,
+        product_id: productId,
         quantity: 1
     };
 }
@@ -152,7 +155,7 @@ function bindBuyButtons() {
             return;
         }
 
-        addToCart(car.name, car.price, car.img, 1);
+        addToCart(car.name, car.price, car.img, 1, car.product_id);
     }, true);
 }
 
@@ -160,7 +163,7 @@ function bindBuyButtons() {
 let isAddingToCart = false;
 
 // Hàm thêm vào giỏ hàng
-function addToCart(name, price, img, quantity = 1) {
+function addToCart(name, price, img, quantity = 1, product_id = '') {
     // Nếu đang xử lý thêm vào giỏ, bỏ qua
     if (isAddingToCart) {
         return false;
@@ -175,7 +178,9 @@ function addToCart(name, price, img, quantity = 1) {
     }
 
     const cart = getCartItems();
-    const idx = cart.findIndex(item => item.name === name);
+    // Try to find by product_id first, then by name
+    const idx = product_id ? cart.findIndex(item => item.product_id === product_id) : 
+                            cart.findIndex(item => item.name === name);
     const qty = Math.max(1, Number(quantity) || 1);
 
     if (idx >= 0) {
@@ -185,6 +190,7 @@ function addToCart(name, price, img, quantity = 1) {
             name,
             price: Number(price) || 0,
             img: img || '',
+            product_id: product_id || '',
             quantity: qty
         });
     }

@@ -491,71 +491,102 @@ document
     return false;
   });
 
-// Tải và hiển thị danh sách sản phẩm
-function loadProducts() {
+// Lưu danh sách sản phẩm toàn cục
+let allProducts = [];
+let currentSearchValue = "";
+
+// Hàm lọc sản phẩm theo tìm kiếm
+function filterProducts(event) {
+  console.log("filterProducts called, event:", event);
+  const searchInput = document.getElementById("productSearchInput");
+  console.log("searchInput element:", searchInput);
+  const searchValue = (searchInput ? searchInput.value : "").toLowerCase().trim();
+  console.log("searchValue:", searchValue);
+  currentSearchValue = searchValue;
+  
+  const productsList = allProducts;
+  console.log("allProducts:", allProducts);
+
+  // Nếu ô tìm kiếm trống, hiển thị tất cả sản phẩm
+  if (!searchValue) {
+    console.log("Search value is empty, showing all products");
+    renderProductsList(productsList);
+    return;
+  }
+
+  // Lọc sản phẩm theo tên hoặc thương hiệu
+  const filteredProducts = productsList.filter((product) => {
+    const name = (product.name || "").toLowerCase();
+    const brand = (product.brand || "").toLowerCase();
+    const category = (product.category || "").toLowerCase();
+    return (
+      name.includes(searchValue) ||
+      brand.includes(searchValue) ||
+      category.includes(searchValue)
+    );
+  });
+
+  console.log("Filtered products:", filteredProducts);
+  // Hiển thị kết quả lọc
+  renderProductsList(filteredProducts);
+}
+
+// Hàm hiển thị danh sách sản phẩm
+function renderProductsList(productsList) {
   const productsGrid = document.getElementById("products-grid");
 
-  if (!productsGrid) return;
-
-  // Show loading spinner
-  productsGrid.innerHTML =
-    '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải sản phẩm...</div>';
-
-  // Fetch products from API
-  fetch("/WebBasic/BackEnd/api/admin/get_products.php", {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("Products API result:", result);
-
-      if (result.success && result.products) {
-        const productsList = result.products;
-
-        if (productsList.length === 0) {
-          productsGrid.innerHTML =
-            '<div class="empty-state">Chưa có sản phẩm nào. Hãy thêm từ form trên!</div>';
-          return;
-        }
-
-        productsGrid.innerHTML = `
-                <div class="products-search-bar" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-search" style="color: #666;"></i>
-                        <input type="text" id="productSearchInput" placeholder="Tìm kiếm sản phẩm..." 
-                            style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: Arial, sans-serif;"
-                            onkeyup="return false;">
-                        <button onclick="showSingleProduct()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-search"></i> Tìm kiếm
-                        </button>
+  if (!productsList || productsList.length === 0) {
+    productsGrid.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="products-search-bar" style="margin-bottom: 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-search" style="color: #666;"></i>
+                            <input type="text" id="productSearchInput" placeholder="Tìm kiếm sản phẩm..." 
+                                style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: Arial, sans-serif;">
+                            <button type="button" onclick="filterProducts()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-search"></i> Tìm kiếm
+                            </button>
+                        </div>
                     </div>
+                    <div class="empty-state">Không tìm thấy sản phẩm nào</div>
                 </div>
-                <div class="products-list">
+            `;
+    // Set lại giá trị tìm kiếm vào input
+    setTimeout(() => {
+      const input = document.getElementById("productSearchInput");
+      if (input) input.value = currentSearchValue;
+    }, 0);
+    return;
+  }
+
+  productsGrid.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="products-search-bar" style="margin-bottom: 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-search" style="color: #666;"></i>
+                            <input type="text" id="productSearchInput" placeholder="Tìm kiếm sản phẩm..." 
+                                style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: Arial, sans-serif;">
+                            <button type="button" onclick="filterProducts()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-search"></i> Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+                    <div class="products-list" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
                     ${productsList
                       .map(
                         (product) => {
-                          // Extract brand and model from name to find matching image
-                          // Example: "Toyota Camry" -> "toyota-camry.jpg"
                           let imageUrl = product.image || product.image_url;
                           
-                          // Clean up image URL - remove any relative path prefix that's already there
                           if (imageUrl) {
-                            // Remove 'assets/images/' if it's in the path
                             imageUrl = imageUrl.replace(/^.*assets\/images\//, '');
                           }
                           
-                          // Ensure image URL is absolute
                           if (imageUrl && !imageUrl.startsWith('/WebBasic')) {
                             imageUrl = '/WebBasic/FrontEnd/assets/images/' + imageUrl;
                           } else if (!imageUrl) {
                             imageUrl = '/WebBasic/FrontEnd/assets/images/1.jpg';
                           }
                           
-                          // If still no image, try to build from product name
                           if (!imageUrl || imageUrl.includes('undefined')) {
                             const nameParts = (product.name || '').toLowerCase().trim().split(/\s+/);
                             if (nameParts.length >= 2) {
@@ -589,8 +620,50 @@ function loadProducts() {
                         }
                       )
                       .join("")}
+                    </div>
                 </div>
             `;
+  // Set lại giá trị tìm kiếm vào input
+  setTimeout(() => {
+    const input = document.getElementById("productSearchInput");
+    if (input) input.value = currentSearchValue;
+  }, 0);
+}
+
+// Tải và hiển thị danh sách sản phẩm
+function loadProducts() {
+  const productsGrid = document.getElementById("products-grid");
+
+  if (!productsGrid) return;
+
+  // Show loading spinner
+  productsGrid.innerHTML =
+    '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải sản phẩm...</div>';
+
+  // Fetch products from API
+  fetch("/WebBasic/BackEnd/api/admin/get_products.php", {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      console.log("Products API result:", result);
+
+      if (result.success && result.products) {
+        // Lưu danh sách sản phẩm vào biến toàn cục
+        allProducts = result.products;
+
+        if (allProducts.length === 0) {
+          productsGrid.innerHTML =
+            '<div class="empty-state">Chưa có sản phẩm nào. Hãy thêm từ form trên!</div>';
+          return;
+        }
+
+        // Hiển thị danh sách sản phẩm
+        renderProductsList(allProducts);
       } else {
         productsGrid.innerHTML =
           '<div class="empty-state">Lỗi tải sản phẩm</div>';
@@ -883,7 +956,7 @@ function renderAdminOrdersTable(orders) {
               .map(
                 (item) => `
                 <div style='margin-bottom:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-family:Arial,sans-serif;'>
-                    <div style='color:#000;font-size:1em;font-family:Arial,sans-serif;font-weight:normal;'>Xe: ${item.brand} ${item.name}</div>
+                    <div style='color:#000;font-size:1em;font-family:Arial,sans-serif;font-weight:normal;'>Xe: ${item.name}</div>
                     <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Số lượng: ${item.quantity}</div>
                     <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Giá: ${formatPrice(item.price)} VNĐ</div>
                 </div>
@@ -1342,7 +1415,7 @@ function renderImportsTable(list) {
               .map(
                 (item) => `
                 <div style='margin-bottom:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-family:Arial,sans-serif;'>
-                    <div style='color:#000;font-size:1em;font-family:Arial,sans-serif;font-weight:normal;'>Xe: ${item.brand} ${item.name}</div>
+                    <div style='color:#000;font-size:1em;font-family:Arial,sans-serif;font-weight:normal;'>Xe: ${item.name}</div>
                     <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Số lượng: ${item.qty}</div>
                     <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Giá nhập: ${formatPrice(item.price)} VNĐ</div>
                     <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Thành tiền: ${formatPrice(item.price * item.qty)} VNĐ</div>
@@ -2237,6 +2310,9 @@ function filterPricing() {
 // Export functions (chỉ giữ load và filter)
 window.loadPricing = loadPricing;
 window.filterPricing = filterPricing;
+window.filterProducts = filterProducts;
+window.renderProductsList = renderProductsList;
+window.loadProducts = loadProducts;
 
 // Filter cho đơn hàng đã bị vô hiệu hóa (Prototype mode)
 window.filterAdminOrders = filterAdminOrders;
