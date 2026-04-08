@@ -87,6 +87,7 @@ if ($method === 'GET') {
             SELECT
                 p.id,
                 p.name,
+                p.brand,
                 p.{$costColumn} AS cost_price,
                 p.profit_margin,
                 p.price AS selling_price,
@@ -102,6 +103,7 @@ if ($method === 'GET') {
             SELECT
                 p.id,
                 p.name,
+                p.brand,
                 p.{$costColumn} AS cost_price,
                 p.profit_margin,
                 p.price AS selling_price,
@@ -116,6 +118,7 @@ if ($method === 'GET') {
             SELECT
                 p.id,
                 p.name,
+                p.brand,
                 p.{$costColumn} AS cost_price,
                 p.profit_margin,
                 p.price AS selling_price,
@@ -131,9 +134,19 @@ if ($method === 'GET') {
     $types = '';
 
     if ($search !== '') {
-        $query .= " AND p.name LIKE ?";
-        $params[] = '%' . $search . '%';
-        $types .= 's';
+        if ($hasCategoryId) {
+            $query .= " AND (p.name LIKE ? OR p.brand LIKE ? OR c.name LIKE ?)";
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+            $types .= 'sss';
+        } else {
+            $query .= " AND (p.name LIKE ? OR p.brand LIKE ? OR p.category LIKE ?)";
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+            $types .= 'sss';
+        }
     }
 
     if ($categoryId > 0 && $hasCategoryId) {

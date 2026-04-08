@@ -1429,7 +1429,7 @@
         }
 
         try {
-            const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+            const response = await fetch(`${PRICING_API}?action=list&search=${encodeURIComponent(query)}&limit=20`);
             const data = await response.json();
             
             if (!data.success || !data.data || data.data.length === 0) {
@@ -1442,15 +1442,16 @@
                 const costPrice = parseFloat(product.cost_price || product.price_cost || 0);
                 const sellingPrice = parseFloat(product.selling_price || 0);
                 const profitMargin = parseFloat(product.profit_margin || 0);
+                const profitAmount = parseFloat(product.profit_amount || (sellingPrice - costPrice));
                 
                 return `
                 <div onclick="selectProductForImport(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${costPrice})" 
                      style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;hover:background:#f0f0f0;"
                      onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='#f9f9f9'">
-                    <div style="font-weight:600;color:#0d6efd;margin-bottom:4px;">🚗 ${product.name}</div>
+                    <div style="font-weight:600;color:#0d6efd;margin-bottom:4px;">🚗 ${escapeHtml(product.name)}</div>
                     <div style="color:#666;margin-bottom:6px;">
                         <span style="margin-right:12px;">ID: ${product.id}</span>
-                        <span>${product.category_name || ''}</span>
+                        <span>${product.category_name || product.category || ''}</span>
                     </div>
                     <table style="width:100%;font-size:10px;color:#333;">
                         <tr>
@@ -1463,7 +1464,7 @@
                         </tr>
                         <tr>
                             <td>📈 Lợi nhuận:</td>
-                            <td style="text-align:right;font-weight:600;color:#ff9800;">${parseFloat(profitMargin).toFixed(1)}%</td>
+                            <td style="text-align:right;font-weight:600;color:#ff9800;">₫${formatMoney(profitAmount)} (${parseFloat(profitMargin).toFixed(1)}%)</td>
                         </tr>
                     </table>
                 </div>
@@ -1844,7 +1845,7 @@
         }
 
         try {
-            const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+            const response = await fetch(`${PRICING_API}?action=list&search=${encodeURIComponent(query)}&limit=20`);
             const data = await response.json();
 
             if (!data.success || !data.data || data.data.length === 0) {
@@ -1857,6 +1858,7 @@
                 const costPrice = parseFloat(product.cost_price || product.price_cost || 0);
                 const sellingPrice = parseFloat(product.selling_price || 0);
                 const profitMargin = parseFloat(product.profit_margin || 0);
+                const profitAmount = parseFloat(product.profit_amount || (sellingPrice - costPrice));
                 
                 return `
                 <div onclick="selectProductForDetail(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${costPrice})"
@@ -1878,7 +1880,7 @@
                         </tr>
                         <tr>
                             <td>📈 Lợi nhuận:</td>
-                            <td style="text-align:right;font-weight:600;color:#ff9800;">${parseFloat(profitMargin).toFixed(1)}%</td>
+                            <td style="text-align:right;font-weight:600;color:#ff9800;">₫${formatMoney(profitAmount)} (${parseFloat(profitMargin).toFixed(1)}%)</td>
                         </tr>
                     </table>
                 </div>
