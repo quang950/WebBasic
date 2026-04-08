@@ -37,6 +37,19 @@ function detectCostColumn($conn) {
     return null;
 }
 
+function getOptionalFloatParam($key) {
+    if (!isset($_GET[$key])) {
+        return null;
+    }
+
+    $raw = trim((string)$_GET[$key]);
+    if ($raw === '') {
+        return null;
+    }
+
+    return floatval($raw);
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
@@ -50,6 +63,12 @@ if ($method === 'GET') {
 
     $search = trim((string)($_GET['search'] ?? ''));
     $categoryId = intval($_GET['categoryId'] ?? 0);
+    $costMin = getOptionalFloatParam('costMin');
+    $costMax = getOptionalFloatParam('costMax');
+    $marginMin = getOptionalFloatParam('marginMin');
+    $marginMax = getOptionalFloatParam('marginMax');
+    $sellMin = getOptionalFloatParam('sellMin');
+    $sellMax = getOptionalFloatParam('sellMax');
     $limit = intval($_GET['limit'] ?? 100);
     $limit = max(1, min(500, $limit));
 
@@ -121,6 +140,42 @@ if ($method === 'GET') {
         $query .= " AND p.category_id = ?";
         $params[] = $categoryId;
         $types .= 'i';
+    }
+
+    if ($costMin !== null) {
+        $query .= " AND p.{$costColumn} >= ?";
+        $params[] = $costMin;
+        $types .= 'd';
+    }
+
+    if ($costMax !== null) {
+        $query .= " AND p.{$costColumn} <= ?";
+        $params[] = $costMax;
+        $types .= 'd';
+    }
+
+    if ($marginMin !== null) {
+        $query .= " AND p.profit_margin >= ?";
+        $params[] = $marginMin;
+        $types .= 'd';
+    }
+
+    if ($marginMax !== null) {
+        $query .= " AND p.profit_margin <= ?";
+        $params[] = $marginMax;
+        $types .= 'd';
+    }
+
+    if ($sellMin !== null) {
+        $query .= " AND p.price >= ?";
+        $params[] = $sellMin;
+        $types .= 'd';
+    }
+
+    if ($sellMax !== null) {
+        $query .= " AND p.price <= ?";
+        $params[] = $sellMax;
+        $types .= 'd';
     }
 
     $query .= " ORDER BY p.id DESC LIMIT ?";

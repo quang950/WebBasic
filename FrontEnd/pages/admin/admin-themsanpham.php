@@ -243,6 +243,12 @@
                         <select id="pricingCategoryFilter" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
                             <option value="">Tất cả loại xe</option>
                         </select>
+                        <input type="number" id="pricingCostMin" min="0" step="1000" placeholder="Giá vốn từ" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
+                        <input type="number" id="pricingCostMax" min="0" step="1000" placeholder="Giá vốn đến" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
+                        <input type="number" id="pricingMarginMin" min="0" max="500" step="0.1" placeholder="% LN từ" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:120px;font-size:14px;">
+                        <input type="number" id="pricingMarginMax" min="0" max="500" step="0.1" placeholder="% LN đến" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:120px;font-size:14px;">
+                        <input type="number" id="pricingSellMin" min="0" step="1000" placeholder="Giá bán từ" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
+                        <input type="number" id="pricingSellMax" min="0" step="1000" placeholder="Giá bán đến" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
                         <button onclick="searchPricingProduct()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tìm kiếm</button>
                     </div>
                     <div id="pricingGrid"></div>
@@ -1067,6 +1073,12 @@
 
         const searchKeyword = (document.getElementById('pricingSearchProduct')?.value || '').trim();
         const categoryValue = document.getElementById('pricingCategoryFilter')?.value || '';
+        const costMin = (document.getElementById('pricingCostMin')?.value || '').trim();
+        const costMax = (document.getElementById('pricingCostMax')?.value || '').trim();
+        const marginMin = (document.getElementById('pricingMarginMin')?.value || '').trim();
+        const marginMax = (document.getElementById('pricingMarginMax')?.value || '').trim();
+        const sellMin = (document.getElementById('pricingSellMin')?.value || '').trim();
+        const sellMax = (document.getElementById('pricingSellMax')?.value || '').trim();
 
         let apiUrl = '/WebBasic/BackEnd/api/pricing.php?action=list&limit=500';
         if (searchKeyword) {
@@ -1074,6 +1086,24 @@
         }
         if (categoryValue) {
             apiUrl += `&categoryId=${encodeURIComponent(categoryValue)}`;
+        }
+        if (costMin !== '') {
+            apiUrl += `&costMin=${encodeURIComponent(costMin)}`;
+        }
+        if (costMax !== '') {
+            apiUrl += `&costMax=${encodeURIComponent(costMax)}`;
+        }
+        if (marginMin !== '') {
+            apiUrl += `&marginMin=${encodeURIComponent(marginMin)}`;
+        }
+        if (marginMax !== '') {
+            apiUrl += `&marginMax=${encodeURIComponent(marginMax)}`;
+        }
+        if (sellMin !== '') {
+            apiUrl += `&sellMin=${encodeURIComponent(sellMin)}`;
+        }
+        if (sellMax !== '') {
+            apiUrl += `&sellMax=${encodeURIComponent(sellMax)}`;
         }
 
         fetch(apiUrl)
@@ -1169,6 +1199,18 @@
     if (pricingCategoryFilter) {
         pricingCategoryFilter.addEventListener('change', () => searchPricingProduct());
     }
+
+    ['pricingCostMin', 'pricingCostMax', 'pricingMarginMin', 'pricingMarginMax', 'pricingSellMin', 'pricingSellMax'].forEach((id) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchPricingProduct();
+            }
+        });
+    });
 
     function searchImportTickets() {
         const search = document.getElementById('searchImportInput')?.value || '';
