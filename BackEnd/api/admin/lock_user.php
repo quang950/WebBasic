@@ -42,25 +42,24 @@ try {
     }
     
     // For simplicity, we'll add a comment or use a status field
-    // Alternative: prepend '!' to password to lock
+    // Use locked column instead of modifying password
     if ($data['locked']) {
-        // Lock: set password to impossible string
-        $lockedPassword = '!LOCKED!';
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-        $stmt->bind_param("si", $lockedPassword, $user_id);
+        // Lock: set locked = 1
+        $stmt = $conn->prepare("UPDATE users SET locked = 1 WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
         $message = 'User locked successfully';
     } else {
-        // Unlock: we can't restore original password, so return error
-        // Instead, generate a temporary password
-        $tempPassword = password_hash('Temp123456', PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-        $stmt->bind_param("si", $tempPassword, $user_id);
-        $message = 'User unlocked successfully (password reset to: Temp123456)';
+        // Unlock: set locked = 0 (password stays the same!)
+        $stmt = $conn->prepare("UPDATE users SET locked = 0 WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $message = 'User unlocked successfully! Password không thay đổi';
     }
     
     if (!$stmt->execute()) {
         throw new Exception("Update failed: " . $stmt->error);
     }
+    
+    $stmt->close();
     
     echo json_encode([
         'success' => true,

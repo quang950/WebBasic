@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     
     $stmt = $conn->prepare("
-        SELECT id, email, first_name, last_name, phone, birth_date, province, address, is_admin
+        SELECT id, email, first_name, last_name, phone, birth_date, province, address, is_admin, locked
         FROM users WHERE id = ?
     ");
     $stmt->bind_param("i", $userId);
@@ -39,6 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     
     $user = $result->fetch_assoc();
+    
+    // locked field trực tiếp từ database
+    $user['locked'] = (bool)$user['locked'];
+    
     $stmt->close();
     
     http_response_code(200);

@@ -168,7 +168,7 @@
     <div class="form-container">
         <div class="form-header">
             <h2><i class="fas fa-plus-circle"></i> Thêm loại xe mới</h2>
-            <a href="admin-themsanpham.php#categories" class="back-btn">
+            <a href="admin-themsanpham.php" class="back-btn">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
@@ -211,7 +211,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" onclick="window.location.href='admin-themsanpham.php#categories'" class="cancel-btn">
+                <button type="button" onclick="window.location.href='admin-themsanpham.php'" class="cancel-btn">
                     Hủy
                 </button>
                 <button type="submit" class="save-btn" onclick="return false;">
@@ -222,11 +222,83 @@
     </div>
 
     <script>
-        // Xử lý submit form (prototype mode - không lưu)
+        // Get category ID từ URL if editing
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryEditId = urlParams.get('edit');
+        
+        // Load category data if editing
+        if (categoryEditId) {
+            fetch(`/WebBasic/BackEnd/api/categories.php?search=${categoryEditId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.categories && data.categories.length > 0) {
+                        const cat = data.categories[0];
+                        document.getElementById('categoryName').value = cat.name || '';
+                        document.getElementById('categoryDescription').value = cat.description || '';
+                        document.getElementById('categoryVisible').checked = cat.status == 1;
+                    }
+                })
+                .catch(err => console.error('Load category error:', err));
+        }
+        
+        // Xử lý submit form
         document.getElementById('addCategoryForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Prototype mode: nút Lưu không hoạt động
-            return false;
+            
+            const name = document.getElementById('categoryName').value.trim();
+            const description = document.getElementById('categoryDescription').value.trim();
+            const visible = document.getElementById('categoryVisible').checked ? 1 : 0;
+            
+            if (!name) {
+                alert('Vui lòng nhập tên loại sản phẩm');
+                return;
+            }
+            
+            if (categoryEditId) {
+                // Update existing category
+                const formData = new FormData();
+                formData.append('id', categoryEditId);
+                formData.append('name', name);
+                formData.append('description', description);
+                formData.append('is_visible', visible);
+                formData.append('status', visible);
+                
+                fetch('/WebBasic/BackEnd/api/categories.php', {
+                    method: 'PUT',
+                    body: new URLSearchParams(formData)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ Cập nhật loại sản phẩm thành công!');
+                        window.location.href = 'admin-themsanpham.php';
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Cập nhật thất bại'));
+                    }
+                })
+                .catch(err => alert('Lỗi kết nối: ' + err));
+            } else {
+                // Add new category
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('description', description);
+                formData.append('is_visible', visible);
+                
+                fetch('/WebBasic/BackEnd/api/categories.php', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ Thêm loại sản phẩm thành công!');
+                        window.location.href = 'admin-themsanpham.php';
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Thêm thất bại'));
+                    }
+                })
+                .catch(err => alert('Lỗi kết nối: ' + err));
+            }
         });
 
         // Auto-focus vào trường đầu tiên

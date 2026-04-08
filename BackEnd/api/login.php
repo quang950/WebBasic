@@ -26,7 +26,7 @@ $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
 $password = $data['password'];
 
 // Get user from database
-$stmt = $conn->prepare("SELECT id, email, password, first_name, last_name, phone, province, address, is_admin FROM users WHERE email = ?");
+$stmt = $conn->prepare("SELECT id, email, password, first_name, last_name, phone, province, address, is_admin, locked FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -40,6 +40,13 @@ if ($result->num_rows === 0) {
 
 $user = $result->fetch_assoc();
 $stmt->close();
+
+// Check if account is locked
+if ($user['locked']) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Tài khoản bị khóa. Vui lòng liên hệ admin']);
+    exit;
+}
 
 // Verify password
 if (!password_verify($password, $user['password'])) {

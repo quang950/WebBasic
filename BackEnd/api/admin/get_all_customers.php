@@ -40,6 +40,7 @@ try {
             users.phone,
             users.province,
             users.created_at,
+            users.locked,
             COUNT(DISTINCT orders.id) as order_count,
             SUM(orders.total_price) as total_spent
         FROM users

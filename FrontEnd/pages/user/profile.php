@@ -386,24 +386,97 @@
 
         // Load thông tin user khi trang load
         window.addEventListener('DOMContentLoaded', function() {
-            const email = localStorage.getItem('userEmail');
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.email === email);
+            const userInfo = localStorage.getItem('userInfo');
             
-            if (user) {
-                document.getElementById('email').value = user.email || '';
-                document.getElementById('phone').value = user.phone || '';
-                document.getElementById('birthDate').value = user.birthDate || '';
-            } else {
-                // Nếu không có user, quay về trang chủ
-                window.location.href = '../../index.html';
+            if (!userInfo) {
+                window.location.href = '../../index.php';
+                return;
             }
+            
+            const user = JSON.parse(userInfo);
+            const userId = user.id;
+            
+            // Fetch user data từ API để cập nhật real-time
+            fetch('/WebBasic/BackEnd/api/user.php?id=' + userId, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.user) {
+                        const apiUser = data.user;
+                        
+                        // Check if user is locked
+                        if (apiUser.locked) {
+                            // Show locked message
+                            const profileForm = document.getElementById('profileForm');
+                            const lockedMsg = document.createElement('div');
+                            lockedMsg.style.cssText = 'background: #ff6b6b; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; text-align: center;';
+                            lockedMsg.innerHTML = '<i class="fas fa-lock"></i> Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.';
+                            profileForm.parentNode.insertBefore(lockedMsg, profileForm);
+                            
+                            // Disable all form fields
+                            const inputs = profileForm.querySelectorAll('input, button, a');
+                            inputs.forEach(input => {
+                                input.disabled = true;
+                                input.style.opacity = '0.5';
+                            });
+                        }
+                        
+                        // Populate form with API data
+                        document.getElementById('email').value = apiUser.email || '';
+                        document.getElementById('phone').value = apiUser.phone || '';
+                        document.getElementById('birthDate').value = apiUser.birth_date || '';
+                        
+                        // Store user ID for later use
+                        window.currentUserId = userId;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user profile:', error);
+                });
         });
 
-        // Xử lý form submit (prototype - không lưu, không thông báo)
+        // Xử lý form submit - Save thông tin user
         document.getElementById('profileForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Không làm gì cả - prototype mode
+            
+            const userId = window.currentUserId;
+            if (!userId) {
+                alert('Không thể lưu: Thiếu user ID');
+                return false;
+            }
+            
+            const formData = {
+                id: userId,
+                phone: document.getElementById('phone').value,
+                birthDate: document.getElementById('birthDate').value
+            };
+            
+            fetch('/WebBasic/BackEnd/api/user.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ Cập nhật thông tin thành công!');
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Không thể lưu'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi: ' + error.message);
+                });
+            
             return false;
         });
     </script>

@@ -17,6 +17,9 @@
                     <button onclick="goToHomePage()" class="home-btn">
                         <i class="fas fa-home"></i> Trang chủ
                     </button>
+                    <button onclick="adminLogout()" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
                 </div>
             </div>
         </header>
@@ -56,7 +59,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#categories" onclick="return showSection('categories')">
+                            <a href="#" onclick="return showSection('categories')">
                                 <i class="fas fa-list"></i> Quản lý loại sản phẩm
                             </a>
                         </li>
@@ -252,7 +255,7 @@
                 <section id="categories-section" class="content-section" style="display:none">
                     <div class="section-header">
                         <h2>Quản lý loại sản phẩm</h2>
-                        <button onclick="window.location.href='/WebBasic/FrontEnd/pages/admin/admin-add-category.php'" class="add-btn">
+                        <button onclick="showAddCategoryModal()" class="add-btn">
                             <i class="fas fa-plus"></i> Thêm loại xe
                         </button>
                     </div>
@@ -494,7 +497,7 @@
 
                     <div class="modal-actions">
                         <button type="button" onclick="closeAddCategoryModal()" class="cancel-btn">Hủy</button>
-                        <button type="submit" class="save-btn" onclick="addProduct();">Lưu</button>
+                        <button type="submit" class="save-btn">Lưu</button>
                     </div>
                 </form>
             </div>
@@ -659,9 +662,27 @@
     <script>
         // Function để quay về trang chủ
         function goToHomePage() {
-            // Lưu trạng thái admin đang đăng nhập khi về trang chủ
+            // GIỮ admin session - không logout
+            // Chỉ set flag để biết admin đang xem trang chủ
             localStorage.setItem('adminViewingHome', 'true');
+            
             window.location.href = '/WebBasic/FrontEnd/index.php';
+        }
+        
+        // Function để đăng xuất admin
+        function adminLogout() {
+            if (!confirm('Bạn chắc chắn muốn đăng xuất?')) {
+                return;
+            }
+            
+            // Clear admin session
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminUsername');
+            localStorage.removeItem('adminInfo');
+            localStorage.removeItem('adminViewingHome');
+            
+            // Redirect to admin login
+            window.location.href = '/WebBasic/FrontEnd/pages/admin/admin-login.php';
         }
 
         // Kiểm tra đăng nhập khi load trang
@@ -687,53 +708,64 @@
 
             loadProducts();
             updateStats();
-            // TODO: Fix API calls - currently causing spinner issues
-            // loadCategories();
+            loadCategories();
+            
+            // Bind form submit handler cho category modal
+            const categoryForm = document.getElementById('addCategoryForm');
+            if (categoryForm) {
+                categoryForm.addEventListener('submit', saveCategoryForm);
+            }
         });
+
+        // ========== HỖ TRỢ ==========
+        
+        // Hàm để escape HTML và tránh XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // ========== QUẢN LÝ LOẠI SẢN PHẨM ==========
         
-        // Load và hiển thị danh sách loại sản phẩm từ database API
+        // Load và hiển thị danh sách loại sản phẩm từ database
         function loadCategories() {
             const tbody = document.getElementById('categoriesTableBody');
-            
             if (!tbody) return;
             
-            // Comment tạm thời - API call bị timeout
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Tính năng này đang được cập nhật...</td></tr>';
-            return;
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
             
-            // Create abort controller with timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            // Fetch categories from API
-            fetch('/WebBasic/BackEnd/api/categories.php?action=list', {
-                signal: controller.signal
+            // Fetch categories from database via API
+            fetch('/WebBasic/BackEnd/api/categories.php', {
+                method: 'GET',
+                headers: {'Content-Type': 'application/json'}
             })
                 .then(response => response.json())
                 .then(data => {
-                    clearTimeout(timeoutId);
                     if (data.success && data.categories && data.categories.length > 0) {
                         tbody.innerHTML = data.categories.map(cat => `
                             <tr>
-                                <td style="padding:12px;text-align:left;">${cat.name}</td>
-                                <td style="padding:12px;text-align:center;">${cat.product_count || 0}</td>
+                                <td style="padding:12px;text-align:left;"><strong>${escapeHtml(cat.name)}</strong></td>
                                 <td style="padding:12px;text-align:center;">
-                                    ${cat.is_visible 
-                                        ? '<i class="fas fa-eye" style="color:#28a745;"></i> Hiển thị' 
-                                        : '<i class="fas fa-eye-slash" style="color:#dc3545;"></i> Ẩn'
+                                    <span style="background:#e7f3ff;color:#0066cc;padding:4px 8px;border-radius:4px;font-weight:600;">
+                                        ${cat.product_count || 0}
+                                    </span>
+                                </td>
+                                <td style="padding:12px;text-align:center;">
+                                    ${cat.is_visible == 1 || cat.status == 1
+                                        ? '<span style="color:#28a745;"><i class="fas fa-check-circle"></i> Hiển thị</span>' 
+                                        : '<span style="color:#dc3545;"><i class="fas fa-times-circle"></i> Ẩn</span>'
                                     }
                                 </td>
                                 <td style="padding:8px;text-align:center;">
-                                    <div style="display:flex;gap:0.5rem;align-items:center;justify-content:center;">
-                                        <button onclick="editCategory(${cat.id})" class="edit-btn" title="Sửa" style="padding:0.5rem;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;">
+                                    <div style="display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;">
+                                        <button onclick="editCategory(${cat.id}, '${(cat.name || '').replace(/'/g, "&apos;")}', '${(cat.description || '').replace(/'/g, "&apos;")}', ${cat.status})" class="edit-btn" title="Sửa" style="padding:6px 10px;background:#0dcaf0;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">
                                             <i class="fas fa-edit"></i> Sửa
                                         </button>
-                                        <button onclick="toggleHideCategory(${cat.id})" title="${cat.is_visible ? 'Ẩn' : 'Hiện'}" style="padding:0.5rem;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;">
-                                            <i class="fas fa-${cat.is_visible ? 'eye-slash' : 'eye'}"></i> ${cat.is_visible ? 'Ẩn' : 'Hiện'}
+                                        <button onclick="toggleHideCategory(${cat.id}, ${cat.status})" title="${cat.status == 1 ? 'Ẩn' : 'Hiện'}" style="padding:6px 10px;background:#6c757d;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">
+                                            <i class="fas fa-${cat.status == 1 ? 'eye-slash' : 'eye'}"></i> ${cat.status == 1 ? 'Ẩn' : 'Hiện'}
                                         </button>
-                                        <button onclick="deleteCategory(${cat.id})" class="delete-btn" title="Xóa" style="padding:0.5rem;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">
+                                        <button onclick="deleteCategory(${cat.id})" class="delete-btn" title="Xóa" style="padding:6px 10px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">
                                             <i class="fas fa-trash"></i> Xóa
                                         </button>
                                     </div>
@@ -745,13 +777,71 @@
                     }
                 })
                 .catch(err => {
-                    clearTimeout(timeoutId);
                     console.error('Error loading categories:', err);
-                    if (err.name === 'AbortError') {
-                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Kết nối timed out - Vui lòng tải lại trang</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Lỗi khi tải danh sách loại sản phẩm</td></tr>';
+                });
+        }
+
+        // Tìm kiếm loại sản phẩm
+        function searchCategories() {
+            const search = document.getElementById('categorySearchInput').value;
+            const status = document.getElementById('categoryStatusFilter').value;
+            const tbody = document.getElementById('categoriesTableBody');
+            
+            if (!tbody) return;
+            
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</td></tr>';
+            
+            let url = '/WebBasic/BackEnd/api/categories.php';
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (status) params.append('status', status === 'visible' ? 1 : 0);
+            
+            if (params.toString()) url += '?' + params.toString();
+            
+            fetch(url, {method: 'GET', headers: {'Content-Type': 'application/json'}})
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.categories && data.categories.length > 0) {
+                        tbody.innerHTML = data.categories.map(cat => `
+                            <tr>
+                                <td style="padding:12px;text-align:left;"><strong>${escapeHtml(cat.name)}</strong></td>
+                                <td style="padding:12px;text-align:center;">
+                                    <span style="background:#e7f3ff;color:#0066cc;padding:4px 8px;border-radius:4px;font-weight:600;">
+                                        ${cat.product_count || 0}
+                                    </span>
+                                </td>
+                                <td style="padding:12px;text-align:center;">
+                                    ${cat.is_visible == 1 || cat.status == 1
+                                        ? '<span style="color:#28a745;"><i class="fas fa-check-circle"></i> Hiển thị</span>' 
+                                        : '<span style="color:#dc3545;"><i class="fas fa-times-circle"></i> Ẩn</span>'
+                                    }
+                                </td>
+                                <td style="padding:8px;text-align:center;">
+                                    <div style="display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;">
+                                        <button onclick="editCategory(${cat.id})" class="edit-btn" title="Sửa" style="padding:6px 10px;background:#0dcaf0;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </button>
+                                        <button onclick="toggleHideCategory(${cat.id}, ${cat.is_visible || cat.status})" title="${cat.is_visible || cat.status ? 'Ẩn' : 'Hiện'}" style="padding:6px 10px;background:#6c757d;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">
+                                            <i class="fas fa-${cat.is_visible || cat.status ? 'eye-slash' : 'eye'}"></i>
+                                        </button>
+                                        <a href="/WebBasic/FrontEnd/pages/admin/admin-add-category.php?edit=${cat.id}" class="edit-btn" title="Chỉnh sửa chi tiết" style="padding:6px 10px;background:#0d6efd;color:white;border:none;border-radius:4px;cursor:pointer;text-decoration:none;font-size:13px;">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </a>
+                                        <button onclick="deleteCategory(${cat.id})" class="delete-btn" title="Xóa" style="padding:6px 10px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">
+                                            <i class="fas fa-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Lỗi khi tải danh sách loại sản phẩm</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">Không tìm thấy loại sản phẩm nào</td></tr>';
                     }
+                })
+                .catch(err => {
+                    console.error('Error searching categories:', err);
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#dc3545;">Lỗi khi tìm kiếm</td></tr>';
                 });
         }
 
@@ -765,19 +855,89 @@
             document.getElementById('addCategoryModal').style.display = 'block';
         }
 
-        // Đóng modal
+        // Đóng modal và reset form
         function closeAddCategoryModal() {
             document.getElementById('addCategoryModal').style.display = 'none';
+            document.getElementById('addCategoryForm').reset();
+            document.getElementById('categoryEditId').value = '';
         }
 
-        // Sửa loại sản phẩm
-        function editCategory(id) {
-            alert('Chức năng sửa chưa khả dụng');
+        // Sửa loại sản phẩm - mở modal thay vì redirect
+        function editCategory(id, name, description, status) {
+            document.getElementById('categoryModalTitle').textContent = 'Sửa loại sản phẩm';
+            document.getElementById('categoryEditId').value = id;
+            document.getElementById('categoryName').value = name;
+            document.getElementById('categoryDescription').value = description || '';
+            document.getElementById('categoryVisible').checked = status == 1;
+            document.getElementById('addCategoryModal').style.display = 'block';
+        }
+        
+        // Xử lý submit form thêm/sửa loại sản phẩm
+        function saveCategoryForm(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('categoryEditId').value;
+            const name = document.getElementById('categoryName').value.trim();
+            const description = document.getElementById('categoryDescription').value.trim();
+            const visible = document.getElementById('categoryVisible').checked ? 1 : 0;
+            
+            if (!name) {
+                alert('Vui lòng nhập tên loại sản phẩm');
+                return;
+            }
+            
+            if (id) {
+                // Update existing
+                const formData = new URLSearchParams();
+                formData.append('id', id);
+                formData.append('name', name);
+                formData.append('description', description);
+                formData.append('is_visible', visible);
+                formData.append('status', visible);
+                
+                fetch('/WebBasic/BackEnd/api/categories.php', {
+                    method: 'PUT',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ Cập nhật thành công!');
+                        closeAddCategoryModal();
+                        loadCategories();
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Cập nhật thất bại'));
+                    }
+                })
+                .catch(err => alert('Lỗi: ' + err));
+            } else {
+                // Add new
+                const formData = new URLSearchParams();
+                formData.append('name', name);
+                formData.append('description', description);
+                formData.append('is_visible', visible);
+                
+                fetch('/WebBasic/BackEnd/api/categories.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ Thêm thành công!');
+                        closeAddCategoryModal();
+                        loadCategories();
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Thêm thất bại'));
+                    }
+                })
+                .catch(err => alert('Lỗi: ' + err));
+            }
         }
 
         // Xóa loại sản phẩm
         function deleteCategory(id) {
-            if (!confirm('Bạn có chắc muốn xóa loại sản phẩm này?')) return;
+            if (!confirm('Bạn có chắc chắn muốn xóa loại sản phẩm này không?')) return;
             
             fetch('/WebBasic/BackEnd/api/categories.php', {
                 method: 'DELETE',
@@ -786,23 +946,46 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    alert('Xóa thành công');
+                    alert('Xóa thành công!');
                     loadCategories();
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    alert('Lỗi: ' + (data.message || 'Xóa thất bại'));
                 }
             })
-            .catch(err => alert('Lỗi kết nối: ' + err));
+            .catch(err => {
+                console.error('Delete error:', err);
+                alert('Lỗi kết nối: ' + err);
+            });
         }
 
         // Ẩn/Hiện loại sản phẩm
-        function toggleHideCategory(id) {
-            alert('Chức năng ẩn/hiện chưa khả dụng');
-        }
-
-        // Tìm kiếm loại sản phẩm
-        function searchCategories() {
-            loadCategories();
+        function toggleHideCategory(id, currentStatus) {
+            const newStatus = currentStatus ? 0 : 1;
+            const statusText = newStatus ? 'Hiển thị' : 'Ẩn';
+            
+            if (!confirm(`Bạn muốn ${statusText} loại sản phẩm này?`)) return;
+            
+            const formData = new URLSearchParams();
+            formData.append('id', id);
+            formData.append('is_visible', newStatus);
+            
+            fetch('/WebBasic/BackEnd/api/categories.php', {
+                method: 'PUT',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert(statusText + ' thành công!');
+                    loadCategories();
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Cập nhật thất bại'));
+                }
+            })
+            .catch(err => {
+                console.error('Update error:', err);
+                alert('Lỗi kết nối: ' + err);
+            });
         }
 
         // Load lại dữ liệu loại sản phẩm

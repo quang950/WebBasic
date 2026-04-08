@@ -70,8 +70,10 @@ try {
     $description = trim($data['description'] ?? '');
     $image_url = trim($data['image_url'] ?? '');
     
-    // Get category_id from category name
-    $category_id = 1; // Default to first category
+    // Get category_id from brand (tự động thêm category nếu brand mới)
+    $category_id = null;
+    
+    // Ưu tiên: Tìm category từ tên category được submit
     if (!empty($category)) {
         $stmt = $conn->prepare("SELECT id FROM categories WHERE name = ? LIMIT 1");
         $stmt->bind_param("s", $category);
@@ -82,13 +84,38 @@ try {
         }
     }
     
-    // Always use first category if not found
-    if ($category_id === 1) {
+    // Nếu không tìm được category → Tìm hoặc tạo category từ brand
+    if ($category_id === null && !empty($brand)) {
+        $stmt = $conn->prepare("SELECT id FROM categories WHERE name = ? LIMIT 1");
+        $stmt->bind_param("s", $brand);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            // Brand đã tồn tại trong categories
+            $category_id = $row['id'];
+        } else {
+            // Brand chưa tồn tại → tự động tạo category mới
+            $stmt = $conn->prepare("INSERT INTO categories (name, description, is_visible, status) VALUES (?, ?, 1, 1)");
+            $description_for_brand = "Dòng xe " . $brand;
+            $stmt->bind_param("ss", $brand, $description_for_brand);
+            
+            if ($stmt->execute()) {
+                $category_id = $conn->insert_id;
+            }
+        }
+    }
+    
+    // Nếu vẫn không có category_id → dùng category đầu tiên
+    if ($category_id === null) {
         $stmt = $conn->prepare("SELECT id FROM categories LIMIT 1");
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
             $category_id = $row['id'];
+        } else {
+            // Nếu không có category nào → dùng 1 (fallback)
+            $category_id = 1;
         }
     }
     

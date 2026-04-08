@@ -145,6 +145,39 @@ try {
         $bind_types .= 's';
     }
     
+    // Xử lý tự động tạo category từ brand (nếu brand được update)
+    if ($brand !== null && $category_id === null) {
+        // Tìm hoặc tạo category từ brand
+        $stmt_check = $conn->prepare("SELECT id FROM categories WHERE name = ? LIMIT 1");
+        $stmt_check->bind_param("s", $brand);
+        $stmt_check->execute();
+        $check_result = $stmt_check->get_result();
+        
+        if ($check_result->num_rows > 0) {
+            // Brand đã tồn tại trong categories
+            $row = $check_result->fetch_assoc();
+            $category_id = $row['id'];
+        } else {
+            // Brand chưa tồn tại → tự động tạo category mới
+            $stmt_insert = $conn->prepare("INSERT INTO categories (name, description, is_visible, status) VALUES (?, ?, 1, 1)");
+            $description_for_brand = "Dòng xe " . $brand;
+            $stmt_insert->bind_param("ss", $brand, $description_for_brand);
+            
+            if ($stmt_insert->execute()) {
+                $category_id = $conn->insert_id;
+            }
+            $stmt_insert->close();
+        }
+        $stmt_check->close();
+        
+        // Thêm category_id vào update fields nếu nó được tạo hoặc tìm thấy
+        if ($category_id !== null) {
+            $update_fields[] = 'category_id = ?';
+            $update_values[] = $category_id;
+            $bind_types .= 'i';
+        }
+    }
+    
     if (empty($update_fields)) {
         http_response_code(400);
         echo json_encode([

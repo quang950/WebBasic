@@ -78,6 +78,9 @@ class ProductModel {
 				$types .= 'd';
 				$params[] = (float)$maxPrice;
 			}
+			
+			// Only show products from visible categories
+			$where[] = '(c.id IS NULL OR c.status = 1)';
 
 			$whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where));
 

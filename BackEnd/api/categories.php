@@ -30,12 +30,27 @@ try {
                 throw new Exception("Query failed: " . $conn->error);
             }
         } else {
-            // Default: return all categories with product counts
-            $sql = "SELECT c.id, c.name, c.description, c.is_visible,
+            // Default: return all categories with product counts and support search filter
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+            $status = isset($_GET['status']) ? intval($_GET['status']) : -1;
+            
+            $sql = "SELECT c.id, c.name, c.description, c.is_visible, c.status,
                     COUNT(p.id) as product_count
                     FROM categories c
-                    LEFT JOIN products p ON p.category = c.name
-                    GROUP BY c.id, c.name, c.description, c.is_visible
+                    LEFT JOIN products p ON p.category_id = c.id";
+            
+            $conditions = [];
+            if (!empty($search)) {
+                $conditions[] = "c.name LIKE '%" . $conn->real_escape_string($search) . "%'";
+            }
+            if ($status >= 0) {
+                $conditions[] = "c.status = " . $status;
+            }
+            if (!empty($conditions)) {
+                $sql .= " WHERE " . implode(' AND ', $conditions);
+            }
+            
+            $sql .= " GROUP BY c.id, c.name, c.description, c.is_visible, c.status
                     ORDER BY c.name ASC";
             
             $result = $conn->query($sql);
@@ -43,6 +58,7 @@ try {
             if ($result) {
                 $categories = [];
                 while ($row = $result->fetch_assoc()) {
+                    $row['status_text'] = $row['status'] == 1 ? 'Đang hiển thị' : 'Đang ẩn';
                     $categories[] = $row;
                 }
                 
@@ -85,27 +101,56 @@ try {
         parse_str(file_get_contents("php://input"), $_PUT);
         
         $id = (int)($_PUT['id'] ?? 0);
-        $name = trim($_PUT['name'] ?? '');
-        $description = trim($_PUT['description'] ?? '');
-        $is_visible = isset($_PUT['is_visible']) ? (int)$_PUT['is_visible'] : 1;
+        $name = isset($_PUT['name']) ? trim($_PUT['name']) : '';
+        $description = isset($_PUT['description']) ? trim($_PUT['description']) : '';
+        $is_visible = isset($_PUT['is_visible']) ? intval($_PUT['is_visible']) : -1;
         
-        if ($id <= 0 || empty($name)) {
-            echo json_encode(['success' => false, 'message' => 'Invalid ID or name']);
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid category ID']);
             exit;
         }
         
-        $stmt = $conn->prepare("UPDATE categories SET name = ?, description = ?, is_visible = ? WHERE id = ?");
-        $stmt->bind_param("ssii", $name, $description, $is_visible, $id);
-        
-        if ($stmt->execute()) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Category updated successfully'
-            ]);
-        } else {
-            throw new Exception("Update failed: " . $stmt->error);
+        // Check if category exists
+        $checkStmt = $conn->prepare("SELECT id FROM categories WHERE id = ? LIMIT 1");
+        $checkStmt->bind_param("i", $id);
+        $checkStmt->execute();
+        if ($checkStmt->get_result()->num_rows === 0) {
+            echo json_encode(['success' => false, 'message' => 'Category not found']);
+            exit;
         }
-        $stmt->close();
+        
+        // If only updating is_visible (status toggle)
+        if ($is_visible >= 0 && empty($name)) {
+            $stmt = $conn->prepare("UPDATE categories SET status = ?, is_visible = ? WHERE id = ?");
+            $stmt->bind_param("iii", $is_visible, $is_visible, $id);
+            
+            if ($stmt->execute()) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Category visibility updated successfully'
+                ]);
+            } else {
+                throw new Exception("Update failed: " . $stmt->error);
+            }
+            $stmt->close();
+        } else if (!empty($name)) {
+            // Full update with all fields
+            $stmt = $conn->prepare("UPDATE categories SET name = ?, description = ?, is_visible = ?, status = ? WHERE id = ?");
+            $status = isset($_PUT['status']) ? intval($_PUT['status']) : $is_visible;
+            $stmt->bind_param("ssiii", $name, $description, $is_visible, $status, $id);
+            
+            if ($stmt->execute()) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Category updated successfully'
+                ]);
+            } else {
+                throw new Exception("Update failed: " . $stmt->error);
+            }
+            $stmt->close();
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No valid fields to update']);
+        }
     }
     elseif ($method === 'DELETE') {
         // Delete category

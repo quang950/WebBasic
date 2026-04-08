@@ -126,17 +126,6 @@
       </div>
     </div>
 
-    <!-- Admin Login Box - Góc phải -->
-    <div class="admin-login-box">
-      <div
-        class="admin-toggle"
-        onclick="window.location.href = '../admin/admin-login.php'"
-      >
-        <i class="fas fa-user-shield"></i>
-        <span>Admin</span>
-      </div>
-    </div>
-
     <script>
       // Toast notification (tự ẩn sau 2s rồi chuyển trang)
       function showToast(message, redirectUrl) {

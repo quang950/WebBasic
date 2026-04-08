@@ -114,7 +114,7 @@ function loadCustomers() {
                                 <td style="padding:12px;text-align:right;"><strong>${formatPrice(u.total_spent || 0)} VNĐ</strong></td>
                                 <td style="padding:12px;text-align:center;white-space:nowrap;">
                                     <button onclick="showResetPasswordModal(${u.id}, '${u.first_name} ${u.last_name}')" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:#007bff;color:#fff;border:none;cursor:pointer;margin-right:4px;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-key"></i> Reset MK</button>
-                                    <button onclick="toggleLockUser(${u.id}, '${u.first_name} ${u.last_name}')" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:#ffc107;color:#000;border:none;cursor:pointer;margin-right:4px;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-lock"></i> Khóa</button>
+                                    <button onclick="toggleLockUser(${u.id}, '${u.first_name} ${u.last_name}', ${u.locked})" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:${u.locked ? '#28a745' : '#ffc107'};color:${u.locked ? '#fff' : '#000'};border:none;cursor:pointer;margin-right:4px;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-${u.locked ? 'lock-open' : 'lock'}"></i> ${u.locked ? 'Mở khóa' : 'Khóa'}</button>
                                     <button onclick="deleteUser(${u.id}, '${u.first_name} ${u.last_name}')" style="padding:6px 12px;font-size:0.9em;border-radius:6px;background:#dc3545;color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-trash"></i> Xóa</button>
                                 </td>
                             </tr>
@@ -413,6 +413,11 @@ function addProduct(event) {
           // Reload products list
           if (typeof loadProducts === "function") {
             loadProducts();
+          }
+          
+          // Reload categories list (để hiện danh sách loại sản phẩm mới nếu có brand mới)
+          if (typeof loadCategories === "function") {
+            loadCategories();
           }
         } else {
           alert("Lỗi: " + (result.message || "Không thể lưu sản phẩm"));
@@ -2653,8 +2658,14 @@ function resetPassword(userId, newPassword) {
 }
 
 // Lock/Unlock user
-function toggleLockUser(userId, userName) {
-  if (!confirm(`Bạn chắc chắn muốn khóa tài khoản của ${userName}?`)) {
+function toggleLockUser(userId, userName, currentLocked) {
+  const newLocked = currentLocked ? 0 : 1;
+  const action = currentLocked ? 'mở khóa' : 'khóa';
+  const confirmMsg = currentLocked 
+    ? `Bạn chắc chắn muốn mở khóa tài khoản của ${userName}?`
+    : `Bạn chắc chắn muốn khóa tài khoản của ${userName}?`;
+  
+  if (!confirm(confirmMsg)) {
     return;
   }
 
@@ -2666,20 +2677,24 @@ function toggleLockUser(userId, userName) {
     },
     body: JSON.stringify({
       user_id: userId,
-      locked: 1,
+      locked: newLocked,
     }),
   })
     .then((response) => response.json())
     .then((result) => {
       if (result.success) {
-        alert("✓ Khóa tài khoản thành công!");
+        let successMsg = currentLocked 
+          ? "✓ Mở khóa tài khoản thành công! User có thể đăng nhập lại với password cũ."
+          : "✓ Khóa tài khoản thành công!";
+        
+        alert(successMsg);
         loadCustomers();
       } else {
-        alert("Lỗi: " + (result.message || "Không thể khóa tài khoản"));
+        alert("Lỗi: " + (result.message || `Không thể ${action} tài khoản`));
       }
     })
     .catch((error) => {
-      console.error("Error locking user:", error);
+      console.error("Error toggling user lock:", error);
       alert("Lỗi: " + error.message);
     });
 }

@@ -3763,6 +3763,7 @@
         const isUserLoggedIn = localStorage.getItem("userLoggedIn") === "true";
         const isAdminLoggedIn =
           localStorage.getItem("adminLoggedIn") === "true";
+        const isAdminViewingHome = localStorage.getItem("adminViewingHome") === "true";
 
         const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
         const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
@@ -3771,8 +3772,13 @@
         const loginBtn = document.getElementById("loginBtn");
         const userInfoDiv = document.getElementById("userInfo");
 
+        // Nếu admin đang xem trang chủ - ẩn login button và user info
+        if (isAdminViewingHome && isAdminLoggedIn) {
+          loginBtn.style.display = "none";
+          userInfoDiv.style.display = "none";
+        }
         // Nếu admin đã đăng nhập
-        if (isAdminLoggedIn) {
+        else if (isAdminLoggedIn) {
           // Ẩn nút đăng nhập, hiển thị thông tin admin
           loginBtn.style.display = "none";
           userInfoDiv.style.display = "flex";
@@ -3803,6 +3809,7 @@
           localStorage.removeItem("adminLoggedIn");
           localStorage.removeItem("adminUsername");
           localStorage.removeItem("adminInfo");
+          localStorage.removeItem("adminViewingHome");
           showToast("Admin đã đăng xuất thành công!");
         } else {
           // Đăng xuất user thường
@@ -3863,6 +3870,9 @@
           });
         }
 
+        // Load products from API for each brand
+        loadAllBrandProducts();
+
         // Slider arrows functionality - chuyển trang giữa 5 xe đầu và 5 xe cuối
         document.querySelectorAll(".slider-arrow.next").forEach((arrow) => {
           arrow.addEventListener("click", function () {
@@ -3901,6 +3911,86 @@
           btn.innerHTML = 'Thu gọn <i class="fas fa-arrow-up"></i>';
         }
       }
+
+      // Function to load all brand products from API
+      async function loadAllBrandProducts() {
+        // Chỉ load những brand nào có sản phẩm trong database
+        const brands = ['Toyota', 'Honda', 'BMW', 'Mercedes', 'Audi', 'Lexus', 'Hyundai', 'Kia', 'VinFast'];
+        
+        for (const brand of brands) {
+          try {
+            await loadBrandProducts(brand);
+          } catch (err) {
+            console.error(`Failed to load ${brand} products:`, err);
+          }
+        }
+      }
+
+      // Function to load products for a specific brand from API
+      async function loadBrandProducts(brand) {
+        try {
+          const response = await fetch(`/WebBasic/BackEnd/api/products.php?brand=${brand}&limit=20`);
+          if (!response.ok) throw new Error(`API error: ${response.status}`);
+          
+          const data = await response.json();
+          if (!data.success || !Array.isArray(data.data)) {
+            console.warn(`No products found for ${brand}`);
+            return;
+          }
+
+          const brandId = brand.toLowerCase();
+          const brandContainer = document.getElementById(brandId);
+          if (!brandContainer) {
+            console.warn(`Brand container not found for ${brand}`);
+            return;
+          }
+
+          const carContainer = brandContainer.querySelector('.car-container');
+          if (!carContainer) {
+            console.warn(`Car container not found for ${brand}`);
+            return;
+          }
+
+          // Clear existing hardcoded cards
+          carContainer.innerHTML = '';
+
+          // Render products from API
+          data.data.forEach((product, index) => {
+            const card = createProductCard(product, index);
+            carContainer.appendChild(card);
+          });
+
+          console.log(`✓ Loaded ${data.data.length} products for ${brand}`);
+        } catch (err) {
+          console.error(`Error loading ${brand} products:`, err);
+        }
+      }
+
+      // Function to create a product card element
+      function createProductCard(product, index) {
+        const card = document.createElement('div');
+        card.className = 'car-card';
+        card.setAttribute('data-desc', product.description || '');
+        
+        // Use image_url directly from API (already has full path)
+        // If not available, use basic filename format or placeholder
+        let imageSrc = product.image_url || 'assets/images/placeholder.jpg';
+        
+        const priceFormatted = new Intl.NumberFormat('vi-VN').format(product.price || 0) + ' VNĐ';
+        
+        card.innerHTML = `
+          <img src="${imageSrc}" alt="${product.name}" onerror="this.src='assets/images/1.jpg'"/>
+          <h3>${product.name}</h3>
+          <p class="price">${priceFormatted}</p>
+          <div class="button-container">
+            <button class="buy-btn" onclick="return false;" style="cursor: pointer; opacity: 1">Mua hàng</button>
+            <a href="#" class="view-details">Chi tiết</a>
+          </div>
+        `;
+        
+        return card;
+      }
+
       
     </script>
   </body>

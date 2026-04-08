@@ -56,7 +56,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#categories" onclick="return showSection('categories')">
+                            <a href="#" onclick="return showSection('categories')">
                                 <i class="fas fa-list"></i> Quáº£n lÃ½ loáº¡i sáº£n pháº©m
                             </a>
                         </li>
