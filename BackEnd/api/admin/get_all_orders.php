@@ -26,6 +26,15 @@ try {
     $ward = $_GET['ward'] ?? ''; // Thêm filter phường
     $sortBy = $_GET['sortBy'] ?? 'created_at'; // Default sort
     
+    // Auto-create shipping_name column if not exists
+    $checkColQuery = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'shipping_name'";
+    $colResult = $conn->query($checkColQuery);
+    if ($colResult && $colResult->num_rows === 0) {
+        // Column doesn't exist, create it
+        $conn->query("ALTER TABLE orders ADD COLUMN shipping_name VARCHAR(255) DEFAULT NULL AFTER shipping_phone");
+    }
+    
     // Build query
     $where = [];
     $params = [];
@@ -70,6 +79,7 @@ try {
             orders.total_price, 
             orders.shipping_address, 
             orders.shipping_phone,
+            COALESCE(orders.shipping_name, CONCAT(users.first_name, ' ', users.last_name)) as shipping_name,
             orders.status,
             orders.created_at,
             users.email as user_email,
@@ -87,34 +97,46 @@ try {
     
     $stmt = $conn->prepare($sql);
     
+    if (!$stmt) {
+        throw new Exception("Query prepare error: " . $conn->error . ". SQL: " . $sql);
+    }
+    
     if (!empty($params)) {
         $types = str_repeat('s', count($params));
         $stmt->bind_param($types, ...$params);
     }
     
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new Exception("Query execute error: " . $stmt->error);
+    }
+    
     $result = $stmt->get_result();
     
     $orders = [];
     while ($row = $result->fetch_assoc()) {
         $orderId = $row['id'];
         
-        // Get items for this order
+        // Get items for this order from order_items table
         if (!$conn) throw new Exception("Database error");
         $stmtItems = $conn->prepare("
-            SELECT p.name as product_name, od.quantity, od.price as unit_price
-            FROM order_details od
-            JOIN products p ON od.product_id = p.id
-            WHERE od.order_id = ?
+            SELECT product_name, quantity, unit_price
+            FROM order_items
+            WHERE order_id = ?
         ");
         
-        $stmtItems->bind_param("i", $orderId);
-        $stmtItems->execute();
-        $itemsResult = $stmtItems->get_result();
-        
-        $items = [];
-        while ($itemRow = $itemsResult->fetch_assoc()) {
-            $items[] = $itemRow;
+        if (!$stmtItems) {
+            error_log("Items prepare error: " . $conn->error);
+            $items = [];
+        } else {
+            $stmtItems->bind_param("i", $orderId);
+            $stmtItems->execute();
+            $itemsResult = $stmtItems->get_result();
+            
+            $items = [];
+            while ($itemRow = $itemsResult->fetch_assoc()) {
+                $items[] = $itemRow;
+            }
+            $stmtItems->close();
         }
         
         $row['items'] = $items;

@@ -17,15 +17,15 @@
                 <div class="dropdown">
                     <a href="#" class="dropdown-trigger">Loại xe <i class="fas fa-chevron-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="toyota.php">Toyota</a>
-                        <a href="mercedes.php">Mercedes</a>
-                        <a href="bmw.php">BMW</a>
-                        <a href="audi.php">Audi</a>
-                        <a href="lexus.php">Lexus</a>
-                        <a href="honda.php">Honda</a>
-                        <a href="hyundai.php">Hyundai</a>
-                        <a href="kia.php">KIA</a>
-                        <a href="vinfast.php">Vinfast</a>
+                        <a href="../brands/index.php?brand=Toyota">Toyota</a>
+                        <a href="../brands/index.php?brand=Mercedes">Mercedes</a>
+                        <a href="../brands/index.php?brand=BMW">BMW</a>
+                        <a href="../brands/index.php?brand=Audi">Audi</a>
+                        <a href="../brands/index.php?brand=Lexus">Lexus</a>
+                        <a href="../brands/index.php?brand=Honda">Honda</a>
+                        <a href="../brands/index.php?brand=Hyundai">Hyundai</a>
+                        <a href="../brands/index.php?brand=KIA">KIA</a>
+                        <a href="../brands/index.php?brand=Vinfast">Vinfast</a>
                     </div>
                 </div>
                 <a href="../../index.php#about">Giới thiệu</a>
@@ -267,8 +267,10 @@
         </div>
     </div>
 
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/search-results.js"></script>
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
+    <script src="../../assets/js/main.js?v=20260408-2"></script>
+    <script src="../../assets/js/search-results.js?v=20260408-3"></script>
 </body>
 </html>
+
 

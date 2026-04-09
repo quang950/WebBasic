@@ -48,7 +48,7 @@ function loadCustomers() {
     '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải khách hàng...</div>';
 
   // Gọi API để lấy tất cả khách hàng
-  fetch("/WebBasic/BackEnd/api/admin/get_all_customers.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_all_customers.php", {
     method: "GET",
     credentials: "include",
     headers: {
@@ -144,66 +144,12 @@ function toggleLockUser(idx) {
 
 // Không còn export toggleLockUser
 
-// Dữ liệu sản phẩm và loại sản phẩm được lưu trong localStorage
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let categories = JSON.parse(localStorage.getItem("categories")) || [];
+// Dữ liệu sản phẩm và loại sản phẩm được fetch từ API
+let products = [];
+let categories = [];
 
-// Khởi tạo dữ liệu đơn hàng mẫu nếu chưa có
-function initSampleOrders() {
-  let orders = JSON.parse(localStorage.getItem("orders")) || [];
-  if (orders.length === 0) {
-    const sampleOrders = [
-      {
-        id: "DH001",
-        date: "15/10/2025, 14:30",
-        name: "Nguyễn Văn An",
-        phone: "0901234567",
-        email: "nguyenvanan@gmail.com",
-        address: "123 Nguyễn Huệ, Quận 1, TP.HCM",
-        paymentMethod: "COD",
-        status: "Đã xử lý",
-        items: [
-          {
-            id: "SP001",
-            brand: "Toyota",
-            name: "Camry 2024",
-            price: 1200000000,
-            quantity: 1,
-            image: "/WebBasic/FrontEnd/assets/images/toyota-camry.jpg",
-          },
-        ],
-        total: 1200000000,
-        note: "Giao hàng trong giờ hành chính",
-      },
-      {
-        id: "DH002",
-        date: "20/10/2025, 10:15",
-        name: "Trần Thị Bình",
-        phone: "0912345678",
-        email: "tranthibinh@gmail.com",
-        address: "456 Lê Lợi, Quận 3, TP.HCM",
-        paymentMethod: "Chuyển khoản",
-        status: "Mới đặt",
-        items: [
-          {
-            id: "SP002",
-            brand: "Honda",
-            name: "City RS 2024",
-            price: 569000000,
-            quantity: 1,
-            image: "/WebBasic/FrontEnd/assets/images/honda-city.jpg",
-          },
-        ],
-        total: 569000000,
-        note: "Khách hàng yêu cầu gọi trước khi giao",
-      },
-    ];
-    localStorage.setItem("orders", JSON.stringify(sampleOrders));
-  }
-}
-
-// Gọi hàm khởi tạo dữ liệu mẫu khi load trang
-initSampleOrders();
+// Orders are fetched from API /BackEnd/api/get_orders.php
+// No longer using localStorage sample data
 
 // Hiển thị/ẩn các section
 function showSection(sectionName) {
@@ -349,8 +295,8 @@ function addProduct(event) {
 
   // Determine which API to call based on edit mode
   const apiUrl = editId 
-    ? "/WebBasic/BackEnd/api/admin/edit_product.php"
-    : "/WebBasic/BackEnd/api/admin/add_product.php";
+    ? BASE_URL + "/BackEnd/api/admin/edit_product.php"
+    : BASE_URL + "/BackEnd/api/admin/add_product.php";
 
   const requestBody = {
     name: `${brand.charAt(0).toUpperCase() + brand.slice(1)} ${name}`,
@@ -366,7 +312,7 @@ function addProduct(event) {
     fuel: fuel,
     transmission: transmission,
     category: category,
-    image: image || `/WebBasic/FrontEnd/assets/images/logo-${brand}.png`,
+    image: image || BASE_URL + `/FrontEnd/assets/images/logo-${brand}.png`,
     description: description,
     status: status,
   };
@@ -586,10 +532,10 @@ function renderProductsList(productsList) {
                             imageUrl = imageUrl.replace(/^.*assets\/images\//, '');
                           }
                           
-                          if (imageUrl && !imageUrl.startsWith('/WebBasic')) {
-                            imageUrl = '/WebBasic/FrontEnd/assets/images/' + imageUrl;
+                          if (imageUrl && !imageUrl.startsWith(BASE_URL)) {
+                            imageUrl = BASE_URL + '/FrontEnd/assets/images/' + imageUrl;
                           } else if (!imageUrl) {
-                            imageUrl = '/WebBasic/FrontEnd/assets/images/1.jpg';
+                            imageUrl = BASE_URL + '/FrontEnd/assets/images/1.jpg';
                           }
                           
                           if (!imageUrl || imageUrl.includes('undefined')) {
@@ -597,16 +543,16 @@ function renderProductsList(productsList) {
                             if (nameParts.length >= 2) {
                               const brand = nameParts[0];
                               const model = nameParts.slice(1).join('-');
-                              imageUrl = `/WebBasic/FrontEnd/assets/images/${brand}-${model}.jpg`;
+                              imageUrl = BASE_URL + `/FrontEnd/assets/images/${brand}-${model}.jpg`;
                             } else {
-                              imageUrl = '/WebBasic/FrontEnd/assets/images/1.jpg';
+                              imageUrl = BASE_URL + '/FrontEnd/assets/images/1.jpg';
                             }
                           }
                           
                           return `
                         <div class="product-card" data-id="${product.id}">
                             <div class="product-image">
-                                <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/WebBasic/FrontEnd/assets/images/1.jpg'" style="width:100%;height:200px;object-fit:cover;">
+                                <img src="${imageUrl}" alt="${product.name}" onerror="this.src='" + BASE_URL + "/FrontEnd/assets/images/1.jpg'" style="width:100%;height:200px;object-fit:cover;">
                             </div>
                             <div class="product-info">
                                 <h3>${product.name}</h3>
@@ -646,7 +592,7 @@ function loadProducts() {
     '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải sản phẩm...</div>';
 
   // Fetch products from API
-  fetch("/WebBasic/BackEnd/api/admin/get_products.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_products.php", {
     method: "GET",
     credentials: "include",
     headers: {
@@ -699,7 +645,7 @@ function editProduct(productId) {
       year: 2025,
       fuel: "Xăng",
       transmission: "Tự động (AT)",
-      image: "/WebBasic/FrontEnd/assets/images/toyota-camry.jpg",
+      image: BASE_URL + "/FrontEnd/assets/images/toyota-camry.jpg",
       category: "sedan",
       description: "Sedan hạng D êm ái, tiện nghi, tiết kiệm.",
     };
@@ -784,7 +730,7 @@ function loadAdminOrders() {
   ordersGrid.innerHTML =
     '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải đơn hàng...</div>';
 
-  fetch("/WebBasic/BackEnd/api/admin/get_all_orders.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_all_orders.php", {
     method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -796,7 +742,7 @@ function loadAdminOrders() {
         const displayOrders = rawOrders.map((order) => ({
           id: order.id,
           date: formatDateVN(order.created_at),
-          name: (order.first_name || "") + " " + (order.last_name || ""),
+          name: order.shipping_name || ((order.first_name || "") + " " + (order.last_name || "")),
           phone: order.shipping_phone || "",
           email: order.user_email || "",
           address: order.shipping_address || "",
@@ -807,7 +753,7 @@ function loadAdminOrders() {
             name: item.product_name,
             quantity: item.quantity,
             price: item.unit_price,
-            img: "/WebBasic/FrontEnd/assets/images/1.jpg", // Default image if API doesn't return
+            img: BASE_URL + "/FrontEnd/assets/images/1.jpg", // Default image if API doesn't return
           })),
           total: order.total_price,
         }));
@@ -855,7 +801,7 @@ function filterAdminOrders() {
   if (sortBy) params.append("sortBy", sortBy);
 
   const url =
-    "/WebBasic/BackEnd/api/admin/get_all_orders.php?" + params.toString();
+    BASE_URL + "/BackEnd/api/admin/get_all_orders.php?" + params.toString();
 
   fetch(url, {
     method: "GET",
@@ -880,7 +826,7 @@ function filterAdminOrders() {
             name: item.product_name,
             quantity: item.quantity,
             price: item.unit_price,
-            img: "/WebBasic/FrontEnd/assets/images/1.jpg",
+            img: BASE_URL + "/FrontEnd/assets/images/1.jpg",
           })),
           total: order.total_price,
         }));
@@ -1015,7 +961,7 @@ function updateOrderStatus(orderId, newStatus) {
     return false;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/update_order_status.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/update_order_status.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ order_id: orderId, status: newStatus }),
@@ -1053,7 +999,10 @@ function showOrderDetail(orderId) {
   let html = `<div class='order-detail-modal' style='position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;'>
         <div style='background:#fff;padding:32px 24px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.12);position:relative;max-height:90vh;overflow-y:auto;'>
             <button onclick='this.parentElement.parentElement.remove()' style='position:absolute;top:12px;right:12px;background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;'>&times;</button>
-            <h3 style='margin-bottom:12px;color:#0d6efd;'>Chi tiết đơn hàng #${order.id}</h3>
+            <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;'>
+                <h3 style='color:#0d6efd;margin:0;'>Chi tiết đơn hàng #${order.id}</h3>
+                <button onclick='showEditOrderShippingModal(${order.id}, "${order.name.replace(/"/g, '\\"')}", "${order.phone.replace(/"/g, '\\"')}", "${order.address.replace(/"/g, '\\"')}")' style='padding:6px 12px;background:#17a2b8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.9em;'><i class='fas fa-edit'></i> Sửa giao hàng</button>
+            </div>
             <div style='margin-bottom:8px;'><strong>Ngày đặt:</strong> ${order.date}</div>
             <div style='margin-bottom:8px;'><strong>Người nhận:</strong> ${order.name} | <strong>ĐT:</strong> ${order.phone}</div>
             <div style='margin-bottom:8px;'><strong>Địa chỉ:</strong> ${order.address}</div>
@@ -1136,17 +1085,20 @@ function loadLowStockAlert() {
     '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải danh sách cảnh báo...</div>';
 
   fetch(
-    `/WebBasic/BackEnd/api/admin/get_stock_report.php?action=low_stock&threshold=${threshold}`,
+    BASE_URL + `/BackEnd/api/admin/get_stock_report.php?action=low_stock&threshold=${threshold}`,
   )
     .then((r) => r.json())
     .then((res) => {
-      if (res.status === "success" && res.data.length > 0) {
+      // API returns nested structure: data.products (array) and data.count
+      const products = res.data && res.data.products ? res.data.products : [];
+      
+      if (res.status === "success" && Array.isArray(products) && products.length > 0) {
         let html = `<ul style="list-style:none;padding:0;margin:0;">`;
-        res.data.forEach((item) => {
+        products.forEach((item) => {
           html += `<li style="padding:12px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
                     <div>
-                        <strong>${item.name}</strong> <span style="color:#666;font-size:0.9em;">(${item.product_code || "Không có mã"})</span>
-                        <div style="font-size:0.85em;color:#007bff;">${item.category || "Chưa phân loại"}</div>
+                        <strong>${item.name}</strong> <span style="color:#666;font-size:0.9em;margin-left:8px;">${item.brand || "N/A"}</span>
+                        <div style="font-size:0.85em;color:#007bff;margin-top:4px;">${item.category_name || "Chưa phân loại"}</div>
                     </div>
                     <div style="background:#dc3545;color:white;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:0.9em;">
                         Tồn: ${item.stock}
@@ -1185,7 +1137,7 @@ function searchStockHistory() {
   const formattedDate = tDate.replace("T", " ") + ":00";
 
   fetch(
-    `/WebBasic/BackEnd/api/admin/get_stock_report.php?action=stock_at_time&searchName=${encodeURIComponent(sName)}&targetDate=${encodeURIComponent(formattedDate)}`,
+    BASE_URL + `/BackEnd/api/admin/get_stock_report.php?action=stock_at_time&searchName=${encodeURIComponent(sName)}&targetDate=${encodeURIComponent(formattedDate)}`,
   )
     .then((r) => r.json())
     .then((res) => {
@@ -1227,7 +1179,7 @@ function searchInventoryReport() {
     '<div style="grid-column:1/-1;text-align:center;"><i class="fas fa-spinner fa-spin"></i> Đang truy xuất sổ kho...</div>';
 
   fetch(
-    `/WebBasic/BackEnd/api/admin/get_stock_report.php?action=report_in_out&searchName=${encodeURIComponent(sName)}&fromDate=${encodeURIComponent(fDate)}&toDate=${encodeURIComponent(tDate)}`,
+    BASE_URL + `/BackEnd/api/admin/get_stock_report.php?action=report_in_out&searchName=${encodeURIComponent(sName)}&fromDate=${encodeURIComponent(fDate)}&toDate=${encodeURIComponent(tDate)}`,
   )
     .then((r) => r.json())
     .then((res) => {
@@ -1324,86 +1276,18 @@ function importHomepageCars(silent = false) {
 window.importHomepageCars = importHomepageCars;
 
 // ========== Quản lý phiếu nhập (imports) ==========
-let importsData = JSON.parse(localStorage.getItem("imports")) || [];
-
-// Khởi tạo dữ liệu phiếu nhập mẫu nếu chưa có
-function initSampleImports() {
-  let imports = JSON.parse(localStorage.getItem("imports")) || [];
-  if (imports.length === 0) {
-    const sampleImports = [
-      {
-        id: 1,
-        code: "PN001",
-        date: "05/10/2025",
-        supplier: "Công ty TNHH Ô tô Thành Công",
-        items: [
-          {
-            productId: "SP001",
-            brand: "Toyota",
-            name: "Camry 2024",
-            price: 1100000000,
-            qty: 3,
-          },
-          {
-            productId: "SP002",
-            brand: "Toyota",
-            name: "Vios 2024",
-            price: 480000000,
-            qty: 5,
-          },
-        ],
-        subtotal: 5700000000,
-        tax: 570000000,
-        total: 6270000000,
-        completed: true,
-        note: "Đã kiểm tra chất lượng và nhập kho đầy đủ",
-      },
-      {
-        id: 2,
-        code: "PN002",
-        date: "12/10/2025",
-        supplier: "Tổng công ty Ô tô Sài Gòn",
-        items: [
-          {
-            productId: "SP003",
-            brand: "Honda",
-            name: "City RS 2024",
-            price: 550000000,
-            qty: 4,
-          },
-          {
-            productId: "SP004",
-            brand: "Honda",
-            name: "CR-V 2024",
-            price: 1100000000,
-            qty: 2,
-          },
-        ],
-        subtotal: 4400000000,
-        tax: 440000000,
-        total: 4840000000,
-        completed: false,
-        note: "Đang chờ thanh toán đợt 2",
-      },
-    ];
-    localStorage.setItem("imports", JSON.stringify(sampleImports));
-    importsData = sampleImports;
-  }
-}
+let importsData = [];
 
 function saveImports() {
-  localStorage.setItem("imports", JSON.stringify(importsData));
+  // Save via API /BackEnd/api/import_tickets.php
+  console.log('saveImports: Use API instead of localStorage');
 }
 
 function loadImports() {
-  initSampleImports(); // Khởi tạo dữ liệu mẫu nếu chưa có
-  importsData = JSON.parse(localStorage.getItem("imports")) || [];
+  // Load from API /BackEnd/api/import_tickets.php
   const grid = document.getElementById("importsGrid");
   if (!grid) return;
-  if (!importsData.length) {
-    grid.innerHTML = '<div class="empty-state">Chưa có phiếu nhập nào.</div>';
-    return;
-  }
+  grid.innerHTML = '<div class="empty-state">Đang tải...</div>';
   grid.innerHTML = renderImportsTable(importsData);
 }
 
@@ -1515,209 +1399,67 @@ function filterImports() {
   return false;
 }
 
-// Các chức năng modal/form thêm/sửa phiếu nhập đã bị vô hiệu hóa (Prototype mode)
-
-// ========== Quản lý tồn kho ==========
+// Quản lý tồn kho - Fetch from API
 function initOldStockData() {
-  let oldStock = JSON.parse(localStorage.getItem("oldStock")) || [];
-  if (oldStock.length === 0) {
-    const sampleOldStock = [
-      {
-        id: "TK001",
-        brand: "Toyota",
-        name: "Fortuner 2023",
-        year: 2023,
-        category: "suv",
-        originalPrice: 1450000000,
-        discount: 10,
-        stockDate: "15/09/2023",
-        daysInStock: 410,
-        quantity: 3,
-        lowStock: false,
-        reason: "Ít người mua do giá cao",
-        image: "/WebBasic/FrontEnd/assets/images/toyota-fortuner.jpg",
-      },
-      {
-        id: "TK002",
-        brand: "Honda",
-        name: "Accord 2023",
-        year: 2023,
-        category: "sedan",
-        originalPrice: 1319000000,
-        discount: 15,
-        stockDate: "20/08/2023",
-        daysInStock: 436,
-        quantity: 2,
-        lowStock: false,
-        reason: "Màu sắc ít phổ biến",
-        image: "/WebBasic/FrontEnd/assets/images/honda-accord.jpg",
-      },
-      {
-        id: "TK003",
-        brand: "Mazda",
-        name: "CX-8 2023",
-        year: 2023,
-        category: "suv",
-        originalPrice: 1179000000,
-        discount: 20,
-        stockDate: "10/07/2023",
-        daysInStock: 477,
-        quantity: 5,
-        lowStock: false,
-        reason: "Model cũ, sắp có phiên bản mới",
-        image: "/WebBasic/FrontEnd/assets/images/mazda-cx8.jpg",
-      },
-      {
-        id: "TK004",
-        brand: "Hyundai",
-        name: "Santa Fe 2024",
-        year: 2024,
-        category: "suv",
-        originalPrice: 1340000000,
-        discount: 5,
-        stockDate: "15/10/2024",
-        daysInStock: 15,
-        quantity: 1,
-        lowStock: true,
-        reason: "Bán chạy, sắp hết hàng",
-        image: "/WebBasic/FrontEnd/assets/images/hyundai-santafe.jpg",
-      },
-      {
-        id: "TK005",
-        brand: "KIA",
-        name: "Sorento 2024",
-        year: 2024,
-        category: "suv",
-        originalPrice: 1149000000,
-        discount: 3,
-        stockDate: "20/10/2024",
-        daysInStock: 10,
-        quantity: 1,
-        lowStock: true,
-        reason: "Nhu cầu cao, cần nhập thêm",
-        image: "/WebBasic/FrontEnd/assets/images/kia-sorento.jpg",
-      },
-      {
-        id: "TK006",
-        brand: "Ford",
-        name: "Everest 2024",
-        year: 2024,
-        category: "suv",
-        originalPrice: 1525000000,
-        discount: 2,
-        stockDate: "25/10/2024",
-        daysInStock: 5,
-        quantity: 1,
-        lowStock: true,
-        reason: "Xe hot, gần hết hàng",
-        image: "/WebBasic/FrontEnd/assets/images/ford-everest.jpg",
-      },
-      {
-        id: "TK007",
-        brand: "Toyota",
-        name: "Vios 2024",
-        year: 2024,
-        category: "sedan",
-        originalPrice: 558000000,
-        discount: 0,
-        stockDate: "27/10/2024",
-        daysInStock: 3,
-        quantity: 1,
-        lowStock: true,
-        reason: "Xe bán chạy nhất phân khúc",
-        image: "/WebBasic/FrontEnd/assets/images/toyota-vios.jpg",
-      },
-      {
-        id: "TK008",
-        brand: "Honda",
-        name: "City 2024",
-        year: 2024,
-        category: "sedan",
-        originalPrice: 599000000,
-        discount: 0,
-        stockDate: "01/08/2024",
-        daysInStock: 90,
-        quantity: 4,
-        lowStock: false,
-        normalStock: true,
-        reason: "Xe sedan hạng B phổ biến",
-        image: "/WebBasic/FrontEnd/assets/images/honda-city.jpg",
-      },
-      {
-        id: "TK009",
-        brand: "Mazda",
-        name: "CX-5 2024",
-        year: 2024,
-        category: "suv",
-        originalPrice: 859000000,
-        discount: 0,
-        stockDate: "15/07/2024",
-        daysInStock: 107,
-        quantity: 6,
-        lowStock: false,
-        normalStock: true,
-        reason: "SUV 5 chỗ được ưa chuộng",
-        image: "/WebBasic/FrontEnd/assets/images/mazda-cx5.jpg",
-      },
-      {
-        id: "TK010",
-        brand: "Hyundai",
-        name: "Tucson 2024",
-        year: 2024,
-        category: "suv",
-        originalPrice: 769000000,
-        discount: 0,
-        stockDate: "20/08/2024",
-        daysInStock: 71,
-        quantity: 5,
-        lowStock: false,
-        normalStock: true,
-        reason: "Thiết kế hiện đại, tiện nghi",
-        image: "/WebBasic/FrontEnd/assets/images/hyundai-tucson.jpg",
-      },
-      {
-        id: "TK011",
-        brand: "Ford",
-        name: "Ranger 2024",
-        year: 2024,
-        category: "pickup",
-        originalPrice: 799000000,
-        discount: 0,
-        stockDate: "05/09/2024",
-        daysInStock: 55,
-        quantity: 3,
-        lowStock: false,
-        normalStock: true,
-        reason: "Bán tải bán chạy nhất",
-        image: "/WebBasic/FrontEnd/assets/images/ford-ranger.jpg",
-      },
-      {
-        id: "TK012",
-        brand: "Mitsubishi",
-        name: "Xpander 2024",
-        year: 2024,
-        category: "suv",
-        originalPrice: 555000000,
-        discount: 0,
-        stockDate: "10/09/2024",
-        daysInStock: 50,
-        quantity: 7,
-        lowStock: false,
-        normalStock: true,
-        reason: "MPV 7 chỗ tiết kiệm",
-        image: "/WebBasic/FrontEnd/assets/images/mitsubishi-xpander.jpg",
-      },
-    ];
-    localStorage.setItem("oldStock", JSON.stringify(sampleOldStock));
-    oldStock = sampleOldStock;
-  }
-  return oldStock;
+  // Load stock data from API /BackEnd/api/admin/get_stock_report.php
+  return [];
 }
 
-function loadOldStock() {
-  const allStock = initOldStockData();
+async function loadOldStock() {
+  try {
+    const response = await fetch(BASE_URL + '/BackEnd/api/admin/get_stock_report.php', {
+      credentials: 'include'
+    });
+    const result = await response.json();
+    
+    let allStock = [];
+    // API returns nested structure: data.products (array) and data.count
+    if (result.status === 'success' && result.data && Array.isArray(result.data.products)) {
+      // Map API data to expected format
+      allStock = result.data.products.map(item => ({
+        id: item.id,
+        name: item.name,
+        brand: item.brand,
+        category: item.category_name,
+        image: item.image,
+        year: item.year,
+        stock: item.stock,
+        quantity: item.stock,
+        originalPrice: item.price || 0,
+        price: item.price || 0,
+        discount: 0,
+        stockDate: new Date().toLocaleDateString('vi-VN'),
+        daysInStock: 0,
+        lowStock: item.stock_level === 'lowStock',
+        normalStock: item.stock_level === 'normalStock',
+        reason: '',
+        stock_level: item.stock_level
+      }));
+    }
+    
+    // Separate by stock level (old code style)
+    const oldStockItems = allStock.filter(item => item.stock_level === 'lowStock');
 
-  // Tách xe theo 3 loại
+    const oldStockContainer = document.getElementById("oldStockList");
+    if (oldStockContainer) {
+      if (oldStockItems.length === 0) {
+        oldStockContainer.innerHTML =
+          '<div class="empty-state">Không có sản phẩm sắp hết hàng.</div>';
+      } else {
+        oldStockContainer.innerHTML = renderStockItems(oldStockItems, "old");
+      }
+    }
+  } catch (err) {
+    console.error('Error loading stock:', err);
+    const container = document.getElementById("oldStockList");
+    if (container) {
+      container.innerHTML = '<div class="empty-state">Lỗi tải dữ liệu tồn kho.</div>';
+    }
+  }
+}
+
+function loadOldStock_original() {
+  const allStock = initOldStockData();
   const lowStockItems = allStock.filter((item) => item.lowStock === true);
   const normalStockItems = allStock.filter((item) => item.normalStock === true);
   const oldStockItems = allStock.filter(
@@ -1967,7 +1709,7 @@ function updateProductMargin(productId, productName) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...';
   }
 
-  fetch("/WebBasic/BackEnd/api/pricing.php", {
+  fetch(BASE_URL + "/BackEnd/api/pricing.php", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -2053,7 +1795,7 @@ function initPricingData() {
         price: 1235000000,
         profitMargin: 8.5,
         sellingPrice: 1339975000,
-        image: "/WebBasic/FrontEnd/assets/images/toyota-camry.jpg",
+        image: BASE_URL + "/FrontEnd/assets/images/toyota-camry.jpg",
       },
       {
         id: 2,
@@ -2063,7 +1805,7 @@ function initPricingData() {
         price: 1029000000,
         profitMargin: 10,
         sellingPrice: 1131900000,
-        image: "/WebBasic/FrontEnd/assets/images/honda-crv.jpg",
+        image: BASE_URL + "/FrontEnd/assets/images/honda-crv.jpg",
       },
       {
         id: 3,
@@ -2073,7 +1815,7 @@ function initPricingData() {
         price: 669000000,
         profitMargin: 12,
         sellingPrice: 749280000,
-        image: "/WebBasic/FrontEnd/assets/images/mazda3.jpg",
+        image: BASE_URL + "/FrontEnd/assets/images/mazda3.jpg",
       },
       {
         id: 4,
@@ -2083,7 +1825,7 @@ function initPricingData() {
         price: 999000000,
         profitMargin: 7,
         sellingPrice: 1068930000,
-        image: "/WebBasic/FrontEnd/assets/images/vinfast-vf8.jpg",
+        image: BASE_URL + "/FrontEnd/assets/images/vinfast-vf8.jpg",
       },
     ];
     return sampleProducts;
@@ -2105,7 +1847,7 @@ function loadPricing() {
     '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
 
   // Gọi API backend để lấy dữ liệu giá từ database
-  fetch("/WebBasic/BackEnd/api/pricing.php?action=list&limit=500")
+  fetch(BASE_URL + "/BackEnd/api/pricing.php?action=list&limit=500")
     .then((response) => response.json())
     .then((data) => {
       if (!data.success || !data.data || data.data.length === 0) {
@@ -2210,7 +1952,7 @@ function filterPricing() {
     '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
 
   // Gọi API backend với tham số lọc
-  let apiUrl = "/WebBasic/BackEnd/api/pricing.php?action=list&limit=500";
+  let apiUrl = BASE_URL + "/BackEnd/api/pricing.php?action=list&limit=500";
   if (searchInput) {
     apiUrl += "&search=" + encodeURIComponent(searchInput);
   }
@@ -2301,6 +2043,284 @@ function filterPricing() {
         '<div style="color:red;padding:20px;">Lỗi khi tải dữ liệu giá. Vui lòng kiểm tra kết nối.</div>';
     });
 }
+
+// ========== Quản lý phiếu nhập hàng (Import Management) ==========
+let currentImportTickets = [];
+
+/**
+ * Search and display import tickets
+ * Collects filter params and calls API
+ */
+async function searchImportTickets() {
+  try {
+    const importTicketsList = document.getElementById("importTicketsList");
+    if (!importTicketsList) return;
+    
+    // Show loading state
+    importTicketsList.innerHTML = '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
+    
+    // Get filter values
+    const search = document.getElementById("searchImportInput")?.value || '';
+    const status = document.getElementById("statusImportFilter")?.value || '';
+    const dateFrom = document.getElementById("dateFromImportFilter")?.value || '';
+    const dateTo = document.getElementById("dateToImportFilter")?.value || '';
+    
+    // Build API URL
+    let apiUrl = BASE_URL + '/BackEnd/api/import_tickets.php?action=list';
+    if (search) apiUrl += '&search=' + encodeURIComponent(search);
+    if (status) apiUrl += '&status=' + encodeURIComponent(status);
+    if (dateFrom) apiUrl += '&dateFrom=' + encodeURIComponent(dateFrom);
+    if (dateTo) apiUrl += '&dateTo=' + encodeURIComponent(dateTo);
+    
+    // Fetch data from API
+    const response = await fetch(apiUrl, { credentials: 'include' });
+    const result = await response.json();
+    
+    if (result.success && Array.isArray(result.data)) {
+      currentImportTickets = result.data;
+      importTicketsList.innerHTML = renderImportTicketsList(result.data);
+    } else {
+      importTicketsList.innerHTML = '<div class="empty-state">Không có phiếu nhập hàng phù hợp.</div>';
+    }
+  } catch (err) {
+    console.error('Error searching import tickets:', err);
+    const container = document.getElementById("importTicketsList");
+    if (container) {
+      container.innerHTML = '<div class="empty-state">Lỗi tải dữ liệu phiếu nhập. Vui lòng kiểm tra kết nối.</div>';
+    }
+  }
+}
+
+/**
+ * Render import tickets as table
+ */
+function renderImportTicketsList(tickets) {
+  if (!tickets || tickets.length === 0) {
+    return '<div class="empty-state">Không có phiếu nhập hàng nào.</div>';
+  }
+  
+  return `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        <thead>
+          <tr style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
+            <th style="padding:14px;text-align:left;font-weight:600;min-width:150px;">Mã Phiếu</th>
+            <th style="padding:14px;text-align:left;font-weight:600;min-width:150px;">Nhà cung cấp</th>
+            <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Ngày Nhập</th>
+            <th style="padding:14px;text-align:right;font-weight:600;min-width:140px;">Tổng Tiền (VNĐ)</th>
+            <th style="padding:14px;text-align:center;font-weight:600;min-width:100px;">Trạng Thái</th>
+            <th style="padding:14px;text-align:center;font-weight:600;min-width:120px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tickets.map((ticket, index) => {
+            const status = ticket.status || (ticket.completed_at ? 'completed' : 'draft');
+            const statusLabel = status === 'completed' ? 'Hoàn thành' : 'Nháp';
+            const statusColor = status === 'completed' ? '#28a745' : '#ffc107';
+            const importDate = ticket.import_date ? new Date(ticket.import_date).toLocaleDateString('vi-VN') : 'N/A';
+            const totalAmount = ticket.total_import_price || ticket.total_amount || 0;
+            
+            return `
+              <tr style="border-bottom:1px solid #f0f0f0;transition:background 0.2s;" 
+                  onmouseover="this.style.background='#f8f9fa'" 
+                  onmouseout="this.style.background='#fff'">
+                <td style="padding:12px;">
+                  <div style="font-weight:600;color:#333;">${ticket.ticket_number || 'N/A'}</div>
+                </td>
+                <td style="padding:12px;color:#555;">
+                  ${ticket.supplier_name || 'Không xác định'}
+                </td>
+                <td style="padding:12px;text-align:center;color:#666;">
+                  ${importDate}
+                </td>
+                <td style="padding:12px;text-align:right;font-weight:600;color:#0d279d;">
+                  ${formatPrice(totalAmount)}
+                </td>
+                <td style="padding:12px;text-align:center;">
+                  <span style="background:${statusColor};color:${status === 'completed' ? '#fff' : '#000'};padding:4px 10px;border-radius:4px;font-size:0.85em;font-weight:600;">
+                    ${statusLabel}
+                  </span>
+                </td>
+                <td style="padding:12px;text-align:center;">
+                  <button onclick="viewImportTicketDetail(${ticket.id})" 
+                    style="background:#0d6efd;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:0.85em;margin-right:4px;"
+                    title="Xem chi tiết">
+                    <i class="fas fa-eye"></i> Xem
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/**
+ * View import ticket detail in modal
+ */
+function viewImportTicketDetail(ticketId) {
+  const ticket = currentImportTickets.find(t => t.id === ticketId);
+  if (!ticket) {
+    showNotification('Không tìm thấy phiếu nhập', 'error');
+    return;
+  }
+  
+  const importDate = ticket.import_date ? new Date(ticket.import_date).toLocaleDateString('vi-VN') : 'N/A';
+  const totalAmount = ticket.total_import_price || ticket.total_amount || 0;
+  const status = ticket.status || (ticket.completed_at ? 'completed' : 'draft');
+  const statusLabel = status === 'completed' ? 'Hoàn thành' : 'Nháp';
+  
+  const modalHtml = `
+    <div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:32px 24px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.12);position:relative;max-height:90vh;overflow-y:auto;">
+        <button onclick="this.closest('[style*=position]').parentElement.remove();" 
+          style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">✕</button>
+        
+        <h2 style="margin-top:0;color:#333;border-bottom:2px solid #667eea;padding-bottom:12px;">Chi tiết Phiếu Nhập Hàng</h2>
+        
+        <div style="margin:20px 0;">
+          <p style="margin:8px 0;"><strong>Mã phiếu:</strong> ${ticket.ticket_number || 'N/A'}</p>
+          <p style="margin:8px 0;"><strong>Nhà cung cấp:</strong> ${ticket.supplier_name || 'Không xác định'}</p>
+          <p style="margin:8px 0;"><strong>Ngày nhập:</strong> ${importDate}</p>
+          <p style="margin:8px 0;"><strong>Trạng thái:</strong> <span style="background:${status === 'completed' ? '#28a745' : '#ffc107'};color:${status === 'completed' ? '#fff' : '#000'};padding:2px 8px;border-radius:4px;">${statusLabel}</span></p>
+          <p style="margin:8px 0;"><strong>Tổng tiền:</strong> <span style="font-weight:600;color:#0d279d;font-size:1.1em;">${formatPrice(totalAmount)}</span></p>
+          ${ticket.notes ? `<p style="margin:8px 0;"><strong>Ghi chú:</strong> ${ticket.notes}</p>` : ''}
+          <p style="margin:8px 0;color:#666;font-size:0.9em;"><strong>Ngày tạo:</strong> ${new Date(ticket.created_at).toLocaleString('vi-VN')}</p>
+        </div>
+        
+        <div style="margin-top:24px;text-align:right;border-top:1px solid #ddd;padding-top:16px;">
+          <button onclick="this.closest('[style*=position]').parentElement.remove();" 
+            style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Insert modal into page
+  const modalWrapper = document.createElement('div');
+  modalWrapper.innerHTML = modalHtml;
+  document.body.appendChild(modalWrapper);
+}
+
+// Edit order shipping info modal
+function showEditOrderShippingModal(orderId, recipientName, recipientPhone, shippingAddress) {
+  const modalHtml = `
+    <div class='edit-order-modal' style='position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;display:flex;align-items:center;justify-content:center;'>
+      <div style='background:#fff;padding:24px;border-radius:12px;max-width:500px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.12);'>
+        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;'>
+          <h3 style='margin:0;color:#0d6efd;'>Sửa thông tin giao hàng</h3>
+          <button onclick='this.closest(".edit-order-modal").remove()' style='background:none;border:none;font-size:24px;cursor:pointer;color:#999;'>&times;</button>
+        </div>
+        
+        <div style='margin-bottom:16px;'>
+          <label style='display:block;margin-bottom:6px;font-weight:600;color:#333;'><strong>Tên người nhận</strong></label>
+          <input type='text' id='editOrderName' value='${recipientName.replace(/'/g, "\\'")}' 
+            style='width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-size:1em;' 
+            placeholder='Nhập tên người nhận'>
+        </div>
+        
+        <div style='margin-bottom:16px;'>
+          <label style='display:block;margin-bottom:6px;font-weight:600;color:#333;'><strong>Số điện thoại</strong></label>
+          <input type='tel' id='editOrderPhone' value='${recipientPhone.replace(/'/g, "\\'")}' 
+            style='width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-size:1em;' 
+            placeholder='Nhập số điện thoại'>
+        </div>
+        
+        <div style='margin-bottom:20px;'>
+          <label style='display:block;margin-bottom:6px;font-weight:600;color:#333;'><strong>Địa chỉ giao hàng</strong></label>
+          <textarea id='editOrderAddress' 
+            style='width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-size:1em;min-height:100px;' 
+            placeholder='Nhập địa chỉ giao hàng'>${shippingAddress.replace(/'/g, "\\'")}</textarea>
+        </div>
+        
+        <div style='display:flex;gap:12px;justify-content:flex-end;'>
+          <button onclick='this.closest(".edit-order-modal").remove()' 
+            style='padding:10px 20px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;'>
+            Hủy
+          </button>
+          <button onclick='submitEditOrderShipping(${orderId})' 
+            style='padding:10px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;'>
+            Lưu thay đổi
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// Submit edit order shipping
+function submitEditOrderShipping(orderId) {
+  const recipientName = document.getElementById('editOrderName').value.trim();
+  const recipientPhone = document.getElementById('editOrderPhone').value.trim();
+  const shippingAddress = document.getElementById('editOrderAddress').value.trim();
+  
+  if (!recipientName || !recipientPhone || !shippingAddress) {
+    showNotification('Vui lòng điền đầy đủ thông tin', 'error');
+    return;
+  }
+  
+  console.log('Submitting order update:', {
+    order_id: orderId,
+    recipient_name: recipientName,
+    recipient_phone: recipientPhone,
+    shipping_address: shippingAddress
+  });
+  
+  fetch(BASE_URL + '/BackEnd/api/admin/update_order_shipping.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      order_id: orderId,
+      recipient_name: recipientName,
+      recipient_phone: recipientPhone,
+      shipping_address: shippingAddress
+    })
+  })
+    .then(response => {
+      console.log('API Response Status:', response.status);
+      return response.json();
+    })
+    .then(result => {
+      console.log('API Response Data:', result);
+      
+      if (result.status === 'success') {
+        showNotification('Cập nhật thông tin giao hàng thành công!', 'success');
+        
+        // Đóng modal edit - tìm parent modal container
+        const editModal = document.querySelector('.edit-order-modal');
+        if (editModal) {
+          editModal.remove();
+        } else {
+          console.warn('Edit modal not found for removal');
+        }
+        
+        // Reload order list sau một chút delay để đảm bảo database đã update
+        setTimeout(() => {
+          console.log('Reloading admin orders...');
+          loadAdminOrders();
+        }, 300);
+      } else {
+        showNotification(result.message || 'Lỗi cập nhật', 'error');
+        console.error('API Error:', result.message);
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error);
+      showNotification('Lỗi kết nối máy chủ: ' + error.message, 'error');
+    });
+}
+
+// Export import functions
+window.searchImportTickets = searchImportTickets;
+window.viewImportTicketDetail = viewImportTicketDetail;
+window.showEditOrderShippingModal = showEditOrderShippingModal;
+window.submitEditOrderShipping = submitEditOrderShipping;
 
 // Export functions (chỉ giữ load và filter)
 window.loadPricing = loadPricing;
@@ -2470,7 +2490,7 @@ function showSingleProduct() {
         <div class="products-list">
             <div class="product-card">
                 <div class="product-image">
-                    <img src="/WebBasic/FrontEnd/assets/images/toyota-camry.jpg" alt="Toyota Camry">
+                    <img src="` + BASE_URL + `/FrontEnd/assets/images/toyota-camry.jpg" alt="Toyota Camry">
                 </div>
                 <div class="product-info">
                     <h3>Toyota Camry</h3>
@@ -2568,7 +2588,7 @@ function addUser() {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/add_user.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/add_user.php", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -2631,7 +2651,7 @@ function showResetPasswordModal(userId, userName) {
 
 // Reset user password
 function resetPassword(userId, newPassword) {
-  fetch("/WebBasic/BackEnd/api/admin/reset_password.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/reset_password.php", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -2669,7 +2689,7 @@ function toggleLockUser(userId, userName, currentLocked) {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/lock_user.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/lock_user.php", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -2709,7 +2729,7 @@ function deleteUser(userId, userName) {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/delete_user.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/delete_user.php", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -2743,7 +2763,7 @@ function loadCategories() {
   tbody.innerHTML =
     '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
 
-  fetch("/WebBasic/BackEnd/api/admin/get_categories.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_categories.php", {
     method: "GET",
     credentials: "include",
   })
@@ -2824,7 +2844,7 @@ function addCategory() {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/add_category.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/add_category.php", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -2894,7 +2914,7 @@ function submitEditCategory(id) {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/edit_category.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/edit_category.php", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -2922,7 +2942,7 @@ function deleteCategory(id, name) {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/delete_category.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/delete_category.php", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -2945,7 +2965,7 @@ window.updateProductProfitMargin = updateProductMargin;
 // ========== PRODUCT EDIT/DELETE FUNCTIONS ==========
 
 function showEditProductModal(id) {
-  fetch("/WebBasic/BackEnd/api/admin/get_product.php?id=" + id, {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_product.php?id=" + id, {
     method: "GET",
     credentials: "include",
   })
@@ -3062,7 +3082,7 @@ function submitEditProduct(id) {
     return;
   }
 
-  fetch("/WebBasic/BackEnd/api/admin/edit_product.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/edit_product.php", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -3104,7 +3124,7 @@ function confirmDeleteProduct(id) {
 }
 
 function deleteProduct(id) {
-  fetch("/WebBasic/BackEnd/api/admin/delete_product.php", {
+  fetch(BASE_URL + "/BackEnd/api/admin/delete_product.php", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

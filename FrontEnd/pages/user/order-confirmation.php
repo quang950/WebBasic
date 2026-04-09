@@ -5,6 +5,7 @@
   <title>Xác nhận đơn hàng</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -273,9 +274,26 @@
           <span class="info-label">Email:</span>
           <span class="info-value" id="receiverEmail">nguyenvana@example.com</span>
         </div>
+        
+        <!-- Địa chỉ chi tiết (4 thành phần tách riêng) -->
+        <div style="padding-top:12px;border-top:2px solid #e0e0e0;margin-top:12px;">
+          <p style="color:#666;font-size:0.9rem;margin:12px 0 12px 0;font-weight:600;"><i class="fas fa-map-marker-alt" style="color:#667eea;margin-right:6px;"></i>Địa chỉ giao hàng</p>
+        </div>
         <div class="info-row">
-          <span class="info-label">Địa chỉ:</span>
-          <span class="info-value" id="receiverAddress">123 Nguyễn Văn Linh, Phường Tân Thuận Đông, Quận 7, TP. Hồ Chí Minh</span>
+          <span class="info-label">Đường:</span>
+          <span class="info-value" id="addressStreet">123 Nguyễn Văn Linh</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Phường/Xã:</span>
+          <span class="info-value" id="addressWard">Tân Thuận Đông</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Quận/Huyện:</span>
+          <span class="info-value" id="addressDistrict">Quận 7</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Tỉnh/TP:</span>
+          <span class="info-value" id="addressProvince">TP. Hồ Chí Minh</span>
         </div>
       </div>
       
@@ -393,7 +411,7 @@
       const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
       if (!isLoggedIn) {
         alert('Vui lòng đăng nhập!');
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
         return;
       }
       
@@ -405,7 +423,7 @@
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         if (cart.length === 0) {
           alert('Không có thông tin đơn hàng!');
-          window.location.href = 'cart.html';
+          window.location.href = 'cart.php';
           return;
         }
         
@@ -426,7 +444,15 @@
       document.getElementById('receiverName').textContent = orderData.receiverName || 'N/A';
       document.getElementById('receiverPhone').textContent = orderData.receiverPhone || 'N/A';
       document.getElementById('receiverEmail').textContent = orderData.receiverEmail || 'N/A';
-      document.getElementById('receiverAddress').textContent = orderData.receiverAddress || 'N/A';
+      
+      // Parse địa chỉ thành 4 thành phần
+      const fullAddress = orderData.receiverAddress || 'N/A';
+      const addressParts = fullAddress.split(',').map(part => part.trim());
+      
+      document.getElementById('addressStreet').textContent = addressParts[0] || 'N/A';
+      document.getElementById('addressWard').textContent = addressParts[1] || 'N/A';
+      document.getElementById('addressDistrict').textContent = addressParts[2] || 'N/A';
+      document.getElementById('addressProvince').textContent = addressParts[3] || 'N/A';
       
       // Hiển thị phương thức thanh toán
       const paymentMethod = orderData.paymentMethod || 'Thanh toán khi nhận hàng (COD)';

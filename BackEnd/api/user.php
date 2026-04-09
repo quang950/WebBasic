@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: http://localhost');
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
@@ -53,17 +54,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-// POST - Update user info
+// POST - Update user info hoặc change password
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!isset($data['id'])) {
+    if (!isset($data['userId']) && !isset($data['id'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'User ID required']);
         exit;
     }
     
-    $userId = intval($data['id']);
+    $userId = intval($data['userId'] ?? $data['id']);
+    
+    // Handle change password action
+    if (isset($data['action']) && $data['action'] === 'changePassword') {
+        if (!isset($data['currentPassword']) || !isset($data['newPassword'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Current and new password required']);
+            exit;
+        }
+        
+        $currentPassword = $data['currentPassword'];
+        $newPassword = $data['newPassword'];
+        
+        // Get current password hash
+        $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'User not found']);
+            $stmt->close();
+            exit;
+        }
+        
+        $user = $result->fetch_assoc();
+        $stmt->close();
+        
+        // Verify current password
+        if (!password_verify($currentPassword, $user['password'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
+            exit;
+        }
+        
+        // Hash new password
+        $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+        
+        // Update password
+        $updateStmt = $conn->prepare("UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?");
+        $updateStmt->bind_param("si", $hashedPassword, $userId);
+        
+        if ($updateStmt->execute()) {
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to change password']);
+        }
+        
+        $updateStmt->close();
+        $conn?->close();
+        exit;
+    }
+    
+    // Handle profile update
     $firstName = htmlspecialchars($data['firstName'] ?? '');
     $lastName = htmlspecialchars($data['lastName'] ?? '');
     $phone = htmlspecialchars($data['phone'] ?? '');

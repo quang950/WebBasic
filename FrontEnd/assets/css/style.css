@@ -1157,7 +1157,7 @@ footer {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: none;
   align-items: center;
   justify-content: center;
@@ -1169,48 +1169,75 @@ footer {
 }
 
 .modal-content {
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  width: min(90vw, 540px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 15px;
+  padding: 30px;
+  width: min(90vw, 600px);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   position: relative;
-  animation: popIn 0.2s ease;
+  animation: popIn 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .modal-content img {
   width: 100%;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .modal-content h2 {
-  margin: 8px 0;
+  margin: 15px 0 10px 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
 }
 .modal-content p {
-  margin: 6px 0;
+  margin: 8px 0;
+  color: #ddd;
+  line-height: 1.5;
 }
 .modal-content .btn {
-  padding: 10px 14px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-right: 8px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  background: #0088cc;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+.modal-content .btn:hover {
+  background: #0066aa;
+  transform: translateY(-2px);
 }
 .modal-content .buy-now {
   background: #28a745;
   color: #fff;
 }
-.modal-content .btn {
-  background: #0077b8;
-  color: #fff;
-}
 
 .close-btn {
   position: absolute;
-  right: 12px;
-  top: 8px;
+  right: 15px;
+  top: 12px;
   cursor: pointer;
-  font-size: 22px;
+  font-size: 28px;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #ff6b6b;
+  transform: scale(1.1);
 }
 
 @keyframes popIn {

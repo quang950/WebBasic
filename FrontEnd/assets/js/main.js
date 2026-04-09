@@ -75,28 +75,13 @@ async function resolvePriceApiBase() {
     if (priceApiBasePromise) return priceApiBasePromise;
 
     priceApiBasePromise = (async () => {
-        const origin = window.location.origin;
-        const candidates = [
-            `${origin}/WebBasic/BackEnd/api`,
-            `${origin}/BackEnd/api`,
-            `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`,
-            'http://localhost:8000/BackEnd/api',
-            'http://127.0.0.1:8000/BackEnd/api'
-        ];
-
-        for (const base of candidates) {
-            try {
-                const response = await fetch(`${base}/test.php`);
-                const text = await response.text();
-                if (response.ok && text.includes('"test"')) {
-                    return base;
-                }
-            } catch (_err) {
-                continue;
-            }
+        // Use BASE_URL if available (from config.js)
+        if (typeof BASE_URL !== 'undefined' && BASE_URL) {
+            return BASE_URL + '/BackEnd/api';
         }
 
-        throw new Error('Khong tim thay API backend');
+        const origin = window.location.origin;
+        return `${origin}/WebBasic/BackEnd/api`;
     })();
 
     return priceApiBasePromise;
@@ -189,10 +174,25 @@ function parseCurrencyToNumber(text) {
 
 // Cập nhật badge số lượng giỏ hàng
 function updateCartCount() {
-    const stored = JSON.parse(localStorage.getItem('cart')) || [];
-    const count = stored.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
-    const badge = document.querySelector('.cart-count');
-    if (badge) badge.textContent = count;
+    const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+    
+    fetch(baseUrl + '/BackEnd/api/cart.php?action=get', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.data) {
+            const totalItems = data.data.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            const cartBadge = document.querySelector('.cart-count');
+            if (cartBadge) {
+                cartBadge.textContent = totalItems;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error updating cart count:', error);
+    });
 }
 
 // Toast thông báo
@@ -320,33 +320,64 @@ function addToCart(name, price, img, quantity = 1, product_id = '') {
 }
 
 // Hàm xóa sản phẩm trong giỏ
-function removeFromCart(index) {
-    const cart = getCartItems();
-    if (!cart[index]) return false;
-
-    cart.splice(index, 1);
-    saveCartItems(cart);
-    loadCart();
-    showToast('Đã xóa sản phẩm khỏi giỏ', 'success');
+function removeFromCart(cartId) {
+    // Use API to remove from database
+    const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+    
+    fetch(baseUrl + '/BackEnd/api/remove_from_cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cart_id: cartId
+        }),
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCart();
+            showToast('Đã xóa sản phẩm khỏi giỏ', 'success');
+        } else {
+            alert('Lỗi: ' + (data.message || 'Không thể xóa sản phẩm'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi khi xóa sản phẩm');
+    });
     return false;
 }
 
 // Hàm tăng/giảm số lượng
-function changeQuantity(index, delta) {
-    const stored = getCartItems();
-    if (!stored[index]) {
-        return false;
-    }
-
-    const nextQty = (Number(stored[index].quantity) || 0) + Number(delta || 0);
-    if (nextQty <= 0) {
-        stored.splice(index, 1);
-    } else {
-        stored[index].quantity = nextQty;
-    }
-
-    saveCartItems(stored);
-    loadCart();
+function changeQuantity(cartId, delta) {
+    const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+    
+    // Use API to update quantity in database
+    fetch(baseUrl + '/BackEnd/api/update_cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cart_id: cartId,
+            delta: Number(delta)
+        }),
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCart();
+        } else {
+            alert('Lỗi: ' + (data.message || 'Không thể cập nhật số lượng'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi khi cập nhật số lượng');
+    });
     return false;
 }
 
@@ -393,37 +424,51 @@ function loadCartWithoutTotalUpdate() {
 function loadCart() {
     const tbody = document.getElementById('cart-body');
     const totalEl = document.getElementById('cart-total');
-    const stored = JSON.parse(localStorage.getItem('cart')) || [];
 
     if (!tbody) return;
 
-    if (stored.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3">Giỏ hàng trống</td></tr>';
-        if (totalEl) totalEl.textContent = 'Tổng cộng: 0 VNĐ';
-        updateCartCount();
-        return;
-    }
+    // Fetch cart from API instead of localStorage
+    const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+    
+    fetch(baseUrl + '/BackEnd/api/cart.php?action=get', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success || !data.data || data.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3">Giỏ hàng trống</td></tr>';
+            if (totalEl) totalEl.textContent = 'Tổng cộng: 0 VNĐ';
+            updateCartCount();
+            return;
+        }
 
-    let rows = '';
-    let total = 0;
-    stored.forEach((item, idx) => {
-        const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 0);
-        total += lineTotal;
-        rows += `
-            <tr>
-                <td>${item.name}</td>
-                <td>${formatCurrency(item.price)}</td>
-                <td>
-                    <button class="remove-btn" onclick="changeQuantity(${idx}, -1)">-</button>
-                    <span style="display:inline-block;min-width:32px;text-align:center" data-quantity-index="${idx}">${item.quantity}</span>
-                    <button class="remove-btn" style="background:#28a745" onclick="changeQuantity(${idx}, 1)">+</button>
-                    <button class="remove-btn" style="margin-left:8px" onclick="removeFromCart(${idx})">Xóa</button>
-                </td>
-            </tr>`;
+        let rows = '';
+        let total = 0;
+        data.data.forEach((item, idx) => {
+            const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 0);
+            total += lineTotal;
+            const itemId = item.id; // cart.id từ database
+            rows += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${formatCurrency(item.price)}</td>
+                    <td>
+                        <button class="remove-btn" onclick="changeQuantity(${itemId}, -1)">-</button>
+                        <span style="display:inline-block;min-width:32px;text-align:center">${item.quantity}</span>
+                        <button class="remove-btn" style="background:#28a745" onclick="changeQuantity(${itemId}, 1)">+</button>
+                        <button class="remove-btn" style="margin-left:8px" onclick="removeFromCart(${itemId})">Xóa</button>
+                    </td>
+                </tr>`;
+        });
+        tbody.innerHTML = rows;
+        if (totalEl) totalEl.textContent = `Tổng cộng: ${formatCurrency(total)}`;
+        updateCartCount();
+    })
+    .catch(error => {
+        console.error('Error loading cart:', error);
+        tbody.innerHTML = '<tr><td colspan="3">Lỗi tải giỏ hàng</td></tr>';
     });
-    tbody.innerHTML = rows;
-    if (totalEl) totalEl.textContent = `Tổng cộng: ${formatCurrency(total)}`;
-    updateCartCount();
 }
 
 // ========================================

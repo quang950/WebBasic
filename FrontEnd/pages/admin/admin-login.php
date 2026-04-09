@@ -390,6 +390,8 @@
       </div>
     </div>
 
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
+
     <script>
       // Toast notification (tự ẩn sau 2s rồi chuyển trang)
       function showToast(message, redirectUrl) {

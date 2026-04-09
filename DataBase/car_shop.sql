@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS stock_history;
 DROP TABLE IF EXISTS order_details;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS user_shipping_addresses;
 DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS cart;
 DROP TABLE IF EXISTS users;
@@ -41,6 +42,8 @@ CREATE TABLE products (
     description TEXT,
     image_url VARCHAR(255),
     stock INT DEFAULT 0,
+    low_stock_threshold INT DEFAULT 10,
+    is_visible TINYINT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -62,6 +65,24 @@ CREATE TABLE users (
     locked BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create user_shipping_addresses table
+CREATE TABLE user_shipping_addresses (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    recipient_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    address_detail TEXT NOT NULL,
+    ward VARCHAR(100),
+    district VARCHAR(100),
+    province VARCHAR(100),
+    postal_code VARCHAR(10),
+    is_default BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_default (user_id, is_default)
 );
 
 -- Create orders table

@@ -16,22 +16,7 @@ const state = {
   productsData: {}, // Cache sản phẩm từ JSON để lấy thông tin chi tiết
 };
 
-// Load dữ liệu từ products.json để có đầy đủ thông tin chi tiết
-async function loadProductsData() {
-  try {
-    const response = await fetch('../../DataBase/products.json');
-    if (!response.ok) throw new Error('Cannot load products.json: ' + response.status);
-    const data = await response.json();
-    console.log('[SUCCESS] Loaded', data.length, 'products from JSON');
-    data.forEach(product => {
-      state.productsData[product.id] = product;
-    });
-    console.log('[SUCCESS] state.productsData now has keys:', Object.keys(state.productsData).slice(0, 10));
-  } catch (err) {
-    console.error('[ERROR] Failed to load products.json:', err.message);
-    console.warn('[FALLBACK] Will load product details from API on demand');
-  }
-}
+// Products data now loaded directly from database via API
 
 function bindEvents() {
   document.getElementById("prevPageBtn").addEventListener("click", () => {
@@ -98,29 +83,16 @@ function updateUrlQuery() {
 async function resolveApiBase() {
   if (state.apiBase) return state.apiBase;
 
-  const origin = window.location.origin;
-  const candidates = [
-    `${origin}/WebBasic/BackEnd/api`,
-    `${origin}/BackEnd/api`,
-    `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`,
-    "http://localhost:8000/BackEnd/api",
-    "http://127.0.0.1:8000/BackEnd/api",
-  ];
-
-  for (const base of candidates) {
-    try {
-      const response = await fetch(`${base}/test.php`);
-      const text = await response.text();
-      if (response.ok && text.includes('"test"')) {
-        state.apiBase = base;
-        return base;
-      }
-    } catch (_err) {
-      // Continue trying next base URL
-    }
+  // Use BASE_URL if available (from config.js)
+  if (typeof BASE_URL !== 'undefined' && BASE_URL) {
+    state.apiBase = BASE_URL + '/BackEnd/api';
+    return state.apiBase;
   }
 
-  throw new Error("Khong tim thay API backend. Hay chay PHP server tren cong 8000.");
+  // Fallback to default paths based on current origin
+  const origin = window.location.origin;
+  state.apiBase = `${origin}/WebBasic/BackEnd/api`;
+  return state.apiBase;
 }
 
 function buildSearchParams(page) {
@@ -216,20 +188,20 @@ function renderProducts() {
       `;
       
       // Tính đúng đường dẫn ảnh - sử dụng absolute URL từ server root
-      let imageSrc = fullData.image_url || item.image_url || 'assets/images/default-car.jpg';
-      // Convert relative path thành absolute URL từ server root: /WebBasic/assets/images/...
+      let imageSrc = fullData.image_url || item.image_url || '/WebBasic/FrontEnd/assets/images/default-car.jpg';
+      // Convert relative path thành absolute URL từ server root: /WebBasic/FrontEnd/assets/images/...
       if (imageSrc && !imageSrc.startsWith('http') && !imageSrc.startsWith('/')) {
-        imageSrc = '/WebBasic/' + imageSrc;
+        imageSrc = '/WebBasic/FrontEnd/' + imageSrc;
       }
       console.log('[DEBUG] imageSrc:', imageSrc);
       
       return `
         <div class="car-card" ${dataAttrs}>
-          <img src="${imageSrc}" alt="${escapeHtml(item.name)}" onerror="this.src='/WebBasic/assets/images/default-car.jpg'">
+          <img src="${imageSrc}" alt="${escapeHtml(item.name)}" onerror="this.src='/WebBasic/FrontEnd/assets/images/default-car.jpg'">
           <h3>${escapeHtml(item.name)}</h3>
           <p class="price">${formatPrice(Number(item.price || 0))} VNĐ</p>
           <div class="button-container">
-            <button class="buy-btn" onclick="return false;" style="cursor:pointer; opacity:1;">Mua hàng</button>
+            <button class="buy-btn" onclick="addToCartFromSearch(${item.id}, '${escapeHtml(item.name)}', ${item.price})" style="cursor:pointer; opacity:1;">Mua hàng</button>
             <a href="#" class="view-details" data-id="${item.id}">Chi tiết</a>
           </div>
         </div>
@@ -370,11 +342,128 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
+// Toast notification
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.style.cssText = "position:fixed;top:28px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:500;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = "1"; }, 10);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }, 2000);
+}
+
+// Add to cart from search results
+function addToCartFromSearch(productId, productName, productPrice) {
+  // Ensure productId is always a number
+  productId = Number(productId);
+
+  // Call API to add to cart
+  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  
+  fetch(baseUrl + '/BackEnd/api/add_to_cart.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      product_id: productId,
+      quantity: 1
+    }),
+    credentials: 'include'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      updateCartCount();
+      showToast("Đã thêm vào giỏ hàng!");
+    } else {
+      // Nếu chưa đăng nhập, redirect tới login page
+      if (data.message && data.message.includes('đăng nhập')) {
+        alert("Vui lòng đăng nhập để mua hàng!");
+        window.location.href = "login.php";
+      } else {
+        alert("Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("Lỗi khi thêm vào giỏ hàng");
+  });
+
+  return false;
+}
+
+// Update cart count badge
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  const cartBadge = document.querySelector(".cart-count");
+  if (cartBadge) {
+    cartBadge.textContent = totalItems;
+  }
+}
+
+// Check login and go to cart
+function checkLoginAndGoToCart() {
+  window.location.href = "cart.php";
+  return false;
+}
+
+// Logout function
+function logout() {
+  localStorage.removeItem("userLoggedIn");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userInfo");
+  localStorage.removeItem("cart");
+  const cartBadge = document.querySelector(".cart-count");
+  if (cartBadge) cartBadge.textContent = "0";
+  showToast("Đã đăng xuất thành công!");
+  window.location.href = "../../index.php";
+}
+
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadProductsData(); // Load dữ liệu từ products.json
   bindEvents();
   hydrateFiltersFromUrl();
   setFilterInputs();
+  updateCartCount();
+  checkUserLoginStatus();
   await fetchAndRender(1);
 });
+
+// Check user login status
+function checkUserLoginStatus() {
+  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  
+  // Check session from server instead of localStorage
+  fetch(baseUrl + '/BackEnd/api/check_session.php', {
+    method: 'GET',
+    credentials: 'include'
+  })
+  .then(response => response.json())
+  .then(data => {
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    const loginBtn = document.getElementById("loginBtn");
+    const userInfoDiv = document.getElementById("userInfo");
+
+    if (data.is_logged_in && userInfo.name) {
+      loginBtn.style.display = "none";
+      userInfoDiv.style.display = "flex";
+      document.getElementById("userName").textContent = userInfo.name;
+      document.getElementById("userAvatar").src = userInfo.picture || `https://ui-avatars.com/api/?name=${userInfo.name}&background=007bff&color=fff&size=35`;
+    } else {
+      loginBtn.style.display = "inline-block";
+      userInfoDiv.style.display = "none";
+    }
+  })
+  .catch(error => {
+    console.error('Error checking session:', error);
+    // Fallback to showing login button
+    const loginBtn = document.getElementById("loginBtn");
+    if (loginBtn) loginBtn.style.display = "inline-block";
+  });
+}

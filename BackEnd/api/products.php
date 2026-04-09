@@ -1,19 +1,20 @@
 <?php
 // products.php - Danh sách sản phẩm theo phân loại + phân trang.
 header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: http://localhost');
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 	http_response_code(200);
-	echo json_encode(['success' => true]);
+	echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
 	exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 	http_response_code(405);
-	echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ']);
+	echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ'], JSON_UNESCAPED_UNICODE);
 	exit;
 }
 
@@ -29,11 +30,11 @@ try {
 	}
 
 	http_response_code($result['success'] ? 200 : 400);
-	echo json_encode($result);
+	echo json_encode($result, JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
 	http_response_code(500);
 	echo json_encode([
 		'success' => false,
 		'message' => 'Lỗi server: ' . $e->getMessage()
-	]);
+	], JSON_UNESCAPED_UNICODE);
 }

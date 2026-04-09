@@ -13,6 +13,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <link rel="stylesheet" href="../../assets/css/style.css" />
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
   </head>
   <body>
     <div class="login-container">
@@ -71,55 +72,6 @@
           Chưa có tài khoản? <a href="register.php">Đăng ký ngay</a>
         </div>
 
-        <div class="divider">
-          <span>hoặc</span>
-        </div>
-
-        <div class="google-login-container">
-          <button class="google-login-btn" onclick="showGmailLogin()">
-            <i class="fab fa-google"></i> Đăng nhập bằng Google
-          </button>
-        </div>
-
-        <!-- Gmail Login Modal -->
-        <div id="gmailModal" class="gmail-modal" style="display: none">
-          <div class="gmail-modal-content">
-            <div class="gmail-modal-header">
-              <h3><i class="fab fa-google"></i> Đăng nhập bằng Google</h3>
-              <span class="gmail-close" onclick="closeGmailLogin()"
-                >&times;</span
-              >
-            </div>
-            <div class="gmail-modal-body">
-              <form id="gmailForm" autocomplete="off">
-                <div class="form-group">
-                  <label for="gmailEmail">Email hoặc tên người dùng:</label>
-                  <input
-                    type="text"
-                    id="gmailEmail"
-                    autocomplete="new-email"
-                    value=""
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="gmailPassword">Mật khẩu:</label>
-                  <input
-                    type="password"
-                    id="gmailPassword"
-                    autocomplete="new-password"
-                    value=""
-                    required
-                  />
-                </div>
-                <button type="submit" class="gmail-submit-btn">
-                  <i class="fab fa-google"></i> Đăng nhập
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-
         <div class="back-to-site">
           <a href="../../index.php"><i class="fas fa-home"></i> Về trang chủ</a>
         </div>
@@ -145,47 +97,6 @@
           }, 300);
         }, 2000);
       }
-
-      // Hiển thị form đăng nhập Gmail
-      function showGmailLogin() {
-        document.getElementById("gmailModal").style.display = "flex";
-      }
-
-      // Đóng form đăng nhập Gmail
-      function closeGmailLogin() {
-        document.getElementById("gmailModal").style.display = "none";
-      }
-
-      // Xử lý đăng nhập Gmail
-      document
-        .getElementById("gmailForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          const email = document.getElementById("gmailEmail").value;
-          const password = document.getElementById("gmailPassword").value;
-
-          // Cho phép đăng nhập với bất kỳ thông tin nào
-          if (email && password) {
-            const userName = email.includes("@") ? email.split("@")[0] : email; // Lấy phần trước @ hoặc toàn bộ nếu không có @
-
-            const userInfo = {
-              id: "gmail_" + Date.now(),
-              name: userName,
-              email: email,
-              picture: `https://ui-avatars.com/api/?name=${userName}&background=db4437&color=fff&size=50`,
-              loginTime: new Date().toISOString(),
-              loginType: "gmail",
-            };
-
-            localStorage.setItem("userLoggedIn", "true");
-            localStorage.setItem("userInfo", JSON.stringify(userInfo));
-
-            showToast("Đăng nhập thành công: " + email, "../../index.php");
-          } else {
-            alert("Vui lòng nhập đầy đủ thông tin đăng nhập");
-          }
-        });
 
       // Toast notification
       function showToast(message, type = 'success', redirectUrl = null) {
@@ -251,7 +162,7 @@
           }
 
           // Gọi API login
-          fetch('/WebBasic/BackEnd/api/login.php', {
+          fetch(BASE_URL + '/BackEnd/api/login.php', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -291,11 +202,6 @@
             showToast("Lỗi kết nối: " + error.message, "error");
           });
         });
-
-      // Kiểm tra nếu đã đăng nhập
-      if (localStorage.getItem("userLoggedIn") === "true") {
-        window.location.href = "../../index.php";
-      }
 
       // Đảm bảo form luôn trống khi load trang
       document.addEventListener("DOMContentLoaded", function () {

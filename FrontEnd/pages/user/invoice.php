@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hóa Đơn - 3 Boys Auto</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -235,13 +236,26 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Lấy đơn hàng từ localStorage
-      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Fetch orders from API
+      let orders = [];
+      const userEmail = localStorage.getItem('userEmail');
+      if (userEmail) {
+          try {
+              const response = await fetch(BASE_URL + '/BackEnd/api/get_orders.php?email=' + encodeURIComponent(userEmail), {
+                  credentials: 'include'
+              });
+              const data = await response.json();
+              orders = data.success ? data.orders : [];
+          } catch (err) {
+              console.error('Error fetching orders:', err);
+              orders = [];
+          }
+      }
       
       if (orders.length === 0) {
         alert('Không có hóa đơn nào!');
-        window.location.href = 'cart.html';
+        window.location.href = 'cart.php';
         return;
       }
       

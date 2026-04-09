@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
 </head>
 <body>
     <div class="register-container">
@@ -303,7 +304,7 @@
             };
             
             // Gọi API register
-            fetch('/WebBasic/BackEnd/api/register.php', {
+            fetch(BASE_URL + '/BackEnd/api/register.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

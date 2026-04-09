@@ -2,6 +2,11 @@
 session_start();
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: http://localhost');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
 require_once __DIR__ . '/../config/db_connect.php';
 
 //LẤY USER TỪ SESSION

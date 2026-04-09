@@ -1,9 +1,17 @@
-<!DOCTYPE html>
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
+<!DOCTYPE html>>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Giỏ hàng</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
   <style>
     .cart-container {
       max-width: 900px;
@@ -85,14 +93,7 @@
 </head>
 <body>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-      if (!isLoggedIn) {
-        alert('Vui lòng đăng nhập để xem giỏ hàng!');
-        window.location.href = 'login.html';
-        return;
-      }
-    });
+    // Session check is done server-side, no need for client-side localStorage check
   </script>
   
   <div class="cart-container">
@@ -119,16 +120,22 @@
     <form id="orderForm" style="margin-top:32px;background:#fff;padding:32px 28px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);max-width:700px;margin-left:auto;margin-right:auto;display:none;">
       <h3 style="margin-bottom:24px;text-align:center;color:#333;font-size:1.5rem;"><i class="fas fa-shipping-fast" style="color:#007bff;margin-right:8px;"></i>Thông tin nhận hàng</h3>
       
-      <!-- Chọn loại địa chỉ -->
-      <div style="margin-bottom:24px;padding:16px;background:#f8f9fa;border-radius:8px;border-left:4px solid #007bff;">
-        <label style="display:inline-flex;align-items:center;cursor:pointer;margin-right:32px;">
-          <input type="radio" name="addressType" value="account" checked style="margin-right:8px;width:18px;height:18px;cursor:pointer;">
-          <span style="font-weight:600;color:#333;"><i class="fas fa-user" style="color:#007bff;margin-right:6px;"></i>Dùng địa chỉ từ tài khoản</span>
-        </label>
-        <label style="display:inline-flex;align-items:center;cursor:pointer;">
-          <input type="radio" name="addressType" value="new" style="margin-right:8px;width:18px;height:18px;cursor:pointer;">
-          <span style="font-weight:600;color:#333;"><i class="fas fa-edit" style="color:#28a745;margin-right:6px;"></i>Nhập địa chỉ mới</span>
-        </label>
+      <!-- Chọn địa chỉ - Dạng danh sách hoặc toggle -->
+      <div id="addressSelectionContainer" style="margin-bottom:24px;padding:16px;background:#f8f9fa;border-radius:8px;border-left:4px solid #007bff;">
+        <div id="addressList" style="display:none;">
+          <!-- Sẽ được load bằng JS -->
+        </div>
+        <div id="addressToggle" style="display:inline-flex;align-items:center;gap:32px;width:100%;">
+          <!-- Fallback khi không load được danh sách -->
+          <label style="display:inline-flex;align-items:center;cursor:pointer;">
+            <input type="radio" name="addressType" value="account" checked style="margin-right:8px;width:18px;height:18px;cursor:pointer;">
+            <span style="font-weight:600;color:#333;"><i class="fas fa-user" style="color:#007bff;margin-right:6px;"></i>Dùng địa chỉ từ tài khoản</span>
+          </label>
+          <label style="display:inline-flex;align-items:center;cursor:pointer;">
+            <input type="radio" name="addressType" value="new" style="margin-right:8px;width:18px;height:18px;cursor:pointer;">
+            <span style="font-weight:600;color:#333;"><i class="fas fa-edit" style="color:#28a745;margin-right:6px;"></i>Nhập địa chỉ mới</span>
+          </label>
+        </div>
       </div>
       
       <!-- Form địa chỉ từ tài khoản -->
@@ -191,6 +198,10 @@
         <div style="margin-bottom:16px;">
           <label style="display:block;margin-bottom:6px;font-weight:600;color:#555;"><i class="fas fa-map-marker-alt" style="color:#28a745;margin-right:6px;"></i>Địa chỉ chi tiết <span style="color:red;">*</span></label>
           <input type="text" id="newStreet" placeholder="Số nhà, tên đường (Ví dụ: 123 Nguyễn Văn Linh)" required style="width:100%;padding:10px 12px;border-radius:6px;border:1px solid #ddd;font-size:0.95rem;transition:border 0.3s;" onfocus="this.style.borderColor='#28a745'" onblur="this.style.borderColor='#ddd'">
+        </div>
+        
+        <div style="padding-top:12px;border-top:2px solid #f0f0f0;margin-bottom:16px;">
+          <p style="color:#666;font-size:0.9rem;margin:12px 0 16px 0;"><i class="fas fa-info-circle" style="color:#ff9800;"></i> <strong>Địa chỉ chi tiết (Phường/Xã, Quận/Huyện, Tỉnh/TP)</strong></p>
         </div>
         
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
@@ -258,6 +269,188 @@
       // Load giỏ hàng từ main.js
       loadCart();
       
+      // Auto-refresh cart every 5 seconds (in case user adds from other page/modal)
+      let cartRefreshInterval = setInterval(function() {
+        loadCart();
+      }, 5000);
+      
+      // Also refresh when page regains focus (user switches tabs)
+      window.addEventListener('focus', function() {
+        loadCart();
+      });
+      
+      // Load danh sách địa chỉ đã lưu
+      loadSavedAddresses();
+      
+      // Clean up interval when page unloads
+      window.addEventListener('beforeunload', function() {
+        clearInterval(cartRefreshInterval);
+      });
+      
+      // Hàm load danh sách địa chỉ từ user_shipping_addresses
+      async function loadSavedAddresses() {
+        try {
+          const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+          const userId = userInfo.id;
+          const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+          
+          if (!userId) {
+            console.log('No user ID, using fallback');
+            showAddressToggle();
+            return;
+          }
+          
+          const response = await fetch(baseUrl + '/BackEnd/api/get_shipping_addresses.php?user_id=' + userId, {
+            method: 'GET',
+            credentials: 'include'
+          });
+          
+          if (!response.ok) {
+            console.log('API error status:', response.status);
+            showAddressToggle();
+            return;
+          }
+          
+          const data = await response.json();
+          
+          if (data.success && data.data && data.data.length > 0) {
+            // Có danh sách địa chỉ - hiển thị dạng radio list
+            renderAddressList(data.data);
+          } else {
+            // Không có danh sách - hiển thị toggle account/new
+            console.log('No addresses found, using fallback');
+            showAddressToggle();
+          }
+        } catch (error) {
+          console.log('Load addresses error:', error);
+          // Fallback: hiển thị toggle
+          showAddressToggle();
+        }
+      }
+      
+      // Hiển thị danh sách địa chỉ dưới dạng radio options
+      function renderAddressList(addresses) {
+        const addressList = document.getElementById('addressList');
+        const addressToggle = document.getElementById('addressToggle');
+        
+        let html = '<div style="margin-bottom:12px;"><p style="color:#666;font-size:0.9rem;margin:0 0 12px 0;font-weight:600;"><i class="fas fa-map-marker-alt" style="color:#007bff;"></i> Chọn địa chỉ:</p></div>';
+        
+        // Thêm option "Dùng địa chỉ từ tài khoản" ở đầu
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        const fullName = userInfo.name || `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim();
+        const addressParts = String(userInfo.address || '').split(',').map(v => v.trim());
+        const accountFullAddr = `${addressParts[0] || ''}, ${addressParts[1] || ''}, ${addressParts[2] || ''}, ${addressParts[3] || userInfo.province || ''}`;
+        
+        if (fullName && accountFullAddr.trim() !== ',,,') {
+          html += `
+            <label style="display:block;margin-bottom:10px;cursor:pointer;padding:10px;border-radius:6px;border:1px solid #ddd;background:#e7f3ff;transition:background 0.2s;" onmouseover="this.style.background='#cde4f0'" onmouseout="this.style.background='#e7f3ff'">
+              <input type="radio" name="addressType" value="account" checked style="margin-right:10px;width:16px;height:16px;cursor:pointer;" onchange="handleAddressSelection(this)">
+              <span style="font-weight:600;color:#0066cc;"><i class="fas fa-user-circle" style="margin-right:6px;"></i>Dùng địa chỉ từ tài khoản</span><br>
+              <span style="color:#666;font-size:0.9rem;margin-left:26px;">${accountFullAddr}</span>
+            </label>
+          `;
+        }
+        
+        // Thêm danh sách saved addresses
+        addresses.forEach((addr, index) => {
+          const isDefault = addr.is_default ? ' (Mặc định)' : '';
+          const fullAddr = `${addr.address_detail}, ${addr.ward}, ${addr.district}, ${addr.province}`;
+          
+          html += `
+            <label style="display:block;margin-bottom:10px;cursor:pointer;padding:10px;border-radius:6px;border:1px solid #ddd;transition:background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
+              <input type="radio" name="addressType" value="saved" data-address-id="${addr.id}" style="margin-right:10px;width:16px;height:16px;cursor:pointer;" onchange="handleAddressSelection(this)">
+              <span style="font-weight:600;color:#333;">${addr.recipient_name}${isDefault}</span> - ${addr.phone}<br>
+              <span style="color:#666;font-size:0.9rem;margin-left:26px;">${fullAddr}</span>
+            </label>
+          `;
+        });
+        
+        // Thêm option "Thêm địa chỉ mới"
+        html += `
+          <label style="display:block;margin-top:16px;padding-top:16px;border-top:1px solid #ddd;cursor:pointer;padding:10px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
+            <input type="radio" name="addressType" value="new" style="margin-right:10px;width:16px;height:16px;cursor:pointer;" onchange="handleAddressSelection(this)">
+            <span style="font-weight:600;color:#28a745;"><i class="fas fa-plus-circle" style="margin-right:6px;"></i>Thêm địa chỉ mới</span>
+          </label>
+        `;
+        
+        addressList.innerHTML = html;
+        addressList.style.display = 'block';
+        addressToggle.style.display = 'none';
+      }
+      
+      // Fallback: Hiển thị toggle account/new (khi không có danh sách)
+      function showAddressToggle() {
+        const addressList = document.getElementById('addressList');
+        const addressToggle = document.getElementById('addressToggle');
+        
+        addressList.style.display = 'none';
+        addressToggle.style.display = 'inline-flex';
+      }
+      
+      // Xử lý khi người dùng chọn địa chỉ
+      window.handleAddressSelection = function(radio) {
+        const addressType = radio.value;
+        const addressId = radio.dataset.addressId;
+        
+        if (addressType === 'saved' && addressId) {
+          // Hiển thị thông tin địa chỉ từ API
+          loadAddressDetails(addressId);
+        } else if (addressType === 'new') {
+          // Hiển thị form nhập địa chỉ mới
+          document.getElementById('accountAddressFields').style.display = 'none';
+          document.getElementById('newAddressFields').style.display = 'block';
+        } else if (addressType === 'account') {
+          // Hiển thị thông tin từ tài khoản
+          document.getElementById('newAddressFields').style.display = 'none';
+          document.getElementById('accountAddressFields').style.display = 'block';
+          loadAccountAddress();
+        }
+      };
+      
+      // Load thông tin chi tiết của địa chỉ đã lưu
+      async function loadAddressDetails(addressId) {
+        try {
+          const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+          const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+          
+          const response = await fetch(baseUrl + '/BackEnd/api/get_shipping_addresses.php?user_id=' + userInfo.id, {
+            method: 'GET',
+            credentials: 'include'
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.data) {
+            const addr = data.data.find(a => a.id == addressId);
+            if (addr) {
+              // Hiển thị thông tin địa chỉ trong readonly fields
+              displaySavedAddressFields(addr);
+            }
+          }
+        } catch (error) {
+          console.log('Load address details error:', error);
+        }
+      }
+      
+      // Hiển thị thông tin của địa chỉ đã lưu (readonly)
+      function displaySavedAddressFields(addr) {
+        // Ẩn cả hai form
+        document.getElementById('accountAddressFields').style.display = 'none';
+        document.getElementById('newAddressFields').style.display = 'none';
+        
+        // Hiển thị container cho địa chỉ đã lưu (dùng account fields nhưng giấu)
+        document.getElementById('accountAddressFields').style.display = 'block';
+        
+        // Điền thông tin vào address fields
+        document.getElementById('accountName').value = addr.recipient_name || '';
+        document.getElementById('accountPhone').value = addr.phone || '';
+        document.getElementById('accountEmail').value = '';
+        document.getElementById('accountStreet').value = addr.address_detail || '';
+        document.getElementById('accountWard').value = addr.ward || '';
+        document.getElementById('accountDistrict').value = addr.district || '';
+        document.getElementById('accountProvince').value = addr.province || '';
+      }
+      
       // Xử lý nút "Đặt hàng" - hiển thị form thông tin nhận hàng
       document.getElementById('showOrderFormBtn').onclick = function(e) { 
         e.preventDefault();
@@ -296,7 +489,8 @@
             
             let receiverName, receiverPhone, receiverEmail, receiverAddress;
             
-            if (addressType === 'account') {
+            if (addressType === 'saved' || addressType === 'account') {
+              // Dùng địa chỉ đã lưu hoặc từ tài khoản
               receiverName = document.getElementById('accountName').value?.trim();
               receiverPhone = document.getElementById('accountPhone').value?.trim();
               receiverEmail = document.getElementById('accountEmail').value?.trim();
@@ -305,14 +499,15 @@
               const district = document.getElementById('accountDistrict').value?.trim();
               const province = document.getElementById('accountProvince').value?.trim();
               
-              // Validate account address fields
+              // Validate address fields
               if (!receiverName || !receiverPhone || !street || !ward || !district || !province) {
-                alert('Vui lòng điền đầy đủ thông tin địa chỉ tài khoản!');
+                alert('Vui lòng điền đầy đủ thông tin địa chỉ!');
                 return false;
               }
               
               receiverAddress = `${street}, ${ward}, ${district}, ${province}`;
-            } else {
+            } else if (addressType === 'new') {
+              // Nhập địa chỉ mới
               receiverName = document.getElementById('newName').value;
               receiverPhone = document.getElementById('newPhone').value;
               receiverEmail = document.getElementById('newEmail').value || 'N/A';
@@ -344,58 +539,84 @@
               return false;
             }
             
-            // Lấy giỏ hàng
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            // Fetch cart từ database API thay vì localStorage
+            const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
             
-            if (cart.length === 0) {
-              alert('Giỏ hàng trống!');
-              window.location.href = '../../index.html';
-              return false;
-            }
-            
-            // Normalize cart items - ensure correct data types
-            const normalizedCart = cart.map(item => ({
-              name: String(item.name || ''),
-              price: Number(item.price) || 0,
-              quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
-              img: String(item.img || '')
-            }));
-            
-            // Tính tổng tiền
-            const totalPrice = normalizedCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            // Tạo đối tượng gửi tới backend
-            const backendOrderData = {
-              shipping_address: receiverAddress,
-              shipping_phone: receiverPhone,
-              payment_method: paymentType,
-              cart_items: normalizedCart
-            };
-            
-            console.log('Sending order data:', backendOrderData);
-            
-            // Tạo đối tượng đơn hàng cho hiển thị
-            const orderData = {
-              orderId: 'DH' + Date.now().toString().slice(-6),
-              orderDate: new Date().toLocaleString('vi-VN'),
-              receiverName: receiverName,
-              receiverPhone: receiverPhone,
-              receiverEmail: receiverEmail,
-              receiverAddress: receiverAddress,
-              paymentMethod: paymentMethod,
-              products: normalizedCart,
-              totalPrice: totalPrice
-            };
-            
-            // Gửi request tới backend API để lưu order vào database
-            fetch('../../../BackEnd/api/Order.php', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              credentials: 'include',
-              body: JSON.stringify(backendOrderData)
+            fetch(baseUrl + '/BackEnd/api/cart.php?action=get', {
+              method: 'GET',
+              credentials: 'include'
             })
+            .then(response => response.json())
+            .then(cartData => {
+              // Kiểm tra giỏ hàng từ API
+              if (!cartData.success || !cartData.data || cartData.data.length === 0) {
+                alert('Giỏ hàng trống! Vui lòng thêm sản phẩm trước khi đặt hàng.');
+                return;
+              }
+
+              // Map cart items từ API format tới order format
+              const cartItems = cartData.data.map(item => ({
+                product_id: Number(item.product_id) || 0,
+                name: String(item.name || ''),
+                price: Number(item.price) || 0,
+                quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+                unit_price: Number(item.price) || 0
+              }));
+
+              // Tính tổng tiền
+              const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+              // Tạo đối tượng gửi tới backend (format cho create_order.php)
+              const backendOrderData = {
+                receiver_name: receiverName,
+                shipping_address: receiverAddress,
+                shipping_phone: receiverPhone,
+                payment_method: paymentType,
+                cart_items: cartItems
+              };
+
+              console.log('Sending order data:', backendOrderData);
+
+              // Tạo đối tượng đơn hàng cho hiển thị trên trang xác nhận
+              const orderData = {
+                orderId: 'DH' + Date.now().toString().slice(-6),
+                orderDate: new Date().toLocaleString('vi-VN'),
+                receiverName: receiverName,
+                receiverPhone: receiverPhone,
+                receiverEmail: receiverEmail,
+                receiverAddress: receiverAddress,
+                paymentMethod: paymentMethod,
+                products: cartItems,
+                totalPrice: totalPrice
+              };
+
+              // Gửi request tới backend API để lưu order vào database
+              submitOrderToBackend(backendOrderData, orderData, baseUrl);
+            })
+            .catch(error => {
+              console.error('Error fetching cart:', error);
+              alert('Lỗi tải giỏ hàng: ' + error.message);
+            });
+            
+            return false;
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra: ' + error.message);
+            return false;
+          }
+        };
+      }
+      
+      // Hàm gửi đơn hàng tới backend
+      function submitOrderToBackend(backendOrderData, orderData, baseUrl) {
+        fetch(baseUrl + '/BackEnd/api/create_order.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(backendOrderData)
+        })
             .then(response => {
               if (!response.ok) {
                 return response.json().catch(() => ({ 
@@ -412,9 +633,6 @@
                 // Lưu vào sessionStorage để trang xác nhận đọc
                 sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
                 
-                // Xóa giỏ hàng sau khi đặt hàng thành công
-                localStorage.removeItem('cart');
-                
                 // Chuyển sang trang xác nhận
                 window.location.replace('order-confirmation.php');
               } else {
@@ -425,14 +643,6 @@
               console.error('Order Error Details:', error);
               alert('Có lỗi xảy ra khi lưu đơn hàng: ' + error.message);
             });
-            
-          } catch (error) {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra: ' + error.message);
-          }
-          
-          return false; 
-        };
       }
       
       // Load địa chỉ từ tài khoản người dùng
@@ -458,39 +668,42 @@
       // Gọi hàm load địa chỉ khi trang load
       loadAccountAddress();
       
-      // Toggle form địa chỉ
+      // Toggle form địa chỉ - fallback listener cho trường hợp dùng toggle thay vì radio list
       document.querySelectorAll('input[name="addressType"]').forEach(radio => {
         radio.addEventListener('change', function() {
-          // Lấy các trường required trong form địa chỉ mới
-          const newNameField = document.getElementById('newName');
-          const newPhoneField = document.getElementById('newPhone');
-          const newStreetField = document.getElementById('newStreet');
-          const newWardField = document.getElementById('newWard');
-          const newDistrictField = document.getElementById('newDistrict');
-          const newProvinceField = document.getElementById('newProvince');
-          
-          if (this.value === 'account') {
-            document.getElementById('accountAddressFields').style.display = 'block';
-            document.getElementById('newAddressFields').style.display = 'none';
+          // Chỉ áp dụng nếu đang dùng toggle (không phải radio list)
+          if (document.getElementById('addressToggle').style.display !== 'none') {
+            // Lấy các trường required trong form địa chỉ mới
+            const newNameField = document.getElementById('newName');
+            const newPhoneField = document.getElementById('newPhone');
+            const newStreetField = document.getElementById('newStreet');
+            const newWardField = document.getElementById('newWard');
+            const newDistrictField = document.getElementById('newDistrict');
+            const newProvinceField = document.getElementById('newProvince');
             
-            // Bỏ required cho các trường địa chỉ mới
-            newNameField.removeAttribute('required');
-            newPhoneField.removeAttribute('required');
-            newStreetField.removeAttribute('required');
-            newWardField.removeAttribute('required');
-            newDistrictField.removeAttribute('required');
-            newProvinceField.removeAttribute('required');
-          } else {
-            document.getElementById('accountAddressFields').style.display = 'none';
-            document.getElementById('newAddressFields').style.display = 'block';
-            
-            // Thêm required cho các trường địa chỉ mới
-            newNameField.setAttribute('required', 'required');
-            newPhoneField.setAttribute('required', 'required');
-            newStreetField.setAttribute('required', 'required');
-            newWardField.setAttribute('required', 'required');
-            newDistrictField.setAttribute('required', 'required');
-            newProvinceField.setAttribute('required', 'required');
+            if (this.value === 'account') {
+              document.getElementById('accountAddressFields').style.display = 'block';
+              document.getElementById('newAddressFields').style.display = 'none';
+              
+              // Bỏ required cho các trường địa chỉ mới
+              newNameField.removeAttribute('required');
+              newPhoneField.removeAttribute('required');
+              newStreetField.removeAttribute('required');
+              newWardField.removeAttribute('required');
+              newDistrictField.removeAttribute('required');
+              newProvinceField.removeAttribute('required');
+            } else if (this.value === 'new') {
+              document.getElementById('accountAddressFields').style.display = 'none';
+              document.getElementById('newAddressFields').style.display = 'block';
+              
+              // Thêm required cho các trường địa chỉ mới
+              newNameField.setAttribute('required', 'required');
+              newPhoneField.setAttribute('required', 'required');
+              newStreetField.setAttribute('required', 'required');
+              newWardField.setAttribute('required', 'required');
+              newDistrictField.setAttribute('required', 'required');
+              newProvinceField.setAttribute('required', 'required');
+            }
           }
         });
       });

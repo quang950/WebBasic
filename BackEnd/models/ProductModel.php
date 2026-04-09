@@ -56,9 +56,12 @@ class ProductModel {
 			$types = '';
 
 			if ($name !== '') {
-				$where[] = 'p.name LIKE ?';
-				$types .= 's';
+				// Search in both product name AND brand
+				$where[] = '(p.name LIKE ? OR p.brand LIKE ? OR LOWER(c.name) LIKE ?)';
+				$types .= 'sss';
 				$params[] = '%' . $name . '%';
+				$params[] = '%' . $name . '%';
+				$params[] = '%' . strtolower($name) . '%';
 			}
 
 			if ($category !== '') {
@@ -88,6 +91,7 @@ class ProductModel {
 						 FROM products p
 						 LEFT JOIN categories c ON p.category_id = c.id
 						 $whereSql";
+			
 			$countStmt = $this->conn->prepare($countSql);
 			if (!$countStmt) {
 				return ['success' => false, 'message' => 'Lỗi truy vấn số lượng sản phẩm'];

@@ -6,6 +6,7 @@
     <title>Thêm loại sản phẩm - Admin Panel</title>
     <link rel="stylesheet" href="../../assets/css/admin-style-new.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
     <style>
         .form-container {
             max-width: 800px;
@@ -228,7 +229,7 @@
         
         // Load category data if editing
         if (categoryEditId) {
-            fetch(`/WebBasic/BackEnd/api/categories.php?search=${categoryEditId}`)
+            fetch(BASE_URL + `/BackEnd/api/categories.php?search=${categoryEditId}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success && data.categories && data.categories.length > 0) {
@@ -263,7 +264,7 @@
                 formData.append('is_visible', visible);
                 formData.append('status', visible);
                 
-                fetch('/WebBasic/BackEnd/api/categories.php', {
+                fetch(BASE_URL + '/BackEnd/api/categories.php', {
                     method: 'PUT',
                     body: new URLSearchParams(formData)
                 })
@@ -284,7 +285,7 @@
                 formData.append('description', description);
                 formData.append('is_visible', visible);
                 
-                fetch('/WebBasic/BackEnd/api/categories.php', {
+                fetch(BASE_URL + '/BackEnd/api/categories.php', {
                     method: 'POST',
                     body: new URLSearchParams(formData)
                 })

@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
     <style>
         /* Modal styles */
         .modal {
@@ -311,26 +312,45 @@
             
             // Kiểm tra mật khẩu mới và xác nhận khớp nhau
             if (newPassword !== confirmPassword) {
+                alert('Mật khẩu xác nhận không khớp!');
                 return false;
             }
             
-            // Lấy user hiện tại
-            const email = localStorage.getItem('userEmail');
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            const userIndex = users.findIndex(u => u.email === email);
+            // Lấy user từ localStorage
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
             
-            if (userIndex >= 0) {
-                // Kiểm tra mật khẩu hiện tại
-                if (users[userIndex].password !== currentPassword) {
-                    return false;
-                }
-                
-                // Cập nhật mật khẩu mới
-                users[userIndex].password = newPassword;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                closeChangePasswordModal();
+            if (!userInfo.id) {
+                alert('Vui lòng đăng nhập lại');
+                return false;
             }
+            
+            // Call API to change password
+            fetch(BASE_URL + '/BackEnd/api/user.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userInfo.id,
+                    action: 'changePassword',
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✓ Đổi mật khẩu thành công!');
+                    closeChangePasswordModal();
+                } else {
+                    alert(data.message || 'Mật khẩu hiện tại không đúng');
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Có lỗi xảy ra!');
+            });
             
             return false;
         }
@@ -397,7 +417,7 @@
             const userId = user.id;
             
             // Fetch user data từ API để cập nhật real-time
-            fetch('/WebBasic/BackEnd/api/user.php?id=' + userId, {
+            fetch(BASE_URL + '/BackEnd/api/user.php?id=' + userId, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -456,7 +476,7 @@
                 birthDate: document.getElementById('birthDate').value
             };
             
-            fetch('/WebBasic/BackEnd/api/user.php', {
+            fetch(BASE_URL + '/BackEnd/api/user.php', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

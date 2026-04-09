@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /WebBasic/
+    
+    # If the request is not for a valid directory
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # If the request is not for a valid file
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # If the request is not already in FrontEnd folder
+    RewriteCond %{REQUEST_URI} !^FrontEnd/
+    
+    # Rewrite all requests to FrontEnd folder
+    RewriteRule ^(.*)$ FrontEnd/$1 [L]
+</IfModule>

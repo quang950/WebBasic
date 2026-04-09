@@ -1,55 +1,149 @@
-﻿// Toast notification (tự ẩn sau 2s)
-function showToast(message, redirectUrl) {
-  var t = document.createElement("div");
-  t.style.cssText =
-    "position:fixed;top:28px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:500;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;";
-  t.textContent = message;
-  document.body.appendChild(t);
-  setTimeout(function () {
-    t.style.opacity = "1";
-  }, 10);
-  setTimeout(function () {
-    t.style.opacity = "0";
-    setTimeout(function () {
-      if (t.parentNode) t.parentNode.removeChild(t);
-      if (redirectUrl) window.location.href = redirectUrl;
-    }, 300);
-  }, 2000);
-}
+﻿// Toast notification - DO NOT show toast with redirect (commented out redirect logic)
+// Use the unified showToast from search-results.js instead
 
 function formatPrice(price) {
   return new Intl.NumberFormat("vi-VN").format(Number(price) || 0);
 }
 
+// Add to cart from search/brand pages - calls API instead of localStorage
+function addToCartFromSearch(productId, productName, productPrice) {
+  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  
+  // If productId is text (like "Camry"), search for product by name first
+  if (isNaN(productId)) {
+    // Search for product by name to get the ID
+    fetch(baseUrl + '/BackEnd/api/products.php?name=' + encodeURIComponent(productName), {
+      method: 'GET',
+      credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.data && data.data.length > 0) {
+        // Use first matching product's ID
+        const actualId = data.data[0].id;
+        addToCartWithId(actualId, productPrice);
+      } else {
+        alert("Không tìm thấy sản phẩm: " + productName);
+      }
+    })
+    .catch(error => {
+      console.error('Error searching product:', error);
+      alert("Lỗi tìm kiếm sản phẩm");
+    });
+  } else {
+    // productId is already a number
+    addToCartWithId(Number(productId), productPrice);
+  }
+  
+  return false;
+}
+
+// Helper function to add to cart with known product ID
+function addToCartWithId(productId, productPrice) {
+  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  
+  fetch(baseUrl + '/BackEnd/api/add_to_cart.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      product_id: productId,
+      quantity: 1
+    }),
+    credentials: 'include'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      updateCartCount();
+      showToast("Đã thêm vào giỏ hàng!");
+    } else {
+      // Nếu chưa đăng nhập, redirect tới login page
+      if (data.message && data.message.includes('đăng nhập')) {
+        alert("Vui lòng đăng nhập để mua hàng!");
+        window.location.href = "../../pages/user/login.php";
+      } else {
+        alert("Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("Lỗi khi thêm vào giỏ hàng");
+  });
+}
+
+// Update cart count badge - NOW CALLS API INSTEAD OF LOCALSTORAGE
+function updateCartCount() {
+  const baseUrl = (typeof BASE_URL !== 'undefined' && BASE_URL) ? BASE_URL : '/WebBasic';
+  
+  fetch(baseUrl + '/BackEnd/api/cart.php?action=get', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.data) {
+      const totalItems = data.data.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const cartBadge = document.querySelector(".cart-count");
+      if (cartBadge) {
+        cartBadge.textContent = totalItems;
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error updating cart count:', error);
+  });
+}
+
+// showToast - simple version without redirect
+function showToast(message) {
+  const container = document.getElementById('toast-container') || (() => {
+    const c = document.createElement('div');
+    c.id = 'toast-container';
+    document.body.appendChild(c);
+    return c;
+  })();
+  const toast = document.createElement('div');
+  toast.className = `toast success`;
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #28a745;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 99999;
+    animation: slideDown 0.3s ease;
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = 'slideUp 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
 let apiBasePromise = null;
-const productLookupCache = new Map();
 
 async function resolveApiBase() {
   if (apiBasePromise) return apiBasePromise;
 
   apiBasePromise = (async () => {
-    const origin = window.location.origin;
-    const candidates = [
-      `${origin}/WebBasic/BackEnd/api`,
-      `${origin}/BackEnd/api`,
-      `${window.location.protocol}//${window.location.hostname}:8000/BackEnd/api`,
-      "http://localhost:8000/BackEnd/api",
-      "http://127.0.0.1:8000/BackEnd/api",
-    ];
-
-    for (const base of candidates) {
-      try {
-        const response = await fetch(`${base}/test.php`);
-        const text = await response.text();
-        if (response.ok && text.includes('"test"')) {
-          return base;
-        }
-      } catch (_err) {
-        // Continue trying next base URL
-      }
+    // Use BASE_URL if available (from config.js)
+    if (typeof BASE_URL !== 'undefined' && BASE_URL) {
+      return BASE_URL + '/BackEnd/api';
     }
 
-    throw new Error("Khong tim thay API backend");
+    const origin = window.location.origin;
+    return `${origin}/WebBasic/BackEnd/api`;
   })();
 
   return apiBasePromise;
@@ -188,10 +282,10 @@ function checkLoginAndGoToCart() {
 
   if (!isUserLoggedIn && !isAdminLoggedIn) {
     alert("Vui lòng đăng nhập để xem giỏ hàng!");
-    window.location.href = "../user/login.html";
+    window.location.href = "../user/login.php";
     return false;
   }
-  window.location.href = "../user/cart.html";
+  window.location.href = "../user/cart.php";
   return false;
 }
 

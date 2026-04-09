@@ -38,4 +38,19 @@ class CartController {
 			(int)$data['quantity']
 		);
 	}
+
+	public function remove($data) {
+		if (!isset($data['cart_id'])) {
+			return ['success' => false, 'message' => 'Thiếu cart_id'];
+		}
+
+		return $this->model->remove((int)$data['cart_id']);
+	}
+
+	public function clear($user_id) {
+		if (!$user_id) {
+			return ['success' => false, 'message' => 'Thiếu user_id'];
+		}
+		return $this->model->clear($user_id);
+	}
 }

@@ -1,7 +1,11 @@
+<?php
+session_start();
+?>
 <!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3 Boys Auto - Những chiếc xe mơ ước</title>
     <link rel="stylesheet" href="assets/css/style.css" />
@@ -13,6 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Lobster&display=swap"
       rel="stylesheet"
     />
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
   </head>
   <body>
     <header>
@@ -43,15 +48,15 @@
               >Loại xe <i class="fas fa-chevron-down"></i
             ></a>
             <div class="dropdown-content">
-              <a href="pages/brands/toyota.php">Toyota</a>
-              <a href="pages/brands/mercedes.php">Mercedes</a>
-              <a href="pages/brands/bmw.php">BMW</a>
-              <a href="pages/brands/audi.php">Audi</a>
-              <a href="pages/brands/lexus.php">Lexus</a>
-              <a href="pages/brands/honda.php">Honda</a>
-              <a href="pages/brands/hyundai.php">Hyundai</a>
-              <a href="pages/brands/kia.php">KIA</a>
-              <a href="pages/brands/vinfast.php">Vinfast</a>
+              <a href="pages/brands/index.php?brand=Toyota">Toyota</a>
+              <a href="pages/brands/index.php?brand=Mercedes">Mercedes</a>
+              <a href="pages/brands/index.php?brand=BMW">BMW</a>
+              <a href="pages/brands/index.php?brand=Audi">Audi</a>
+              <a href="pages/brands/index.php?brand=Lexus">Lexus</a>
+              <a href="pages/brands/index.php?brand=Honda">Honda</a>
+              <a href="pages/brands/index.php?brand=Hyundai">Hyundai</a>
+              <a href="pages/brands/index.php?brand=KIA">KIA</a>
+              <a href="pages/brands/index.php?brand=Vinfast">Vinfast</a>
             </div>
           </div>
           <button id="filterToggleBtn">
@@ -206,7 +211,7 @@
                   }
 
                   // Redirect to search results page with absolute path (same as direct URL access)
-                  var redirectUrl = "/WebBasic/pages/user/search-results.php?name=" + encodeURIComponent(searchName);
+                  var redirectUrl = "/WebBasic/FrontEnd/pages/user/search-results.php?name=" + encodeURIComponent(searchName);
                   window.location.href = redirectUrl;
                   closeSearchPopup();
                 });
@@ -261,7 +266,7 @@
               id="userName"
               style="cursor: pointer"
             ></span>
-            <a href="#" class="logout-link" onclick="logout()">Đăng xuất</a>
+            <a href="#" class="logout-link" onclick="logout(); return false;">Đăng xuất</a>
           </div>
         </div>
       </nav>
@@ -292,10 +297,10 @@
                   Giá từ <strong>Liên Hệ Để Biết Thêm</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/mercedes.php" class="btn-test"
+                  <a href="pages/brands/index.php?brand=Mercedes" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/mercedes.php" class="btn-more"
+                  <a href="pages/brands/index.php?brand=Mercedes" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -316,10 +321,10 @@
                   Giá từ <strong>1.350.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/toyota.php" class="btn-test"
+                  <a href="pages/brands/index.php?brand=Toyota" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/toyota.php" class="btn-more"
+                  <a href="pages/brands/index.php?brand=Toyota" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -345,10 +350,10 @@
                   Giá từ <strong>1.650.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/toyota.php" class="btn-test"
+                  <a href="pages/brands/index.php?brand=Toyota" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/toyota.php" class="btn-more"
+                  <a href="pages/brands/index.php?brand=Toyota" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -374,10 +379,10 @@
                   Giá từ <strong>5.249.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/mercedes.php" class="btn-test"
+                  <a href="pages/brands/index.php?brand=Mercedes" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/mercedes.php" class="btn-more"
+                  <a href="pages/brands/index.php?brand=Mercedes" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -403,10 +408,10 @@
                   Giá từ <strong>1.119.000.000 VNĐ</strong>
                 </p>
                 <div class="slide-btns">
-                  <a href="pages/brands/honda.php" class="btn-test"
+                  <a href="pages/brands/index.php?brand=Honda" class="btn-test"
                     ><i class="fas fa-shield-alt"></i> Lái Thử</a
                   >
-                  <a href="pages/brands/honda.php" class="btn-more"
+                  <a href="pages/brands/index.php?brand=Honda" class="btn-more"
                     >Xem Thêm</a
                   >
                 </div>
@@ -3291,13 +3296,23 @@
         <span class="close-btn">&times;</span>
         <img id="modalImg" src="" alt="Xe ô tô" />
         <h2 id="modalTitle"></h2>
-        <p id="modalPrice"></p>
-        <p id="modalDesc"></p>
+        <p id="modalPrice" style="font-size: 18px; font-weight: bold; color: #ffc107; margin: 10px 0;"></p>
+        
+        <!-- Chi tiết thông tin sản phẩm -->
+        <div id="modalDetails" style="margin: 15px 0; font-size: 14px; line-height: 1.8;">
+          <div id="modalOrigin" style="display: none;"><i class="fas fa-location-dot" style="color: #e74c3c; margin-right: 8px;"></i><span>Xuất xứ: </span><span id="modalOriginValue"></span></div>
+          <div id="modalYear" style="display: none;"><i class="fas fa-calendar" style="color: #3498db; margin-right: 8px;"></i><span>Năm sản xuất: </span><span id="modalYearValue"></span></div>
+          <div id="modalFuel" style="display: none;"><i class="fas fa-gas-pump" style="color: #e67e22; margin-right: 8px;"></i><span>Nhiên liệu: </span><span id="modalFuelValue"></span></div>
+          <div id="modalSeats" style="display: none;"><i class="fas fa-car" style="color: #27ae60; margin-right: 8px;"></i><span>Số ghế: </span><span id="modalSeatsValue"></span></div>
+          <div id="modalTransmission" style="display: none;"><i class="fas fa-cog" style="color: #9b59b6; margin-right: 8px;"></i><span>Hộp số: </span><span id="modalTransmissionValue"></span></div>
+          <div id="modalEngine" style="display: none;"><i class="fas fa-wrench" style="color: #34495e; margin-right: 8px;"></i><span>Động cơ: </span><span id="modalEngineValue"></span></div>
+        </div>
+        
+        <p id="modalDesc" style="margin: 15px 0; line-height: 1.6; color: #ccc;"></p>
         <button
           id="addToCartBtn"
           class="btn"
-          onclick="return false;"
-          style="cursor: pointer; opacity: 1"
+          style="cursor: pointer; opacity: 1; width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;"
         >
           Thêm vào giỏ
         </button>
@@ -3325,6 +3340,7 @@
     </svg>
 
     <script src="assets/js/main.js?v=20260408-1"></script>
+    <script src="assets/js/brand-page.js?v=20260408-1"></script>
     <script>
       // ===== HERO SLIDER =====
       (function () {
@@ -3760,11 +3776,8 @@
 
       // Kiểm tra trạng thái đăng nhập và hiển thị thông tin user/admin
       function checkUserLoginStatus() {
-        const isUserLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-        const isAdminLoggedIn =
-          localStorage.getItem("adminLoggedIn") === "true";
+        const isAdminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
         const isAdminViewingHome = localStorage.getItem("adminViewingHome") === "true";
-
         const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
         const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
         const adminUsername = localStorage.getItem("adminUsername") || "Admin";
@@ -3786,15 +3799,15 @@
           // Cập nhật thông tin admin
           const displayName = adminInfo.name || adminUsername;
           document.getElementById("userName").textContent = displayName;
-        } else if (isUserLoggedIn && userInfo.name) {
-          // Ẩn nút đăng nhập, hiển thị thông tin user
+        } else if (userInfo.name) {
+          // User đã login - hiển thị info từ localStorage
           loginBtn.style.display = "none";
           userInfoDiv.style.display = "flex";
 
           // Cập nhật thông tin user
           document.getElementById("userName").textContent = userInfo.name;
         } else {
-          // Hiển thị nút đăng nhập, ẩn thông tin user
+          // Chưa login - hiển thị nút đăng nhập
           loginBtn.style.display = "inline-block";
           userInfoDiv.style.display = "none";
         }
@@ -3836,6 +3849,25 @@
       // Gọi function kiểm tra khi trang load
       document.addEventListener("DOMContentLoaded", function () {
         checkUserLoginStatus();
+
+        // Handle buy button clicks - event delegation
+        document.addEventListener('click', function(e) {
+          const buyBtn = e.target.closest('.buy-btn');
+          if (buyBtn) {
+            e.preventDefault();
+            const card = buyBtn.closest('.car-card');
+            if (card) {
+              const productId = card.querySelector('h3')?.innerText?.split(' ')[0] || '1';
+              const productName = card.querySelector('h3')?.innerText || 'Sản phẩm';
+              const productPrice = card.querySelector('.price')?.innerText || '0 VNĐ';
+              const priceNum = parseInt(productPrice.replace(/[^0-9]/g, '')) || 0;
+              
+              // Call API to add to cart
+              addToCartFromSearch(productId, productName, priceNum);
+            }
+            return false;
+          }
+        });
 
         const userNameNode = document.getElementById("userName");
         const accountModal = document.getElementById("accountModal");
@@ -3929,7 +3961,7 @@
       // Function to load products for a specific brand from API
       async function loadBrandProducts(brand) {
         try {
-          const response = await fetch(`/WebBasic/BackEnd/api/products.php?brand=${brand}&limit=20`);
+          const response = await fetch(BASE_URL + `/BackEnd/api/products.php?brand=${brand}&limit=20`);
           if (!response.ok) throw new Error(`API error: ${response.status}`);
           
           const data = await response.json();
@@ -3970,10 +4002,18 @@
       function createProductCard(product, index) {
         const card = document.createElement('div');
         card.className = 'car-card';
+        card.setAttribute('data-id', product.id || index);
         card.setAttribute('data-desc', product.description || '');
         
+        // Add generic/optional detail attributes (will fallback to empty in modal)
+        card.setAttribute('data-origin', product.origin || '');
+        card.setAttribute('data-year', product.year || '');
+        card.setAttribute('data-fuel', product.fuel || '');
+        card.setAttribute('data-seats', product.seats || '');
+        card.setAttribute('data-transmission', product.transmission || '');
+        card.setAttribute('data-engine', product.engine || '');
+        
         // Use image_url directly from API (already has full path)
-        // If not available, use basic filename format or placeholder
         let imageSrc = product.image_url || 'assets/images/placeholder.jpg';
         
         const priceFormatted = new Intl.NumberFormat('vi-VN').format(product.price || 0) + ' VNĐ';
@@ -3991,7 +4031,100 @@
         return card;
       }
 
-      
+      // Setup modal and event listeners for view details
+      let currentProductData = {};
+      const modal = document.getElementById('carModal');
+      const closeBtn = document.querySelector('.close-btn');
+      const addToCartBtn = document.getElementById('addToCartBtn');
+
+      if (closeBtn) {
+        closeBtn.onclick = function() {
+          modal.style.display = 'none';
+        };
+      }
+
+      window.onclick = function(event) {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      };
+
+      // Helper function to display or hide detail field
+      function setDetailField(elementId, valueId, value) {
+        const elem = document.getElementById(elementId);
+        const valElem = document.getElementById(valueId);
+        if (elem && valElem) {
+          if (value && value !== 'Không rõ' && value !== '' && value !== 'undefined') {
+            valElem.innerText = value;
+            elem.style.display = 'block';
+          } else {
+            elem.style.display = 'none';
+          }
+        }
+      }
+
+      // Delegate event listeners for dynamically created cards
+      document.addEventListener('click', function(e) {
+        // Handle view-details clicks
+        if (e.target && e.target.classList.contains('view-details')) {
+          e.preventDefault();
+          const card = e.target.closest('.car-card');
+          if (card) {
+            const productId = card.dataset.id;
+            const productName = card.querySelector('h3')?.innerText || 'Sản phẩm';
+            const productPrice = card.querySelector('.price')?.innerText || '0 VNĐ';
+            const productDesc = card.dataset.desc || 'Không có mô tả';
+            const productImg = card.querySelector('img')?.src || 'assets/images/1.jpg';
+            
+            // Get detail attributes from card
+            const origin = card.dataset.origin || '';
+            const year = card.dataset.year || '';
+            const fuel = card.dataset.fuel || '';
+            const seats = card.dataset.seats || '';
+            const transmission = card.dataset.transmission || '';
+            const engine = card.dataset.engine || '';
+
+            currentProductData = {
+              id: productId,
+              name: productName,
+              price: productPrice,
+              desc: productDesc,
+              img: productImg,
+              origin, year, fuel, seats, transmission, engine
+            };
+
+            document.getElementById('modalTitle').innerText = productName;
+            document.getElementById('modalPrice').innerText = productPrice;
+            document.getElementById('modalDesc').innerText = productDesc;
+            document.getElementById('modalImg').src = productImg;
+            
+            // Update detail fields
+            setDetailField('modalOrigin', 'modalOriginValue', origin);
+            setDetailField('modalYear', 'modalYearValue', year);
+            setDetailField('modalFuel', 'modalFuelValue', fuel);
+            setDetailField('modalSeats', 'modalSeatsValue', seats);
+            setDetailField('modalTransmission', 'modalTransmissionValue', transmission);
+            setDetailField('modalEngine', 'modalEngineValue', engine);
+            
+            modal.style.display = 'block';
+          }
+          return false;
+        }
+      });
+
+      // Add to cart from modal
+      if (addToCartBtn) {
+        addToCartBtn.onclick = function(e) {
+          e.preventDefault();
+          if (currentProductData.id) {
+            const priceNum = parseInt(currentProductData.price.replace(/[^0-9]/g, ''));
+            addToCartFromSearch(parseInt(currentProductData.id), currentProductData.name, priceNum);
+            modal.style.display = 'none';
+          }
+          return false;
+        };
+      }
     </script>
   </body>
 </html>
+

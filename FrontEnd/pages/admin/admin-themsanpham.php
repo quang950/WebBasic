@@ -6,6 +6,7 @@
     <title>Admin Panel - Quản lý sản phẩm</title>
     <link rel="stylesheet" href="../../assets/css/admin-style-new.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/WebBasic/FrontEnd/assets/js/config.js"></script>
 </head>
 <body>
     <div class="admin-container">
@@ -672,7 +673,7 @@
             // Chỉ set flag để biết admin đang xem trang chủ
             localStorage.setItem('adminViewingHome', 'true');
             
-            window.location.href = '/WebBasic/FrontEnd/index.php';
+            window.location.href = BASE_URL + '/FrontEnd/index.php';
         }
         
         // Function để đăng xuất admin
@@ -694,7 +695,7 @@
         // Kiểm tra đăng nhập khi load trang
         document.addEventListener('DOMContentLoaded', function() {
             if (!localStorage.getItem('adminLoggedIn')) {
-                window.location.href = '/WebBasic/FrontEnd/pages/admin/admin-login.php';
+                window.location.href = BASE_URL + '/FrontEnd/pages/admin/admin-login.php';
                 return;
             }
             
@@ -742,7 +743,7 @@
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
             
             // Fetch categories from database via API
-            fetch('/WebBasic/BackEnd/api/categories.php', {
+            fetch(BASE_URL + '/BackEnd/api/categories.php', {
                 method: 'GET',
                 headers: {'Content-Type': 'application/json'}
             })
@@ -798,7 +799,7 @@
             
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</td></tr>';
             
-            let url = '/WebBasic/BackEnd/api/categories.php';
+            let url = BASE_URL + '/BackEnd/api/categories.php';
             const params = new URLSearchParams();
             if (search) params.append('search', search);
             if (status) params.append('status', status === 'visible' ? 1 : 0);
@@ -901,7 +902,7 @@
                 formData.append('is_visible', visible);
                 formData.append('status', visible);
                 
-                fetch('/WebBasic/BackEnd/api/categories.php', {
+                fetch(BASE_URL + '/BackEnd/api/categories.php', {
                     method: 'PUT',
                     body: formData
                 })
@@ -923,7 +924,7 @@
                 formData.append('description', description);
                 formData.append('is_visible', visible);
                 
-                fetch('/WebBasic/BackEnd/api/categories.php', {
+                fetch(BASE_URL + '/BackEnd/api/categories.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -945,7 +946,7 @@
         function deleteCategory(id) {
             if (!confirm('Bạn có chắc chắn muốn xóa loại sản phẩm này không?')) return;
             
-            fetch('/WebBasic/BackEnd/api/categories.php', {
+            fetch(BASE_URL + '/BackEnd/api/categories.php', {
                 method: 'DELETE',
                 body: new URLSearchParams({id: id})
             })
@@ -975,7 +976,7 @@
             formData.append('id', id);
             formData.append('is_visible', newStatus);
             
-            fetch('/WebBasic/BackEnd/api/categories.php', {
+            fetch(BASE_URL + '/BackEnd/api/categories.php', {
                 method: 'PUT',
                 body: formData
             })
@@ -1116,7 +1117,7 @@
     // ==========================================  
     // IMPORT MANAGEMENT FUNCTIONS
     // ==========================================
-    const API_BASE = '/WebBasic/BackEnd/api/';
+    const API_BASE = BASE_URL + '/BackEnd/api/';
     const PRICING_API = `${API_BASE}pricing.php`;
     let currentImportTicketId = null;
     let ticketItemsForCreate = [];
@@ -1263,7 +1264,7 @@
         const sellMin = (document.getElementById('pricingSellMin')?.value || '').trim();
         const sellMax = (document.getElementById('pricingSellMax')?.value || '').trim();
 
-        let apiUrl = '/WebBasic/BackEnd/api/pricing.php?action=list&limit=500';
+        let apiUrl = BASE_URL + '/BackEnd/api/pricing.php?action=list&limit=500';
         if (searchKeyword) {
             apiUrl += `&search=${encodeURIComponent(searchKeyword)}`;
         }
@@ -1328,7 +1329,7 @@
         }
 
         try {
-            const response = await fetch('/WebBasic/BackEnd/api/pricing.php', {
+            const response = await fetch(BASE_URL + '/BackEnd/api/pricing.php', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
