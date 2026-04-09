@@ -25,21 +25,31 @@ try {
     $dateTo = isset($_GET['dateTo']) ? trim($_GET['dateTo']) : date('Y-m-d');
     $productId = isset($_GET['productId']) ? intval($_GET['productId']) : 0;
 
+    // Convert DATE to DATETIME if needed
+    if (strlen($dateFrom) === 10) {
+        $dateFrom = $dateFrom . ' 00:00:00';
+    }
+    if (strlen($dateTo) === 10) {
+        $dateTo = $dateTo . ' 23:59:59';
+    }
+
     $sql = "
         SELECT 
             p.id,
             p.name,
             p.brand,
-            p.stock,
+            p.stock as stock_end,
             COALESCE(SUM(CASE WHEN ii.import_ticket_id IS NOT NULL THEN ii.quantity ELSE 0 END), 0) as total_import,
             COALESCE(SUM(CASE WHEN od.order_id IS NOT NULL THEN od.quantity ELSE 0 END), 0) as total_export,
-            COALESCE(SUM(CASE WHEN ii.import_ticket_id IS NOT NULL THEN ii.quantity ELSE 0 END), 0) - 
-            COALESCE(SUM(CASE WHEN od.order_id IS NOT NULL THEN od.quantity ELSE 0 END), 0) as net_change
+            (COALESCE(SUM(CASE WHEN ii.import_ticket_id IS NOT NULL THEN ii.quantity ELSE 0 END), 0) - 
+            COALESCE(SUM(CASE WHEN od.order_id IS NOT NULL THEN od.quantity ELSE 0 END), 0)) as net_change,
+            (p.stock - (COALESCE(SUM(CASE WHEN ii.import_ticket_id IS NOT NULL THEN ii.quantity ELSE 0 END), 0) - 
+            COALESCE(SUM(CASE WHEN od.order_id IS NOT NULL THEN od.quantity ELSE 0 END), 0))) as stock_begin
         FROM products p
         LEFT JOIN import_items ii ON p.id = ii.product_id 
-            AND DATE(ii.created_at) BETWEEN ? AND ?
+            AND ii.created_at BETWEEN ? AND ?
         LEFT JOIN order_details od ON p.id = od.product_id 
-            AND DATE(od.created_at) BETWEEN ? AND ?
+            AND od.created_at BETWEEN ? AND ?
     ";
 
     $where = [];

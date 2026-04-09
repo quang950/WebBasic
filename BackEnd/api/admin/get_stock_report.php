@@ -194,47 +194,73 @@ try {
         $product_id = $product['id'];
         $current_stock = $product['stock'];
         
-        // Calculate stock at target time by summing all changes before/at that time
-        // Query 1: Get all history changes UP TO target time
-        $histSql = "
-            SELECT 
-                COUNT(*) as history_count,
-                COALESCE(SUM(CASE WHEN type = 'import' THEN quantity ELSE 0 END), 0) as total_imported,
-                COALESCE(SUM(CASE WHEN type = 'sale' THEN quantity ELSE 0 END), 0) as total_sold,
-                COALESCE(SUM(CASE WHEN type = 'adjustment' THEN quantity ELSE 0 END), 0) as total_adjusted
-            FROM stock_history
-            WHERE product_id = ? AND created_at <= ?
+        // Calculate stock at target time by summing all import/export UP TO target date
+        // Query 1: Get all imports UP TO target time
+        $importSql = "
+            SELECT COALESCE(SUM(ii.quantity), 0) as total_imported
+            FROM import_items ii
+            INNER JOIN import_tickets it ON ii.import_ticket_id = it.id
+            WHERE ii.product_id = ? AND DATE(it.import_date) <= DATE(?) AND it.completed_at IS NOT NULL
         ";
         
-        $stmt = $conn->prepare($histSql);
+        $stmt = $conn->prepare($importSql);
         if (!$stmt) {
             throw new Exception("Lỗi chuẩn bị câu lệnh: " . $conn->error);
         }
         
         $stmt->bind_param("is", $product_id, $targetDate);
         $stmt->execute();
-        $histResult = $stmt->get_result();
-        $histData = $histResult->fetch_assoc();
+        $importResult = $stmt->get_result();
+        $importData = $importResult->fetch_assoc();
+        $total_imported = intval($importData['total_imported']);
 
-        // Query 2: Get changes AFTER target time (to deduct from current stock)
-        $afterSql = "
-            SELECT 
-                COALESCE(SUM(CASE WHEN type = 'import' THEN quantity ELSE 0 END), 0) as total_imported_after,
-                COALESCE(SUM(CASE WHEN type = 'sale' THEN quantity ELSE 0 END), 0) as total_sold_after,
-                COALESCE(SUM(CASE WHEN type = 'adjustment' THEN quantity ELSE 0 END), 0) as total_adjusted_after
-            FROM stock_history
-            WHERE product_id = ? AND created_at > ?
+        // Query 2: Get all exports (orders) UP TO target time
+        $exportSql = "
+            SELECT COALESCE(SUM(od.quantity), 0) as total_exported
+            FROM order_details od
+            INNER JOIN orders o ON od.order_id = o.id
+            WHERE od.product_id = ? AND o.created_at <= ?
         ";
         
-        $stmt2 = $conn->prepare($afterSql);
+        $stmt2 = $conn->prepare($exportSql);
         $stmt2->bind_param("is", $product_id, $targetDate);
         $stmt2->execute();
-        $afterResult = $stmt2->get_result();
-        $afterData = $afterResult->fetch_assoc();
+        $exportResult = $stmt2->get_result();
+        $exportData = $exportResult->fetch_assoc();
+        $total_exported = intval($exportData['total_exported']);
         
-        // Calculate: Current stock - changes that happened after target time
-        // stock_at_time = current + sold_after - imported_after - adjusted_after
-        $net_change_after = $afterData['total_imported_after'] - $afterData['total_sold_after'] + $afterData['total_adjusted_after'];
+        // Calculate: stock_at_time = current - (all_imports - all_exports after target time)
+        // = current - (imports_after - exports_after)
+        $allAfterImportSql = "
+            SELECT COALESCE(SUM(ii.quantity), 0) as total_imported_after
+            FROM import_items ii
+            INNER JOIN import_tickets it ON ii.import_ticket_id = it.id
+            WHERE ii.product_id = ? AND DATE(it.import_date) > DATE(?) AND it.completed_at IS NOT NULL
+        ";
+        
+        $stmt3 = $conn->prepare($allAfterImportSql);
+        $stmt3->bind_param("is", $product_id, $targetDate);
+        $stmt3->execute();
+        $afterImportResult = $stmt3->get_result();
+        $afterImportData = $afterImportResult->fetch_assoc();
+        $total_imported_after = intval($afterImportData['total_imported_after']);
+        
+        $allAfterExportSql = "
+            SELECT COALESCE(SUM(od.quantity), 0) as total_exported_after
+            FROM order_details od
+            INNER JOIN orders o ON od.order_id = o.id
+            WHERE od.product_id = ? AND o.created_at > ?
+        ";
+        
+        $stmt4 = $conn->prepare($allAfterExportSql);
+        $stmt4->bind_param("is", $product_id, $targetDate);
+        $stmt4->execute();
+        $afterExportResult = $stmt4->get_result();
+        $afterExportData = $afterExportResult->fetch_assoc();
+        $total_exported_after = intval($afterExportData['total_exported_after']);
+        
+        // stock_at_time = current_stock - (imports_after - exports_after)
+        $net_change_after = $total_imported_after - $total_exported_after;
         $stock_at_time = $current_stock - $net_change_after;
         
         // Ensure non-negative
@@ -251,10 +277,10 @@ try {
                 'current_stock' => $current_stock,
                 'debug' => [
                     'product_id' => $product_id,
-                    'history_count_before' => $histData['history_count'],
-                    'total_imported_before' => $histData['total_imported'],
-                    'total_sold_before' => $histData['total_sold'],
-                    'total_adjusted_before' => $histData['total_adjusted'],
+                    'total_imported_upto_date' => $total_imported,
+                    'total_exported_upto_date' => $total_exported,
+                    'total_imported_after_date' => $total_imported_after,
+                    'total_exported_after_date' => $total_exported_after,
                     'net_change_after_target' => $net_change_after,
                     'calculation' => "current_stock($current_stock) - net_change_after($net_change_after) = $stock_at_time"
                 ]
@@ -269,11 +295,13 @@ try {
         $fromDate = isset($_GET['fromDate']) ? $_GET['fromDate'] : date('Y-m-d');
         $toDate = isset($_GET['toDate']) ? $_GET['toDate'] : date('Y-m-d');
         
-        // Log input parameters
-        error_log("=== report_in_out START ===");
-        error_log("searchName: '{$searchName}'");
-        error_log("fromDate: '{$fromDate}'");
-        error_log("toDate: '{$toDate}'");
+        // Convert DATE to DATETIME if needed
+        if (strlen($fromDate) === 10) {
+            $fromDate = $fromDate . ' 00:00:00';
+        }
+        if (strlen($toDate) === 10) {
+            $toDate = $toDate . ' 23:59:59';
+        }
         
         if (empty($searchName)) {
             throw new Exception("Vui lòng nhập tên sản phẩm");
@@ -296,12 +324,8 @@ try {
             LIMIT 1
         ";
         
-        error_log("Product search SQL: {$sql}");
-        error_log("Search pattern: '{$searchPattern}'");
-        
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
-            error_log("Prepare error: " . $conn->error);
             throw new Exception("Lỗi chuẩn bị câu lệnh: " . $conn->error);
         }
         
@@ -313,15 +337,12 @@ try {
         );
         
         if (!$stmt->execute()) {
-            error_log("Execute error: " . $stmt->error);
             throw new Exception("Execute error: " . $stmt->error);
         }
         
         $result = $stmt->get_result();
-        error_log("Product search result rows: " . $result->num_rows);
         
         if ($result->num_rows === 0) {
-            error_log("No product found for: '{$searchName}'");
             throw new Exception("Không tìm thấy sản phẩm phù hợp với '{$searchName}'");
         }
         
@@ -329,74 +350,63 @@ try {
         $product_id = $product['id'];
         $current_stock = $product['stock'];
         
-        error_log("Found product - ID: {$product_id}, Name: {$product['name']}, Current Stock: {$current_stock}, Brand: {$product['brand']}");
-        
-        // Query stock_history for imports and exports in date range
-        $histSql = "
-            SELECT 
-                COALESCE(SUM(CASE WHEN type = 'import' THEN quantity ELSE 0 END), 0) as total_imported,
-                COALESCE(SUM(CASE WHEN type = 'sale' THEN quantity ELSE 0 END), 0) as total_sold,
-                COALESCE(SUM(CASE WHEN type = 'adjustment' THEN quantity ELSE 0 END), 0) as total_adjusted
-            FROM stock_history
-            WHERE product_id = ? 
-            AND DATE(created_at) >= DATE(?)
-            AND DATE(created_at) <= DATE(?)
+        // Get total imports from import_items IN date range
+        // Use import_tickets.import_date (date when ticket is completed) instead of created_at (when draft was created)
+        $importInSql = "
+            SELECT COALESCE(SUM(ii.quantity), 0) as total_imported
+            FROM import_items ii
+            INNER JOIN import_tickets it ON ii.import_ticket_id = it.id
+            WHERE ii.product_id = ? 
+            AND DATE(it.import_date) >= DATE(?)
+            AND DATE(it.import_date) <= DATE(?)
+            AND it.completed_at IS NOT NULL
         ";
         
-        error_log("History SQL: {$histSql}");
-        error_log("History params - Product ID: {$product_id}, From: {$fromDate}, To: {$toDate}");
-        
-        $stmt = $conn->prepare($histSql);
+        $stmt = $conn->prepare($importInSql);
         if (!$stmt) {
-            error_log("History prepare error: " . $conn->error);
-            throw new Exception("Lỗi chuẩn bị câu lệnh: " . $conn->error);
+            throw new Exception("Lỗi prepare query import in: " . $conn->error);
         }
-        
         $stmt->bind_param("iss", $product_id, $fromDate, $toDate);
-        if (!$stmt->execute()) {
-            error_log("History execute error: " . $stmt->error);
-            throw new Exception("Execute error in history query: " . $stmt->error);
-        }
+        $stmt->execute();
+        $importInResult = $stmt->get_result();
+        $importInData = $importInResult->fetch_assoc();
+        $total_import_in = intval($importInData['total_imported']);
         
-        $histResult = $stmt->get_result();
-        $histData = $histResult->fetch_assoc();
+        // Get total exports from orders IN date range
+        // Use order_details.created_at instead of orders.created_at
+        $exportInSql = "
+            SELECT COALESCE(SUM(od.quantity), 0) as total_exported
+            FROM order_details od
+            WHERE od.product_id = ? AND od.created_at >= ? AND od.created_at <= ?
+        ";
         
-        error_log("History query result: " . json_encode($histData));
+        $stmt = $conn->prepare($exportInSql);
+        $stmt->bind_param("iss", $product_id, $fromDate, $toDate);
+        $stmt->execute();
+        $exportInResult = $stmt->get_result();
+        $exportInData = $exportInResult->fetch_assoc();
+        $total_export_in = intval($exportInData['total_exported']);
         
-        if (!$histData) {
-            $histData = [
-                'total_imported' => 0,
-                'total_sold' => 0,
-                'total_adjusted' => 0
-            ];
-            error_log("No history data found, using zeros");
-        }
-        
-        // stock_begin = current_stock - net changes in period
-        $net_change_in_period = $histData['total_imported'] - $histData['total_sold'] + $histData['total_adjusted'];
-        $stock_begin = $current_stock - $net_change_in_period;
+        // Calculate stock_begin = current - (import_in - export_in)
+        $net_change_in = $total_import_in - $total_export_in;
+        $stock_begin = $current_stock - $net_change_in;
         $stock_end = $current_stock;
         
-        error_log("Calculations - Net change: {$net_change_in_period}, Stock begin: {$stock_begin}, Stock end: {$stock_end}");
-        
         if ($stock_begin < 0) $stock_begin = 0;
-        
-        error_log("=== report_in_out SUCCESS ===");
         
         echo json_encode([
             'status' => 'success',
             'data' => [
                 'product_name' => $product['name'],
                 'product_id' => $product_id,
-                'period_from' => $fromDate,
-                'period_to' => $toDate,
+                'period_from' => str_replace(' 00:00:00', '', $fromDate),
+                'period_to' => str_replace(' 23:59:59', '', $toDate),
                 'stock_begin' => intval($stock_begin),
-                'total_import' => intval($histData['total_imported']),
-                'total_sale' => intval($histData['total_sold']),
-                'total_adjustment' => intval($histData['total_adjusted']),
+                'total_import' => $total_import_in,
+                'total_sale' => $total_export_in,
+                'net_change' => $net_change_in,
                 'stock_end' => intval($stock_end),
-                'current_stock' => intval($current_stock),
-                'note' => 'Báo cáo từ lịch sử nhập/xuất'
+                'current_stock' => intval($current_stock)
             ]
         ]);
         exit;
