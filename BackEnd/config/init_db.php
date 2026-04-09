@@ -5,6 +5,11 @@
 
 require_once __DIR__ . '/db_connect.php';
 
+// Check database connection
+if (!$conn) {
+    die("Lỗi kết nối cơ sở dữ liệu: " . ($dbError ?? "Unknown error"));
+}
+
 // SQL để tạo các tables
 $tables = [
     // Users table
@@ -102,16 +107,32 @@ $tables = [
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (import_ticket_id) REFERENCES import_tickets(id) ON DELETE CASCADE,
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );",
+    
+    // Stock history table (lịch sử thay đổi tồn kho)
+    "CREATE TABLE IF NOT EXISTS stock_history (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        product_id INT NOT NULL,
+        type ENUM('import', 'sale', 'adjustment') DEFAULT 'import',
+        quantity INT NOT NULL,
+        reason TEXT,
+        recorded_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL,
+        INDEX idx_product_date (product_id, created_at)
     );"
 ];
 
 // Execute table creation
 foreach ($tables as $sql) {
-    if (!$conn->query($sql)) {
-        die("Error creating table: " . $conn->error);
+    if (!@$conn->query($sql)) {
+        die("Error creating table: " . (@$conn->error ?? "Unknown error"));
     }
 }
 
 echo "Database tables created/verified successfully!";
-$conn->close();
+if ($conn) {
+    $conn->close();
+}
 ?>

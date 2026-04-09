@@ -8,6 +8,10 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db_connect.php';
 
 try {
+    if (!$conn) {
+        throw new Exception('Kết nối cơ sở dữ liệu thất bại');
+    }
+    
     $search = $_GET['search'] ?? '';
     
     // Build query

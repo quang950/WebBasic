@@ -15,6 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../config/db_connect.php';
 require_once __DIR__ . '/../controllers/CartController.php';
 
+if (!$conn) {
+	http_response_code(500);
+	echo json_encode(['success' => false, 'message' => 'Database connection error'], JSON_UNESCAPED_UNICODE);
+	exit;
+}
+
 $userId = $_SESSION['user_id'] ?? null;
 if (!$userId) {
     echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập'], JSON_UNESCAPED_UNICODE);

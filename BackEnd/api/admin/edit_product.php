@@ -75,6 +75,25 @@ try {
     }
     $stmt->close();
     
+    // Auto-add columns if they don't exist
+    $checkColsQuery = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' 
+                      AND COLUMN_NAME IN ('is_long_stock', 'long_stock_reason')";
+    $colResult = @$conn->query($checkColsQuery);
+    $existingCols = [];
+    if ($colResult) {
+        while ($colRow = $colResult->fetch_assoc()) {
+            $existingCols[] = $colRow['COLUMN_NAME'];
+        }
+    }
+    
+    if (!in_array('is_long_stock', $existingCols)) {
+        @$conn->query("ALTER TABLE products ADD COLUMN is_long_stock TINYINT DEFAULT 0");
+    }
+    if (!in_array('long_stock_reason', $existingCols)) {
+        @$conn->query("ALTER TABLE products ADD COLUMN long_stock_reason TEXT");
+    }
+    
     // Extract data
     $name = isset($data['name']) ? trim($data['name']) : null;
     $brand = isset($data['brand']) ? trim($data['brand']) : null;
@@ -85,6 +104,8 @@ try {
     $stock = isset($data['stock']) ? intval($data['stock']) : null;
     $description = isset($data['description']) ? trim($data['description']) : null;
     $image_url = isset($data['image_url']) ? trim($data['image_url']) : null;
+    $is_long_stock = isset($data['is_long_stock']) ? intval($data['is_long_stock']) : null;
+    $long_stock_reason = isset($data['long_stock_reason']) ? trim($data['long_stock_reason']) : null;
     
     // Build update query
     $update_fields = [];
@@ -142,6 +163,18 @@ try {
     if ($image_url !== null) {
         $update_fields[] = 'image_url = ?';
         $update_values[] = $image_url;
+        $bind_types .= 's';
+    }
+    
+    if ($is_long_stock !== null) {
+        $update_fields[] = 'is_long_stock = ?';
+        $update_values[] = $is_long_stock;
+        $bind_types .= 'i';
+    }
+    
+    if ($long_stock_reason !== null) {
+        $update_fields[] = 'long_stock_reason = ?';
+        $update_values[] = $long_stock_reason;
         $bind_types .= 's';
     }
     

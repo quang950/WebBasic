@@ -25,6 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once '../config/db_connect.php';
 
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection error'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 try {
     // Kiểm tra user đã đăng nhập
     if (!isset($_SESSION['user_id'])) {

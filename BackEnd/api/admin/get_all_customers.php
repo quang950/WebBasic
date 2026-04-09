@@ -8,6 +8,10 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db_connect.php';
 
 try {
+    if (!$conn) {
+        throw new Exception('Database connection failed');
+    }
+    
     // Get filter parameters
     $search = $_GET['search'] ?? '';
     $status = $_GET['status'] ?? ''; // 'active' or 'locked'

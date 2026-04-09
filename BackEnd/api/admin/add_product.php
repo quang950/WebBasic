@@ -69,6 +69,8 @@ try {
     $category = trim($data['category'] ?? '');
     $description = trim($data['description'] ?? '');
     $image_url = trim($data['image_url'] ?? '');
+    $is_long_stock = intval($data['is_long_stock'] ?? 0);
+    $long_stock_reason = trim($data['long_stock_reason'] ?? '');
     
     // Get category_id from brand (tự động thêm category nếu brand mới)
     $category_id = null;
@@ -119,11 +121,30 @@ try {
         }
     }
     
+    // Auto-add columns if they don't exist
+    $checkColsQuery = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' 
+                      AND COLUMN_NAME IN ('is_long_stock', 'long_stock_reason')";
+    $colResult = @$conn->query($checkColsQuery);
+    $existingCols = [];
+    if ($colResult) {
+        while ($colRow = $colResult->fetch_assoc()) {
+            $existingCols[] = $colRow['COLUMN_NAME'];
+        }
+    }
+    
+    if (!in_array('is_long_stock', $existingCols)) {
+        @$conn->query("ALTER TABLE products ADD COLUMN is_long_stock TINYINT DEFAULT 0");
+    }
+    if (!in_array('long_stock_reason', $existingCols)) {
+        @$conn->query("ALTER TABLE products ADD COLUMN long_stock_reason TEXT");
+    }
+    
     // Insert product
     $stmt = $conn->prepare("
         INSERT INTO products 
-        (name, brand, category_id, price, cost_price, profit_margin, stock, description, image_url)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (name, brand, category_id, price, cost_price, profit_margin, stock, description, image_url, is_long_stock, long_stock_reason)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
     if (!$stmt) {
@@ -131,8 +152,8 @@ try {
     }
     
     $stmt->bind_param(
-        "ssidddiss",
-        $name, $brand, $category_id, $price, $cost_price, $profit_margin, $stock, $description, $image_url
+        "ssidddissis",
+        $name, $brand, $category_id, $price, $cost_price, $profit_margin, $stock, $description, $image_url, $is_long_stock, $long_stock_reason
     );
     
     if (!$stmt->execute()) {

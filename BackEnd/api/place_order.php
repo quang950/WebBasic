@@ -12,6 +12,11 @@ header('Access-Control-Allow-Headers: Content-Type');
 require_once __DIR__ . '/../config/db_connect.php';
 
 try {
+    if (!$conn) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database connection error']);
+        exit;
+    }
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ']);
@@ -171,12 +176,11 @@ try {
 
             // Record stock history
             $hstmt = $conn->prepare("
-                INSERT INTO stock_history (product_id, type, quantity, reason, created_by)
-                VALUES (?, 'export', ?, ?, ?)
+                INSERT INTO stock_history (product_id, type, quantity, reason, recorded_by)
+                VALUES (?, 'sale', ?, ?, ?)
             ");
             $reason = "Order #$order_id";
-            $null_user = null;
-            $hstmt->bind_param("iiss", $item['product_id'], $item['quantity'], $reason, $null_user);
+            $hstmt->bind_param("iisi", $item['product_id'], $item['quantity'], $reason, $user_id);
             $hstmt->execute();
         }
 

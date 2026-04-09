@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 session_start();
 require_once __DIR__ . '/../../config/db_connect.php';
 
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection error']);
+    exit;
+}
+
 try {
     // Get filters
     $status = isset($_GET['status']) ? trim($_GET['status']) : '';

@@ -8,6 +8,10 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db_connect.php';
 
 try {
+    if (!$conn) {
+        throw new Exception('Database connection failed: ' . ($dbError ?? 'Unknown error'));
+    }
+    
     $search = $_GET['search'] ?? '';
     $status = $_GET['status'] ?? '';
     
@@ -26,34 +30,43 @@ try {
         WHERE 1=1
     ";
     
+    $bind_types = '';
+    $bind_params = [];
+    
     if (!empty($search)) {
-        $search = "%$search%";
+        $search_param = "%$search%";
         $sql .= " AND c.name LIKE ?";
+        $bind_types .= 's';
+        $bind_params[] = &$search_param;
     }
     
     if ($status !== '') {
+        $status_param = (int)$status;
         $sql .= " AND c.status = ?";
+        $bind_types .= 'i';
+        $bind_params[] = &$status_param;
     }
     
     $sql .= " GROUP BY c.id ORDER BY c.name ASC";
     
     $stmt = $conn->prepare($sql);
-    
-    $bind_types = '';
-    $bind_values = [];
-    
-    if (!empty($search) && $status !== '') {
-        $bind_types = 'si';
-        $bind_values = [&$search, &$status];
-        $stmt->bind_param($bind_types, ...$bind_values);
-    } elseif (!empty($search)) {
-        $stmt->bind_param('s', $search);
-    } elseif ($status !== '') {
-        $stmt->bind_param('i', $status);
+    if (!$stmt) {
+        throw new Exception('Prepare failed: ' . $conn->error);
     }
     
-    $stmt->execute();
+    // Bind parameters if any
+    if (!empty($bind_params)) {
+        $stmt->bind_param($bind_types, ...$bind_params);
+    }
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Execute failed: ' . $stmt->error);
+    }
+    
     $result = $stmt->get_result();
+    if (!$result) {
+        throw new Exception('Get result failed: ' . $stmt->error);
+    }
     
     $categories = [];
     while ($row = $result->fetch_assoc()) {
@@ -61,10 +74,12 @@ try {
         $categories[] = $row;
     }
     
+    $stmt->close();
+    
     http_response_code(200);
     echo json_encode([
         'success' => true,
-        'data' => $categories,
+        'categories' => $categories,
         'total' => count($categories)
     ]);
     
@@ -72,7 +87,11 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Lỗi: ' . $e->getMessage()
+        'message' => 'Lỗi: ' . $e->getMessage(),
+        'debug' => [
+            'db_connected' => !empty($conn),
+            'db_error' => $dbError ?? null
+        ]
     ]);
 }
 ?>

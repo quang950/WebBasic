@@ -17,6 +17,11 @@ session_start();
 require_once __DIR__ . '/../../config/db_connect.php';
 
 try {
+    if (!$conn) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database connection error']);
+        exit;
+    }
     $status = isset($_GET['status']) ? trim($_GET['status']) : ''; // 'pending' or 'completed'
     $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;

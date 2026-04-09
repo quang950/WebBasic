@@ -19,6 +19,10 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['is_admin'])) {
 
 
 try {
+    if (!$conn) {
+        throw new Exception('Kết nối cơ sở dữ liệu thất bại');
+    }
+    
     // Get filter parameters
     $dateFrom = $_GET['dateFrom'] ?? '';
     $dateTo = $_GET['dateTo'] ?? '';
@@ -29,10 +33,10 @@ try {
     // Auto-create shipping_name column if not exists
     $checkColQuery = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
                       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'shipping_name'";
-    $colResult = $conn->query($checkColQuery);
-    if ($colResult && $colResult->num_rows === 0) {
-        // Column doesn't exist, create it
-        $conn->query("ALTER TABLE orders ADD COLUMN shipping_name VARCHAR(255) DEFAULT NULL AFTER shipping_phone");
+    $colResult = @$conn->query($checkColQuery);
+    if (!$colResult || $colResult->num_rows === 0) {
+        // Column doesn't exist, create it (suppress errors if already exists)
+        @$conn->query("ALTER TABLE orders ADD COLUMN shipping_name VARCHAR(255) DEFAULT NULL AFTER shipping_phone");
     }
     
     // Build query
@@ -116,27 +120,44 @@ try {
     while ($row = $result->fetch_assoc()) {
         $orderId = $row['id'];
         
-        // Get items for this order from order_items table
-        if (!$conn) throw new Exception("Database error");
-        $stmtItems = $conn->prepare("
-            SELECT product_name, quantity, unit_price
-            FROM order_items
-            WHERE order_id = ?
+        // Get items for this order - use direct query without multiple cursor checks
+        $items = [];
+        
+        // Try order_details first (newer schema)
+        $itemsResult = $conn->query("
+            SELECT 
+                COALESCE(p.name, od.product_id, 'Sản phẩm') as product_name, 
+                od.quantity, 
+                COALESCE(od.price, 0) as unit_price,
+                COALESCE(p.image_url, '') as image_url,
+                COALESCE(p.brand, '') as brand
+            FROM order_details od
+            LEFT JOIN products p ON od.product_id = p.id
+            WHERE od.order_id = $orderId
         ");
         
-        if (!$stmtItems) {
-            error_log("Items prepare error: " . $conn->error);
-            $items = [];
-        } else {
-            $stmtItems->bind_param("i", $orderId);
-            $stmtItems->execute();
-            $itemsResult = $stmtItems->get_result();
-            
-            $items = [];
+        if ($itemsResult && $itemsResult->num_rows > 0) {
             while ($itemRow = $itemsResult->fetch_assoc()) {
                 $items[] = $itemRow;
             }
-            $stmtItems->close();
+        } else {
+            // Fallback to order_items if order_details is empty
+            $itemsResult2 = $conn->query("
+                SELECT 
+                    oi.product_name,
+                    oi.quantity,
+                    oi.unit_price as unit_price,
+                    '' as image_url,
+                    '' as brand
+                FROM order_items oi
+                WHERE oi.order_id = $orderId
+            ");
+            
+            if ($itemsResult2 && $itemsResult2->num_rows > 0) {
+                while ($itemRow = $itemsResult2->fetch_assoc()) {
+                    $items[] = $itemRow;
+                }
+            }
         }
         
         $row['items'] = $items;

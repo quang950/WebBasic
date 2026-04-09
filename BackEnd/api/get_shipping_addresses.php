@@ -11,6 +11,12 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once __DIR__ . '/../config/db_connect.php';
 
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection error']);
+    exit;
+}
+
 try {
     // Lấy user_id từ query
     $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;

@@ -1172,33 +1172,37 @@ footer {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   border-radius: 15px;
   padding: 30px;
-  width: min(90vw, 600px);
-  max-height: 85vh;
+  width: min(90vw, 550px);
+  max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
   position: relative;
   animation: popIn 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #fff;
 }
 
 .modal-content img {
   width: 100%;
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: block;
 }
+
 .modal-content h2 {
-  margin: 15px 0 10px 0;
-  font-size: 24px;
-  font-weight: bold;
+  margin: 12px 0 8px 0;
+  font-size: 26px;
+  font-weight: 700;
   color: #fff;
 }
+
 .modal-content p {
   margin: 8px 0;
   color: #ddd;
-  line-height: 1.5;
+  line-height: 1.6;
 }
+
 .modal-content .btn {
   padding: 12px 24px;
   border: none;
@@ -1211,14 +1215,18 @@ footer {
   color: #fff;
   transition: all 0.3s ease;
 }
+
 .modal-content .btn:hover {
   background: #0066aa;
   transform: translateY(-2px);
 }
+
 .modal-content .buy-now {
   background: #28a745;
   color: #fff;
 }
+
+
 
 .close-btn {
   position: absolute;
@@ -1239,6 +1247,37 @@ footer {
   color: #ff6b6b;
   transform: scale(1.1);
 }
+
+/* Scrollbar styling for modal */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+  .modal-content {
+    width: min(95vw, 500px);
+    padding: 20px;
+  }
+  
+  .modal-content h2 {
+    font-size: 22px;
+  }
+}
+
 
 @keyframes popIn {
   from {

@@ -16,6 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../../config/db_connect.php';
 
 try {
+    // Kiểm tra connection
+    if (!$conn) {
+        throw new Exception("Database connection failed");
+    }
+    
     $dateFrom = isset($_GET['dateFrom']) ? trim($_GET['dateFrom']) : date('Y-m-01');
     $dateTo = isset($_GET['dateTo']) ? trim($_GET['dateTo']) : date('Y-m-d');
     $productId = isset($_GET['productId']) ? intval($_GET['productId']) : 0;
@@ -51,10 +56,18 @@ try {
     $sql .= $whereStr . " GROUP BY p.id ORDER BY total_import DESC, total_export DESC";
 
     $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception("Prepare error: " . $conn->error);
+    }
+    
     if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
     }
-    $stmt->execute();
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Execute error: " . $stmt->error);
+    }
+    
     $result = $stmt->get_result();
 
     $report = [];

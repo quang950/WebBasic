@@ -21,6 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once dirname(__DIR__) . '/config/db_connect.php';
 require_once dirname(__DIR__) . '/controllers/CartController.php';
 
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection error'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 try {
     // Kiểm tra user đã đăng nhập
     $userId = $_SESSION['user_id'] ?? null;

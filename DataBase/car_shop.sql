@@ -44,6 +44,8 @@ CREATE TABLE products (
     stock INT DEFAULT 0,
     low_stock_threshold INT DEFAULT 10,
     is_visible TINYINT DEFAULT 1,
+    is_long_stock TINYINT DEFAULT 0,
+    long_stock_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL

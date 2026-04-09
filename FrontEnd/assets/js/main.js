@@ -19,25 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch (e) {}
 
-    // Nếu admin đang đăng nhập, hiển thị nút quay lại Admin trên navbar
-    try {
-        const isAdmin = localStorage.getItem('adminLoggedIn') === 'true';
-        const actions = document.querySelector('.user-actions');
-        if (isAdmin) {
-            if (actions && !actions.querySelector('.admin-return-btn')) {
-                const btn = document.createElement('button');
-                btn.className = 'admin-return-btn blob-btn login-btn';
-                btn.innerHTML = '<span class="blob-btn__inner"><span class="blob-btn__blobs"><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span><span class="blob-btn__blob"></span></span></span>Quay lại Admin';
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    window.location.href = '/WebBasic/FrontEnd/pages/admin/admin-themsanpham.php';
-                };
-                actions.insertBefore(btn, actions.firstChild);
-            }
-            const cartIcon = document.querySelector('.cart-icon');
-            if (cartIcon) cartIcon.style.display = 'none';
-        }
-    } catch (e) {}
+    // Admin view mode được quản lý bằng PHP conditional rendering trong navbar (xem index.php)
 
     // Cập nhật số lượng giỏ hàng trên navbar khi load trang
     updateCartCount();

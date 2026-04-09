@@ -6,6 +6,12 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config/db_connect.php';
 
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection error']);
+    exit;
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 

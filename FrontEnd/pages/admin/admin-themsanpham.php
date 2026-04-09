@@ -143,19 +143,15 @@
                         <h3 style="color:#0d279d;margin-bottom:16px;font-size:1.1rem;">
                             <i class="fas fa-clipboard-list"></i> Báo cáo tổng số lượng nhập - xuất của sản phẩm 
                         </h3>
-                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
                             <input type="text" id="inventorySearchProduct" placeholder="Nhập mã xe (SKU...) hoặc tên" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:300px;font-size:14px;">
                             <input type="date" id="inventoryFromDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
                             <span style="color:#666;font-weight:600;">đến</span>
                             <input type="date" id="inventoryToDate" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
                             <button onclick="searchInventoryReport()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tra cứu</button>
                         </div>
-                        <div id="inventoryResult" style="margin-top:16px;display:none;">
-                            <div style="background:#fff;padding:16px;border-radius:6px;border:1px solid #ddd;">
-                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;" id="inventoryDataList">
-                                    <!-- Render data JS load vô đây -->
-                                </div>
-                            </div>
+                        <div id="inventoryResult" style="display:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-top:16px;">
+                            <div id="inventoryDataList"></div>
                         </div>
                     </div>
 
@@ -189,8 +185,32 @@
                     <!-- Xe tồn kho lâu -->
                     <div style="background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:20px;">
                         <h3 style="color:#d9534f;margin-bottom:16px;font-size:1.2rem;">
-                            <i class="fas fa-exclamation-triangle"></i> Xe tồn kho lâu (Trên 1 năm)
+                            <i class="fas fa-exclamation-triangle"></i> Quản lý xe tồn kho lâu
                         </h3>
+                        
+                        <!-- Form chỉ định sản phẩm tồn -->
+                        <div style="background:#f8f9fa;padding:15px;border-radius:6px;margin-bottom:20px;border:1px solid #ddd;">
+                            <h4 style="margin-top:0;color:#333;"><i class="fas fa-tag"></i> Đánh dấu sản phẩm là tồn kho lâu</h4>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                                <div>
+                                    <label style="display:block;margin-bottom:6px;font-weight:600;">Chọn sản phẩm:</label>
+                                    <select id="longStockProductSelect" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                                        <option value="">-- Chọn sản phẩm --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block;margin-bottom:6px;font-weight:600;">Lý do tồn:</label>
+                                    <input type="text" id="longStockReasonInput" placeholder="VD: Ít người mua, giá cao, ..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                                </div>
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <label style="display:block;margin-bottom:6px;font-weight:600;">Ghi chú chi tiết (tuỳ chọn):</label>
+                                <textarea id="longStockDetailInput" placeholder="Chi tiết thêm về lý do tồn..." rows="2" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;"></textarea>
+                            </div>
+                            <button onclick="markProductAsLongStock()" style="padding:10px 20px;background:#d9534f;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;"><i class="fas fa-check"></i> Đánh dấu tồn kho lâu</button>
+                        </div>
+                        
+                        <!-- Danh sách sản phẩm tồn -->
                         <div id="oldStockList"></div>
                     </div>
 
@@ -236,6 +256,9 @@
                         <h2>Quản lý giá bán</h2>
                     </div>
                     <div style="margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                        <select id="pricingCategoryFilter" onchange="searchPricingProduct()" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;min-width:180px;">
+                            <option value="">Tất cả loại xe</option>
+                        </select>
                         <input type="text" id="pricingSearchProduct" placeholder="Tìm theo tên sản phẩm" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:250px;font-size:14px;">
                         <input type="number" id="pricingCostMin" min="0" step="1000" placeholder="Giá vốn từ" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
                         <input type="number" id="pricingCostMax" min="0" step="1000" placeholder="Giá vốn đến" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
@@ -323,25 +346,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="productBrand">Thương hiệu:</label>
-                    <select id="productBrand" name="productBrand" required>
-                        <option value="">Chọn thương hiệu</option>
-                        <option value="toyota">Toyota</option>
-                        <option value="mercedes">Mercedes</option>
-                        <option value="bmw">BMW</option>
-                        <option value="audi">Audi</option>
-                        <option value="lexus">Lexus</option>
-                        <option value="honda">Honda</option>
-                        <option value="hyundai">Hyundai</option>
-                        <option value="kia">KIA</option>
-                        <option value="vinfast">Vinfast</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="productCategory">Loại sản phẩm:</label>
+                    <label for="productCategory">Thương hiệu:</label>
                     <select id="productCategory" name="productCategory" required>
-                        <option value="">Chọn loại</option>
+                        <option value="">Chọn thương hiệu</option>
                     </select>
                 </div>
 
@@ -363,7 +370,7 @@
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                     <div class="form-group">
-                        <label for="productStock">Số lượng tồn:</label>
+                        <label for="productStock">Số lượng:</label>
                         <input type="number" id="productStock" name="productStock" value="0" min="0" placeholder="Số lượng hiện có">
                     </div>
                     <div class="form-group">
@@ -398,9 +405,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="productImageUrl">URL Hình ảnh:</label>
-                    <input type="url" id="productImageUrl" name="productImageUrl" placeholder="https://example.com/image.jpg" required>
-                    <small style="color: #666;">Nhập đường dẫn URL hình ảnh sản phẩm</small>
+                    <label for="productImageUrl">Hình ảnh:</label>
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                        <div style="flex:1;">
+                            <input type="url" id="productImageUrl" name="productImageUrl" placeholder="https://example.com/image.jpg" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                            <small style="color: #666;display:block;margin-top:4px;">Nhập URL hoặc chọn file từ thiết bị</small>
+                        </div>
+                        <button type="button" onclick="document.getElementById('productImageUpload').click()" style="padding:10px 16px;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;margin-top:0;">
+                            <i class="fas fa-folder-open"></i> Browse
+                        </button>
+                    </div>
+                    <input type="file" id="productImageUpload" name="productImageUpload" accept="image/*" style="display:none;" onchange="handleImageUpload('productImageUrl', this)">
                 </div>
 
                 <div class="form-group">
@@ -659,11 +674,9 @@
     <script>
         // Function để quay về trang chủ
         function goToHomePage() {
-            // GIỮ admin session - không logout
-            // Chỉ set flag để biết admin đang xem trang chủ
-            localStorage.setItem('adminViewingHome', 'true');
-            
-            window.location.href = BASE_URL + '/FrontEnd/index.php';
+            // Redirect tới index với admin_view=true
+            // Query param cho phép admin xem trang chủ mà không cần thiết lập localStorage
+            window.location.href = BASE_URL + '/FrontEnd/index.php?admin_view=true';
         }
         
         // Function để đăng xuất admin
@@ -694,18 +707,17 @@
                 document.getElementById('admin-welcome').textContent = `Xin chào, ${username}!`;
             }
             
-            // Khởi tạo loại sản phẩm và cập nhật select
-            if (typeof initCategories === 'function') initCategories();
-            if (typeof updateCategorySelect === 'function') updateCategorySelect();
+            // Khởi tạo loại sản phẩm và cập nhật select từ database
+            if (typeof loadCategoriesForProductSelect === 'function') loadCategoriesForProductSelect();
 
             // Tự động nhập các xe có sẵn từ trang chủ (nếu đã được cache)
             if (typeof importHomepageCars === 'function') {
                 try { importHomepageCars(true); } catch (e) { /* ignore */ }
             }
 
-            loadProducts();
-            updateStats();
-            loadCategories();
+            if (typeof loadProducts === 'function') loadProducts();
+            if (typeof updateStats === 'function') updateStats();
+            if (typeof loadCategories === 'function') loadCategories();
             
             // Bind form submit handler cho category modal
             const categoryForm = document.getElementById('addCategoryForm');
@@ -1035,36 +1047,6 @@
             `;
         }
 
-        // Tra cứu nhập-xuất-tồn
-        function searchInventoryReport() {
-            const inventoryResult = document.getElementById('inventoryResult');
-            if (!inventoryResult) return;
-            
-            inventoryResult.style.display = 'block';
-            
-            // Thêm nút quay lại
-            const resultDiv = inventoryResult.querySelector('div > div:first-child');
-            if (resultDiv && !document.getElementById('inventoryBackBtn')) {
-                const backBtn = document.createElement('div');
-                backBtn.id = 'inventoryBackBtn';
-                backBtn.style.cssText = 'margin-bottom: 15px;';
-                backBtn.innerHTML = `
-                    <button onclick="hideInventoryReport()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-undo"></i> Quay lại
-                    </button>
-                `;
-                inventoryResult.insertBefore(backBtn, inventoryResult.firstChild);
-            }
-        }
-
-        // Ẩn kết quả tra cứu
-        function hideInventoryReport() {
-            const inventoryResult = document.getElementById('inventoryResult');
-            const backBtn = document.getElementById('inventoryBackBtn');
-            if (inventoryResult) inventoryResult.style.display = 'none';
-            if (backBtn) backBtn.remove();
-        }
-
         // Load lại dữ liệu tồn kho
         function loadStockData() {
             // Gọi lại hàm load dữ liệu ban đầu từ admin.js
@@ -1215,123 +1197,6 @@
             </div>
         `;
     }
-
-    // Load dữ liệu giá bán từ backend API
-    function loadPricing() {
-        const pricingGrid = document.getElementById('pricingGrid');
-        if (!pricingGrid) return;
-
-        pricingGrid.innerHTML = '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
-
-        const searchKeyword = (document.getElementById('pricingSearchProduct')?.value || '').trim();
-        const costMin = (document.getElementById('pricingCostMin')?.value || '').trim();
-        const costMax = (document.getElementById('pricingCostMax')?.value || '').trim();
-        const marginMin = (document.getElementById('pricingMarginMin')?.value || '').trim();
-        const marginMax = (document.getElementById('pricingMarginMax')?.value || '').trim();
-        const sellMin = (document.getElementById('pricingSellMin')?.value || '').trim();
-        const sellMax = (document.getElementById('pricingSellMax')?.value || '').trim();
-
-        let apiUrl = BASE_URL + '/BackEnd/api/pricing.php?action=list&limit=500';
-        if (searchKeyword) {
-            apiUrl += `&search=${encodeURIComponent(searchKeyword)}`;
-        }
-        if (costMin !== '') {
-            apiUrl += `&costMin=${encodeURIComponent(costMin)}`;
-        }
-        if (costMax !== '') {
-            apiUrl += `&costMax=${encodeURIComponent(costMax)}`;
-        }
-        if (marginMin !== '') {
-            apiUrl += `&marginMin=${encodeURIComponent(marginMin)}`;
-        }
-        if (marginMax !== '') {
-            apiUrl += `&marginMax=${encodeURIComponent(marginMax)}`;
-        }
-        if (sellMin !== '') {
-            apiUrl += `&sellMin=${encodeURIComponent(sellMin)}`;
-        }
-        if (sellMax !== '') {
-            apiUrl += `&sellMax=${encodeURIComponent(sellMax)}`;
-        }
-
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success || !data.data || data.data.length === 0) {
-                    pricingGrid.innerHTML = '<div class="empty-state">Không tìm thấy sản phẩm phù hợp.</div>';
-                    return;
-                }
-
-                renderPricingTable(data.data);
-            })
-            .catch(err => {
-                console.error('Error loading pricing data:', err);
-                pricingGrid.innerHTML = '<div style="color:red;padding:20px;">Lỗi khi tải dữ liệu giá. Vui lòng kiểm tra kết nối.</div>';
-            });
-    }
-
-    async function updateProductPricing(productId) {
-        const costInput = document.getElementById(`pricing-cost-${productId}`);
-        const marginInput = document.getElementById(`pricing-margin-${productId}`);
-
-        if (!costInput || !marginInput) {
-            alert('❌ Không tìm thấy dữ liệu cần cập nhật.');
-            return;
-        }
-
-        const costPrice = Number(costInput.value);
-        const profitMargin = Number(marginInput.value);
-
-        if (Number.isNaN(costPrice) || costPrice < 0) {
-            alert('❌ Giá vốn phải lớn hơn hoặc bằng 0.');
-            return;
-        }
-
-        if (Number.isNaN(profitMargin) || profitMargin < 0 || profitMargin > 500) {
-            alert('❌ % lợi nhuận phải trong khoảng 0 - 500.');
-            return;
-        }
-
-        try {
-            const response = await fetch(BASE_URL + '/BackEnd/api/pricing.php', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'update_pricing',
-                    product_id: productId,
-                    cost_price: costPrice,
-                    profit_margin: profitMargin
-                })
-            });
-
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Cập nhật giá thất bại');
-            }
-
-            alert('✅ Đã cập nhật giá vốn, % lợi nhuận và giá bán.');
-            loadPricing();
-        } catch (error) {
-            console.error('Update pricing error:', error);
-            alert('❌ ' + (error.message || 'Lỗi khi cập nhật giá bán'));
-        }
-    }
-
-    function searchPricingProduct() {
-        loadPricing();
-        return false;
-    }
-
-    function loadPricingData() {
-        loadPricing();
-        return false;
-    }
-
-    window.loadPricing = loadPricing;
-    window.searchPricingProduct = searchPricingProduct;
-    window.loadPricingData = loadPricingData;
-    window.updateProductPricing = updateProductPricing;
-    window.updateProductProfitMargin = updateProductPricing;
 
     const pricingSearchInput = document.getElementById('pricingSearchProduct');
     if (pricingSearchInput) {
@@ -2183,7 +2048,7 @@
 
         // Nếu mở trực tiếp tab pricing thì tải dữ liệu giá bán
         if (window.location.hash === '#pricing') {
-            loadPricing();
+            if (typeof loadPricing === 'function') loadPricing();
         }
     });
     </script>

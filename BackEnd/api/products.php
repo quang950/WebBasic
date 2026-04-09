@@ -21,6 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 require_once '../config/db_connect.php';
 require_once '../controllers/ProductController.php';
 
+if (!$conn) {
+	http_response_code(500);
+	echo json_encode(['success' => false, 'message' => 'Database connection error'], JSON_UNESCAPED_UNICODE);
+	exit;
+}
+
 try {
 	$controller = new ProductController($conn ?? null);
 	$result = $controller->handleGetProducts($_GET);

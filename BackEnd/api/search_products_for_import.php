@@ -5,7 +5,7 @@ header('Access-Control-Allow-Methods: GET');
 
 require_once __DIR__ . '/../config/db_connect.php';
 
-if (!$dbConnected) {
+if (!$dbConnected || !$conn) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
     exit;

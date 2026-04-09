@@ -22,6 +22,12 @@ require_once '../config/db_connect.php';
 require_once '../controllers/ProductController.php';
 
 try {
+	if (!$conn) {
+		http_response_code(500);
+		echo json_encode(['success' => false, 'message' => 'Database connection error']);
+		exit;
+	}
+	
 	$controller = new ProductController($conn ?? null);
 	$result = $controller->handleSearch($_GET);
 

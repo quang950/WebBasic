@@ -219,7 +219,8 @@ function showAddProductModal() {
   modalTitle.textContent = "Thêm sản phẩm mới";
 
   modal.style.display = "block";
-  updateCategorySelect();
+  loadCategoriesForProductSelect();
+  setupLongStockToggle();
 }
 
 // Đóng modal thêm sản phẩm
@@ -241,6 +242,18 @@ function closeAddProductModal() {
   modalTitle.textContent = "Thêm sản phẩm mới";
 }
 
+// Setup toggle cho checkbox tồn kho lâu
+function setupLongStockToggle() {
+  const checkbox = document.getElementById("isLongStock");
+  const reasonGroup = document.getElementById("longStockReasonGroup");
+  
+  if (!checkbox || !reasonGroup) return;
+  
+  checkbox.addEventListener("change", function() {
+    reasonGroup.style.display = this.checked ? "block" : "none";
+  });
+}
+
 // Add product function
 function addProduct(event) {
   // Prevent form submission
@@ -254,7 +267,7 @@ function addProduct(event) {
   const editId = form.dataset.editId;
   const name = document.getElementById("productName").value.trim();
   const code = document.getElementById("productCode").value.trim() || "";
-  const brand = document.getElementById("productBrand").value.trim();
+  const brand = document.getElementById("productCategory").value.trim();
   const price = parseFloat(document.getElementById("productPrice").value);
   const cost = parseFloat(document.getElementById("productCost").value || "0");
   const margin = parseFloat(
@@ -267,7 +280,6 @@ function addProduct(event) {
   const transmission = document
     .getElementById("productTransmission")
     .value.trim();
-  const category = document.getElementById("productCategory").value.trim();
   const image = document.getElementById("productImageUrl").value.trim();
   const description = document
     .getElementById("productDescription")
@@ -275,7 +287,7 @@ function addProduct(event) {
   const status = document.getElementById("productStatus").checked ? 1 : 0;
 
   // Validate
-  if (!name || !brand || !price) {
+  if (!name || !categoryId || !price) {
     alert(
       "Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Thương hiệu, Giá bán)!",
     );
@@ -293,15 +305,20 @@ function addProduct(event) {
   submitBtn.disabled = true;
   submitBtn.textContent = "Đang lưu...";
 
+  // Get category name from dropdown selected text
+  const categorySelect = document.getElementById("productCategory");
+  const categoryId = parseInt(brand) || 0;
+  const categoryName = categorySelect?.options[categorySelect.selectedIndex]?.text || brand;
+
   // Determine which API to call based on edit mode
   const apiUrl = editId 
     ? BASE_URL + "/BackEnd/api/admin/edit_product.php"
     : BASE_URL + "/BackEnd/api/admin/add_product.php";
 
   const requestBody = {
-    name: `${brand.charAt(0).toUpperCase() + brand.slice(1)} ${name}`,
+    name: `${categoryName} ${name}`,
     product_code: code,
-    brand: brand,
+    brand: categoryName,
     price: price,
     price_cost: cost,
     profit_margin: margin,
@@ -311,10 +328,12 @@ function addProduct(event) {
     year: year,
     fuel: fuel,
     transmission: transmission,
-    category: category,
-    image: image || BASE_URL + `/FrontEnd/assets/images/logo-${brand}.png`,
+    category_id: categoryId,
+    image: image || BASE_URL + `/FrontEnd/assets/images/logo-${categoryName.toLowerCase()}.png`,
     description: description,
     status: status,
+    is_long_stock: document.getElementById("isLongStock").checked ? 1 : 0,
+    long_stock_reason: document.getElementById("longStockReason").value.trim() || "",
   };
 
   // Add ID for edit
@@ -388,6 +407,35 @@ function addProduct(event) {
 // Make addProduct globally available
 window.addProduct = addProduct;
 
+// Upload hình ảnh từ file hoặc URL
+function handleImageUpload(imageInputId, fileInput) {
+  if (!fileInput.files || !fileInput.files[0]) return;
+
+  const file = fileInput.files[0];
+  if (!file.type.startsWith('image/')) {
+    alert('Vui lòng chọn file hình ảnh!');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const dataUrl = e.target.result;
+    document.getElementById(imageInputId).value = dataUrl;
+    
+    // Show preview if available
+    const preview = document.getElementById("imagePreview");
+    const previewImg = document.getElementById("previewImg");
+    if (preview && previewImg) {
+      previewImg.src = dataUrl;
+      preview.style.display = "block";
+    }
+  };
+  reader.onerror = function (e) {
+    alert('Lỗi đọc file: ' + e.message);
+  };
+  reader.readAsDataURL(file);
+}
+
 // Preview ảnh khi chọn file
 function previewImage(input) {
   const preview = document.getElementById("imagePreview");
@@ -416,9 +464,6 @@ function previewUrlImage(input) {
   if (input.value) {
     previewImg.src = input.value;
     preview.style.display = "block";
-
-    // Xóa file nếu có URL
-    document.getElementById("productImage").value = "";
   } else {
     preview.style.display = "none";
   }
@@ -560,6 +605,7 @@ function renderProductsList(productsList) {
                                 <p class="price">${formatPrice(product.price)} VNĐ</p>
                                 <div class="product-details">
                                     ${product.stock !== undefined ? `<span><i class="fas fa-boxes"></i> Tồn: ${product.stock}</span>` : ""}
+                                    ${product.is_long_stock ? `<span style="color:#dc3545;font-weight:bold;"><i class="fas fa-exclamation-circle"></i> Tồn kho lâu</span>` : ""}
                                 </div>
                                 <div class="product-actions">
                                     <button onclick="showEditProductModal(${product.id})" class="edit-btn" style="padding:4px 10px;font-size:0.95em;border-radius:6px;min-width:0;line-height:1.2;display:inline-flex;align-items:center;gap:4px;background:#17a2b8;color:#fff;border:none;cursor:pointer;"><i class="fas fa-edit"></i> Sửa</button>
@@ -715,13 +761,6 @@ function formatDateVN(dateStr) {
   }
 }
 
-// Lightweight accessor for orders used by stock helpers
-function loadOrders() {
-  return JSON.parse(localStorage.getItem("orders")) || [];
-}
-
-let currentAdminOrders = [];
-
 // ========== Quản lý đơn hàng cho admin ==========
 function loadAdminOrders() {
   const ordersGrid = document.getElementById("adminOrdersGrid");
@@ -748,14 +787,18 @@ function loadAdminOrders() {
           address: order.shipping_address || "",
           paymentMethod: order.payment || "COD",
           status: order.status,
-          items: order.items.map((item) => ({
-            brand: extractBrand(item.product_name),
-            name: item.product_name,
-            quantity: item.quantity,
-            price: item.unit_price,
-            img: BASE_URL + "/FrontEnd/assets/images/1.jpg", // Default image if API doesn't return
+          items: (order.items || []).map((item) => ({
+            brand: item.brand || item.product_brand || "Unknown",
+            name: item.product_name || "Sản phẩm",
+            quantity: item.quantity || 0,
+            price: item.unit_price || 0,
+            img: item.image_url 
+              ? (item.image_url.startsWith('http') 
+                  ? item.image_url
+                  : BASE_URL + "/FrontEnd/assets/images/" + item.image_url.split('/').pop())
+              : BASE_URL + "/FrontEnd/assets/images/1.jpg",
           })),
-          total: order.total_price,
+          total: order.total_price || 0,
         }));
 
         // Lưu biến global để hiển thị modal chi tiết
@@ -822,7 +865,7 @@ function filterAdminOrders() {
           paymentMethod: order.payment || "COD",
           status: order.status,
           items: order.items.map((item) => ({
-            brand: extractBrand(item.product_name),
+            brand: item.product_brand || item.brand || "Unknown",
             name: item.product_name,
             quantity: item.quantity,
             price: item.unit_price,
@@ -870,27 +913,7 @@ function mapOrderStatus(dbStatus) {
   return statusMap[dbStatus] || dbStatus || "Mới đặt (Chưa xử lý)";
 }
 
-function extractBrand(productName) {
-  // Trích xuất hãng từ tên sản phẩm (ví dụ: "Toyota Camry" -> "Toyota")
-  if (!productName) return "";
-  const brands = [
-    "Toyota",
-    "Honda",
-    "BMW",
-    "Mercedes",
-    "Audi",
-    "Lexus",
-    "Hyundai",
-    "Kia",
-    "Vinfast",
-  ];
-  for (let brand of brands) {
-    if (productName.toLowerCase().includes(brand.toLowerCase())) {
-      return brand;
-    }
-  }
-  return productName.split(" ")[0] || "";
-}
+// Brand is now stored in database - not extracted from product name
 
 function renderAdminOrdersTable(orders) {
   if (!orders.length)
@@ -902,14 +925,15 @@ function renderAdminOrdersTable(orders) {
           .reverse()
           .map((order) => {
             const statusText = order.status || "Mới đặt";
+            const orderItems = order.items || [];
 
-            const itemsHtml = order.items
+            const itemsHtml = orderItems
               .map(
                 (item) => `
                 <div style='margin-bottom:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-family:Arial,sans-serif;'>
-                    <div style='color:#000;font-size:1em;font-family:Arial,sans-serif;font-weight:normal;'>Xe: ${item.name}</div>
-                    <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Số lượng: ${item.quantity}</div>
-                    <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Giá: ${formatPrice(item.price)} VNĐ</div>
+                    <div style='color:#000;font-size:1em;font-family:Arial,sans-serif;font-weight:normal;'>Xe: ${item.name || "N/A"}</div>
+                    <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Số lượng: ${item.quantity || 0}</div>
+                    <div style='color:#000;font-size:1em;margin-top:4px;font-family:Arial,sans-serif;font-weight:normal;'>Giá: ${formatPrice(item.price || 0)} VNĐ</div>
                 </div>
             `,
               )
@@ -936,7 +960,7 @@ function renderAdminOrdersTable(orders) {
                         ${itemsHtml}
                     </div>
                     <div style='margin-top:12px;padding-top:12px;border-top:1px solid #e0e0e0;'>
-                        <div style='color:#000;font-size:1.1em;text-align:right;font-family:Arial,sans-serif;font-weight:normal;'>Tổng: ${formatPrice(order.total)} VNĐ</div>
+                        <div style='color:#000;font-size:1.1em;text-align:right;font-family:Arial,sans-serif;font-weight:normal;'>Tổng: ${formatPrice(order.total || 0)} VNĐ</div>
                     </div>
                 </div>
             `;
@@ -996,6 +1020,7 @@ function showOrderDetail(orderId) {
     return;
   }
 
+  const orderItems = order.items || [];
   let html = `<div class='order-detail-modal' style='position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;'>
         <div style='background:#fff;padding:32px 24px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.12);position:relative;max-height:90vh;overflow-y:auto;'>
             <button onclick='this.parentElement.parentElement.remove()' style='position:absolute;top:12px;right:12px;background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;'>&times;</button>
@@ -1016,21 +1041,21 @@ function showOrderDetail(orderId) {
                     <th style="padding:10px;border-bottom:2px solid #ddd;">SL</th>
                 </tr></thead>
                 <tbody>
-                    ${order.items
-                      .map(
+                    ${orderItems.length > 0 
+                      ? orderItems.map(
                         (item) => `
                     <tr style="border-bottom:1px solid #eee;">
-                        <td style="padding:10px;"><img src='${item.img}' alt='${item.name}' style='width:60px;height:40px;object-fit:cover;border-radius:6px;'></td>
-                        <td style="padding:10px;font-weight:600;">${item.name}</td>
-                        <td style="padding:10px;color:#d9534f;">${formatPrice(item.price)} VNĐ</td>
-                        <td style="padding:10px;text-align:center;">${item.quantity}</td>
+                        <td style="padding:10px;"><img src='${item.img || ""}' alt='${item.name || ""}' style='width:60px;height:40px;object-fit:cover;border-radius:6px;' onerror="this.src='${BASE_URL}/FrontEnd/assets/images/1.jpg'"></td>
+                        <td style="padding:10px;font-weight:600;">${item.name || "N/A"}</td>
+                        <td style="padding:10px;color:#d9534f;">${formatPrice(item.price || 0)} VNĐ</td>
+                        <td style="padding:10px;text-align:center;">${item.quantity || 0}</td>
                     </tr>`,
-                      )
-                      .join("")}
+                      ).join("")
+                      : '<tr style="border-bottom:1px solid #eee;"><td colspan="4" style="padding:20px;text-align:center;color:#999;">Không có mục hàng nào</td></tr>'}
                 </tbody>
             </table>
             <div style='text-align:right;font-weight:bold;font-size:1.2rem;margin-top:20px;color:#198754;border-top:2px solid #eee;padding-top:15px;'>
-                Tổng hóa đơn: ${formatPrice(order.total)} đ
+                Tổng hóa đơn: ${formatPrice(order.total || 0)} đ
             </div>
         </div>
     </div>`;
@@ -1118,6 +1143,177 @@ function loadLowStockAlert() {
     );
 }
 
+// ========== Quản lý sản phẩm tồn kho lâu ==========
+
+// Load danh sách sản phẩm vào dropdown
+function loadLongStockProducts() {
+  console.log("📋 loadLongStockProducts called");
+  const select = document.getElementById("longStockProductSelect");
+  if (!select) {
+    console.error("❌ longStockProductSelect element not found");
+    return;
+  }
+
+  console.log("📡 Fetching products from:", BASE_URL + "/BackEnd/api/admin/get_products.php");
+  
+  fetch(BASE_URL + "/BackEnd/api/admin/get_products.php", {
+    method: "GET",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" }
+  })
+    .then(r => {
+      console.log("📥 Response status:", r.status);
+      return r.json();
+    })
+    .then(res => {
+      console.log("✅ API response:", res);
+      
+      if (res.success && res.products && res.products.length > 0) {
+        console.log("✨ Found " + res.products.length + " products");
+        
+        // Build HTML string with all options
+        let optionsHTML = '<option value="">-- Chọn sản phẩm --</option>';
+        res.products.forEach(product => {
+          optionsHTML += `<option value="${product.id}">${product.name} (Tồn: ${product.stock})</option>`;
+        });
+        
+        console.log("📝 Setting innerHTML with " + res.products.length + " options");
+        select.innerHTML = optionsHTML;
+        console.log("✓ Dropdown populated successfully");
+      } else {
+        console.warn("⚠️ No products found or API error:", res);
+        select.innerHTML = '<option value="">-- Không có sản phẩm --</option>';
+      }
+    })
+    .catch(e => {
+      console.error("❌ Error loading products:", e);
+      select.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+    });
+}
+
+// Đánh dấu sản phẩm là tồn kho lâu
+function markProductAsLongStock() {
+  const productId = document.getElementById("longStockProductSelect").value;
+  const reason = document.getElementById("longStockReasonInput").value.trim();
+  const detail = document.getElementById("longStockDetailInput").value.trim();
+
+  if (!productId) {
+    alert("Vui lòng chọn sản phẩm!");
+    return;
+  }
+
+  if (!reason) {
+    alert("Vui lòng nhập lý do tồn!");
+    return;
+  }
+
+  fetch(BASE_URL + "/BackEnd/api/admin/edit_product.php", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: parseInt(productId),
+      is_long_stock: 1,
+      long_stock_reason: reason + (detail ? " - " + detail : "")
+    })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        alert("✓ Đã đánh dấu sản phẩm là tồn kho lâu!");
+        document.getElementById("longStockProductSelect").value = "";
+        document.getElementById("longStockReasonInput").value = "";
+        document.getElementById("longStockDetailInput").value = "";
+        loadLongStockList();
+      } else {
+        alert("Lỗi: " + (res.message || "Không thể cập nhật"));
+      }
+    })
+    .catch(e => alert("Lỗi: " + e.message));
+}
+
+// Load danh sách sản phẩm tồn kho lâu
+function loadLongStockList() {
+  console.log("📋 loadLongStockList called");
+  const listDiv = document.getElementById("oldStockList");
+  if (!listDiv) {
+    console.error("❌ oldStockList element not found");
+    return;
+  }
+
+  console.log("📡 Fetching long stock products");
+  fetch(BASE_URL + "/BackEnd/api/admin/get_long_stock_products.php", {
+    method: "GET",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" }
+  })
+    .then(r => r.json())
+    .then(res => {
+      console.log("✅ API response:", res);
+      
+      if (res.success && res.products && res.products.length > 0) {
+        console.log("✨ Found " + res.products.length + " long stock products");
+        
+        let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:20px;">`;
+        res.products.forEach(product => {
+          html += `
+            <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:15px;">
+              <div style="margin-bottom:12px;">
+                <div style="color:#333;font-size:1.1em;font-weight:600;">${product.name}</div>
+                <div style="color:#666;font-size:0.9em;margin-top:4px;">Mã: ${product.id} | ${product.brand || "N/A"}</div>
+              </div>
+              
+              <div style="background:#fff;border-radius:6px;padding:10px;margin-bottom:12px;">
+                <div style="color:#d9534f;font-weight:600;margin-bottom:4px;"><i class="fas fa-exclamation-circle"></i> Tồn kho lâu</div>
+                <div style="color:#666;font-size:0.9em;">${product.long_stock_reason || "Chưa có ghi chú"}</div>
+              </div>
+              
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid #ddd;">
+                <div style="font-weight:600;color:#f57c00;">Tồn: ${product.stock} chiếc</div>
+                <button onclick="unmarkLongStock(${product.id})" style="padding:6px 12px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:0.85em;font-weight:600;">
+                  <i class="fas fa-times"></i> Bỏ đánh dấu
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+        listDiv.innerHTML = html;
+      } else {
+        console.log("ℹ️ No long stock products found");
+        listDiv.innerHTML = '<div style="padding:20px;background:#e8f5e9;border-radius:6px;text-align:center;color:#2e7d32;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Không có sản phẩm nào bị tồn kho lâu</div>';
+      }
+    })
+    .catch(e => {
+      console.error("❌ Error loading long stock list:", e);
+      listDiv.innerHTML = '<div style="color:red;padding:15px;">❌ Lỗi tải dữ liệu: ' + e.message + '</div>';
+    });
+}
+
+// Bỏ đánh dấu sản phẩm tồn
+function unmarkLongStock(productId) {
+  if (!confirm("Bạn chắc chắn muốn bỏ đánh dấu sản phẩm này?")) return;
+
+  fetch(BASE_URL + "/BackEnd/api/admin/edit_product.php", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: productId,
+      is_long_stock: 0,
+      long_stock_reason: ""
+    })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        alert("✓ Đã bỏ đánh dấu!");
+        loadLongStockList();
+      }
+    })
+    .catch(e => alert("Lỗi: " + e.message));
+}
+
 // 2. Tra cứu tồn kho tại 1 thời điểm
 function searchStockHistory() {
   const sName = document.getElementById("historyProductId").value;
@@ -1160,66 +1356,142 @@ function searchStockHistory() {
 
 // 3. Báo cáo Nhập Xuất trong 1 khoảng thời gian
 function searchInventoryReport() {
+  console.log("🔵 searchInventoryReport called");
+  
   const sName = document.getElementById("inventorySearchProduct").value;
   const fDate = document.getElementById("inventoryFromDate").value;
   const tDate = document.getElementById("inventoryToDate").value;
   const resDiv = document.getElementById("inventoryResult");
   const listDiv = document.getElementById("inventoryDataList");
 
+  console.log("📝 Values:", { sName, fDate, tDate });
+
   if (!sName || !fDate || !tDate) {
-    showNotification(
-      "Vui lòng điền đủ Tên/Mã sản phẩm và Khoảng thời gian",
-      "error",
-    );
+    console.warn("⚠️ Validation failed - empty fields");
+    alert("Vui lòng điền đủ Tên/Mã sản phẩm và Khoảng thời gian");
+    return;
+  }
+
+  // Validate date range
+  if (fDate > tDate) {
+    console.warn("⚠️ Date validation failed");
+    alert("Ngày bắt đầu không được sau ngày kết thúc");
     return;
   }
 
   resDiv.style.display = "block";
-  listDiv.innerHTML =
-    '<div style="grid-column:1/-1;text-align:center;"><i class="fas fa-spinner fa-spin"></i> Đang truy xuất sổ kho...</div>';
+  listDiv.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang truy xuất...</div>';
 
-  fetch(
-    BASE_URL + `/BackEnd/api/admin/get_stock_report.php?action=report_in_out&searchName=${encodeURIComponent(sName)}&fromDate=${encodeURIComponent(fDate)}&toDate=${encodeURIComponent(tDate)}`,
-  )
-    .then((r) => r.json())
+  const url = BASE_URL + `/BackEnd/api/admin/get_stock_report.php?action=report_in_out&searchName=${encodeURIComponent(sName)}&fromDate=${encodeURIComponent(fDate)}&toDate=${encodeURIComponent(tDate)}`;
+  console.log("📡 Fetching:", url);
+
+  fetch(url)
+    .then((r) => {
+      console.log("📥 Response status:", r.status);
+      return r.json();
+    })
     .then((res) => {
+      console.log("✅ Full response:", res);
+      
       if (res.status === "success") {
         const d = res.data;
-        listDiv.innerHTML = `
-                <div style="grid-column:1/-1;margin-bottom:10px;font-size:1.1rem;color:#0d279d;">
-                    Báo cáo thẻ kho sản phẩm: <strong>${d.product_name}</strong> 
-                    <span style="font-size:0.9em;color:#555;">(Từ ${fDate} đến ${tDate})</span>
-                </div>
-                <div style="text-align:center;padding:12px;background:#e3f2fd;border-radius:6px;">
-                    <div style="color:#1976d2;font-size:0.9em;margin-bottom:4px;font-weight:600;">Tồn đầu kỳ</div>
-                    <div style="color:#0d47a1;font-size:1.5em;font-weight:700;">${d.stock_begin}</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:6px;">
-                    <div style="color:#2e7d32;font-size:0.9em;margin-bottom:4px;font-weight:600;">Số lượng Nhập</div>
-                    <div style="color:#1b5e20;font-size:1.5em;font-weight:700;">+ ${d.total_import}</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:6px;">
-                    <div style="color:#f57c00;font-size:0.9em;margin-bottom:4px;font-weight:600;">Số lượng Xuất</div>
-                    <div style="color:#e65100;font-size:1.5em;font-weight:700;">- ${d.total_export}</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#f3e5f5;border-radius:6px;">
-                    <div style="color:#7b1fa2;font-size:0.9em;margin-bottom:4px;font-weight:600;">Tồn cuối kỳ</div>
-                    <div style="color:#4a148c;font-size:1.5em;font-weight:700;">${d.stock_end}</div>
-                </div>
-            `;
+        console.log("📊 Data object:", d);
+        
+        const html = `
+          <div style="margin-bottom:16px;">
+            <button onclick="hideInventoryReport()" style="padding:8px 16px;background:#6c757d;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
+              <i class="fas fa-undo"></i> Quay lại
+            </button>
+          </div>
+          <div style="margin-bottom:12px;font-size:1.1rem;color:#0d279d;font-weight:bold;">
+            📦 ${d.product_name}
+          </div>
+          <div style="font-size:0.9em;color:#666;margin-bottom:16px;">
+            Kỳ báo cáo: <strong>${fDate}</strong> → <strong>${tDate}</strong>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+            <div style="text-align:center;padding:12px;background:#e3f2fd;border-radius:6px;border-left:4px solid #1976d2;">
+              <div style="color:#1976d2;font-size:0.85em;margin-bottom:4px;font-weight:600;">Tồn đầu kỳ</div>
+              <div style="color:#0d47a1;font-size:1.8em;font-weight:700;">${Number(d.stock_begin) || 0}</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:6px;border-left:4px solid #2e7d32;">
+              <div style="color:#2e7d32;font-size:0.85em;margin-bottom:4px;font-weight:600;">Nhập</div>
+              <div style="color:#1b5e20;font-size:1.8em;font-weight:700;">+${Number(d.total_import) || 0}</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:6px;border-left:4px solid #f57c00;">
+              <div style="color:#f57c00;font-size:0.85em;margin-bottom:4px;font-weight:600;">Xuất</div>
+              <div style="color:#e65100;font-size:1.8em;font-weight:700;">-${Number(d.total_sale) || 0}</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:#f3e5f5;border-radius:6px;border-left:4px solid #7b1fa2;">
+              <div style="color:#7b1fa2;font-size:0.85em;margin-bottom:4px;font-weight:600;">Tồn cuối kỳ</div>
+              <div style="color:#4a148c;font-size:1.8em;font-weight:700;">${Number(d.stock_end) || 0}</div>
+            </div>
+          </div>
+        `;
+        
+        console.log("📝 HTML generated, setting innerHTML");
+        listDiv.innerHTML = html;
+        console.log("✨ HTML set successfully");
       } else {
-        listDiv.innerHTML = `<div style="grid-column:1/-1;color:red;text-align:center;">Lỗi: ${res.message}</div>`;
+        console.error("❌ API error:", res.message);
+        listDiv.innerHTML = `<div style="color:red;padding:12px;background:#ffebee;border-radius:6px;border:1px solid #ffcdd2;">❌ ${res.message}</div>`;
       }
     })
-    .catch(
-      (e) =>
-        (listDiv.innerHTML = `<div style="grid-column:1/-1;color:red;text-align:center;">Lỗi kết nối</div>`),
-    );
+    .catch((e) => {
+      console.error("❌ Fetch error:", e);
+      listDiv.innerHTML = `<div style="color:red;padding:12px;background:#ffebee;border-radius:6px;border:1px solid #ffcdd2;">❌ Lỗi kết nối: ${e.message}</div>`;
+    });
+}
+
+// Initialize inventory report form with default dates
+function initInventoryReportForm() {
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  // Format: YYYY-MM-DD
+  const todayStr = today.toISOString().split('T')[0];
+  const firstDayStr = firstDay.toISOString().split('T')[0];
+  
+  const fromDateInput = document.getElementById("inventoryFromDate");
+  const toDateInput = document.getElementById("inventoryToDate");
+  
+  if (fromDateInput && !fromDateInput.value) {
+    fromDateInput.value = firstDayStr;
+  }
+  if (toDateInput && !toDateInput.value) {
+    toDateInput.value = todayStr;
+  }
+  
+  console.log("Inventory form initialized - From:", firstDayStr, "To:", todayStr);
+}
+
+// Ẩn kết quả báo cáo nhập xuất
+function hideInventoryReport() {
+  const resDiv = document.getElementById("inventoryResult");
+  const listDiv = document.getElementById("inventoryDataList");
+  
+  if (resDiv) {
+    resDiv.style.display = "none";
+  }
+  if (listDiv) {
+    listDiv.innerHTML = '';
+  }
+}
+
+// Call initialization when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initInventoryReportForm);
+  document.addEventListener('DOMContentLoaded', loadLongStockProducts);
+} else {
+  initInventoryReportForm();
+  loadLongStockProducts();
 }
 
 // Gọi mặc định cho Cảnh báo hết hàng khi tab được hiển thị
 function onStockTabSelect() {
   loadLowStockAlert();
+  loadLongStockProducts();
+  loadLongStockList();
 }
 
 // Hàm loadCategories được định nghĩa dưới đây (line 2703+) để gọi API backend
@@ -1237,39 +1509,11 @@ function updateCategorySelect() {
 
 // ========== Nhập xe đã có từ trang chủ ==========
 function importHomepageCars(silent = false) {
-  const cached = JSON.parse(localStorage.getItem("homepageCars") || "[]");
-  if (!cached.length) {
-    if (!silent)
-      showNotification("Không tìm thấy dữ liệu xe trang chủ để nhập.", "info");
-    return 0;
+  // Import from homepage is no longer needed - use API to manage products
+  if (!silent) {
+    showNotification("Vui lòng quản lý sản phẩm trực tiếp từ mục Quản lý sản phẩm hoặc API.", "info");
   }
-  let imported = 0;
-  cached.forEach((item) => {
-    // Bỏ qua nếu đã tồn tại theo name+brand
-    if (products.some((p) => p.name === item.name && p.brand === item.brand))
-      return;
-    products.push({
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      name: item.name,
-      brand: item.brand,
-      price: item.price || 0,
-      year: item.year || new Date().getFullYear(),
-      fuel: item.fuel || "Xăng",
-      transmission: item.transmission || "Tự động (AT)",
-      image: item.image,
-      description: item.description || "",
-      category: item.category || "",
-      dateAdded: new Date().toISOString(),
-      hidden: false,
-    });
-    imported++;
-  });
-  localStorage.setItem("products", JSON.stringify(products));
-  loadProducts();
-  updateStats();
-  if (!silent)
-    showNotification(`Đã nhập ${imported} sản phẩm từ trang chủ`, "success");
-  return imported;
+  return 0;
 }
 
 // Gắn import vào window để gọi từ HTML nếu cần
@@ -1456,6 +1700,9 @@ async function loadOldStock() {
       container.innerHTML = '<div class="empty-state">Lỗi tải dữ liệu tồn kho.</div>';
     }
   }
+  
+  // Load dropdown sản phẩm cho phần "Quản lý tồn kho lâu"
+  loadLongStockProducts();
 }
 
 function loadOldStock_original() {
@@ -1558,23 +1805,6 @@ function renderStockItems(items, type) {
                     </div>
                 </div>
                 
-                <div style='margin-top:12px;padding:12px;background:#f8f9fa;border-radius:6px;border:1px solid #dee2e6;'>
-                    <label style='display:block;margin-bottom:8px;font-weight:600;color:#495057;font-family:Arial,sans-serif;font-size:0.95em;'>
-                        Sửa % giảm giá:
-                    </label>
-                    <div style='display:flex;gap:8px;align-items:center;'>
-                        <input 
-                            type="number" 
-                            value="${item.discount}" 
-                            min="0" 
-                            max="100" 
-                            step="1"
-                            style='flex:1;padding:8px 10px;border:1px solid #ced4da;border-radius:6px;font-size:1em;font-family:Arial,sans-serif;'
-                        />
-                        <span style='color:#6c757d;font-size:1em;font-weight:600;'>%</span>
-                    </div>
-                </div>
-                
                 <div style='margin-top:12px;'>
                     ${item.discount > 0 ? `<div style='color:#666;font-size:0.95em;margin-bottom:6px;font-family:Arial,sans-serif;font-weight:normal;text-decoration:line-through;'>Giá gốc: ${formatPrice(item.originalPrice)} VNĐ</div>` : ""}
                     <div style='color:${type === "warning" ? "#ff9800" : type === "normal" ? "#28a745" : "#dc3545"};font-size:1.2em;font-family:Arial,sans-serif;font-weight:600;'>${item.discount > 0 ? "Giá ưu đãi" : "Giá bán"}: ${formatPrice(currentPrice)} VNĐ</div>
@@ -1642,23 +1872,6 @@ function loadOldStock_original() {
                     </div>
                 </div>
                 
-                <div style='margin-top:12px;padding:12px;background:#f8f9fa;border-radius:6px;border:1px solid #dee2e6;'>
-                    <label style='display:block;margin-bottom:8px;font-weight:600;color:#495057;font-family:Arial,sans-serif;font-size:0.95em;'>
-                        Sửa % giảm giá:
-                    </label>
-                    <div style='display:flex;gap:8px;align-items:center;'>
-                        <input 
-                            type="number" 
-                            value="${item.discount}" 
-                            min="0" 
-                            max="100" 
-                            step="1"
-                            style='flex:1;padding:8px 10px;border:1px solid #ced4da;border-radius:6px;font-size:1em;font-family:Arial,sans-serif;'
-                        />
-                        <span style='color:#6c757d;font-size:1em;font-weight:600;'>%</span>
-                    </div>
-                </div>
-                
                 <div style='margin-top:12px;'>
                     <div style='color:#666;font-size:0.95em;margin-bottom:6px;font-family:Arial,sans-serif;font-weight:normal;text-decoration:line-through;'>Giá gốc: ${formatPrice(item.originalPrice)} VNĐ</div>
                     <div style='color:#dc3545;font-size:1.2em;font-family:Arial,sans-serif;font-weight:600;'>Giá ưu đãi: ${formatPrice(currentPrice)} VNĐ</div>
@@ -1680,6 +1893,59 @@ function loadOldStock_original() {
 }
 
 // ========== Quản lý giá bán ==========
+function loadCategoriesForPricingFilter() {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_categories.php")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success && data.categories) {
+        const categoryFilterElement = document.getElementById("pricingCategoryFilter");
+        if (categoryFilterElement) {
+          const currentValue = categoryFilterElement.value;
+          categoryFilterElement.innerHTML =
+            '<option value="">Tất cả loại xe</option>' +
+            data.categories
+              .map((cat) => `<option value="${cat.id}">${cat.name}</option>`)
+              .join("");
+          categoryFilterElement.value = currentValue;
+        }
+      }
+    })
+    .catch((err) => console.error("Error loading categories for pricing filter:", err));
+}
+
+function loadCategoriesForProductSelect() {
+  fetch(BASE_URL + "/BackEnd/api/admin/get_categories.php")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success && data.categories) {
+        // Cập nhật dropdown "productCategory" khi thêm sản phẩm
+        const productCategoryElement = document.getElementById("productCategory");
+        if (productCategoryElement) {
+          const currentValue = productCategoryElement.value;
+          productCategoryElement.innerHTML =
+            '<option value="">Chọn loại</option>' +
+            data.categories
+              .map((cat) => `<option value="${cat.id}">${cat.name}</option>`)
+              .join("");
+          productCategoryElement.value = currentValue;
+        }
+        
+        // Cập nhật dropdown "editProductCategory" khi sửa sản phẩm (nếu modal đang mở)
+        const editProductCategoryElement = document.getElementById("editProductCategory");
+        if (editProductCategoryElement) {
+          const currentValue = editProductCategoryElement.value;
+          editProductCategoryElement.innerHTML =
+            '<option value="">Chọn loại</option>' +
+            data.categories
+              .map((cat) => `<option value="${cat.id}">${cat.name}</option>`)
+              .join("");
+          editProductCategoryElement.value = currentValue;
+        }
+      }
+    })
+    .catch((err) => console.error("Error loading categories for product select:", err));
+}
+
 function updateProductMargin(productId, productName) {
   const marginInput = document.getElementById(`margin_${productId}`);
   if (!marginInput) return;
@@ -1780,64 +2046,7 @@ function showToast(message, duration = 2000, type = "info") {
 }
 
 // ========== Quản lý giá bán ==========
-function initPricingData() {
-  // Dữ liệu mẫu cho quản lý giá bán (lấy từ sản phẩm có sẵn)
-  const products = JSON.parse(localStorage.getItem("products")) || [];
-
-  // Nếu chưa có sản phẩm, tạo dữ liệu mẫu
-  if (products.length === 0) {
-    const sampleProducts = [
-      {
-        id: 1,
-        name: "Camry 2024",
-        brand: "Toyota",
-        category: "sedan",
-        price: 1235000000,
-        profitMargin: 8.5,
-        sellingPrice: 1339975000,
-        image: BASE_URL + "/FrontEnd/assets/images/toyota-camry.jpg",
-      },
-      {
-        id: 2,
-        name: "CR-V 2024",
-        brand: "Honda",
-        category: "suv",
-        price: 1029000000,
-        profitMargin: 10,
-        sellingPrice: 1131900000,
-        image: BASE_URL + "/FrontEnd/assets/images/honda-crv.jpg",
-      },
-      {
-        id: 3,
-        name: "Mazda3 2024",
-        brand: "Mazda",
-        category: "sedan",
-        price: 669000000,
-        profitMargin: 12,
-        sellingPrice: 749280000,
-        image: BASE_URL + "/FrontEnd/assets/images/mazda3.jpg",
-      },
-      {
-        id: 4,
-        name: "VF 8 2024",
-        brand: "VinFast",
-        category: "suv",
-        price: 999000000,
-        profitMargin: 7,
-        sellingPrice: 1068930000,
-        image: BASE_URL + "/FrontEnd/assets/images/vinfast-vf8.jpg",
-      },
-    ];
-    return sampleProducts;
-  }
-
-  // Thêm profitMargin và sellingPrice cho sản phẩm nếu chưa có
-  return products.map((p) => {
-    if (!p.profitMargin) p.profitMargin = 10; // Mặc định 10%
-    if (!p.sellingPrice) p.sellingPrice = p.price * (1 + p.profitMargin / 100);
-    return p;
-  });
-}
+// Pricing data loaded from API via loadPricing()
 
 function loadPricing() {
   const pricingGrid = document.getElementById("pricingGrid");
@@ -1845,6 +2054,9 @@ function loadPricing() {
 
   pricingGrid.innerHTML =
     '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
+
+  // Trước tiên, load categories vào dropdown
+  loadCategoriesForPricingFilter();
 
   // Gọi API backend để lấy dữ liệu giá từ database
   fetch(BASE_URL + "/BackEnd/api/pricing.php?action=list&limit=500")
@@ -1857,15 +2069,6 @@ function loadPricing() {
       }
 
       const products = data.data;
-      const categories = JSON.parse(localStorage.getItem("categories")) || [];
-
-      if (categoryFilter) {
-        categoryFilter.innerHTML =
-          '<option value="">Tất cả loại xe</option>' +
-          categories
-            .map((cat) => `<option value="${cat.id}">${cat.name}</option>`)
-            .join("");
-      }
 
       if (!products.length) {
         pricingGrid.innerHTML =
@@ -1950,6 +2153,9 @@ function filterPricing() {
 
   pricingGrid.innerHTML =
     '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
+
+  // Load categories vào dropdown
+  loadCategoriesForPricingFilter();
 
   // Gọi API backend với tham số lọc
   let apiUrl = BASE_URL + "/BackEnd/api/pricing.php?action=list&limit=500";
@@ -2328,6 +2534,9 @@ window.filterPricing = filterPricing;
 window.filterProducts = filterProducts;
 window.renderProductsList = renderProductsList;
 window.loadProducts = loadProducts;
+window.updateProductMargin = updateProductMargin;
+window.loadCategoriesForPricingFilter = loadCategoriesForPricingFilter;
+window.loadCategoriesForProductSelect = loadCategoriesForProductSelect;
 
 // Filter cho đơn hàng đã bị vô hiệu hóa (Prototype mode)
 window.filterAdminOrders = filterAdminOrders;
@@ -2439,21 +2648,30 @@ function closeAddImportModal() {
 }
 
 function loadProductsToImportModal() {
-  const products = JSON.parse(localStorage.getItem("products")) || [];
-  const selects = document.querySelectorAll(".import-product-select");
-
-  const optionsHTML =
-    '<option value="">-- Chọn sản phẩm --</option>' +
-    products
-      .map(
-        (p) =>
-          `<option value="${p.id}">${p.brand} ${p.name} (${p.year || ""})</option>`,
-      )
-      .join("");
-
-  selects.forEach((select) => {
-    select.innerHTML = optionsHTML;
-  });
+  // Load products from API instead of localStorage
+  fetch(BASE_URL + "/BackEnd/api/admin/get_products.php", {
+    method: "GET",
+    credentials: "include",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success && data.products) {
+        const selects = document.querySelectorAll(".import-product-select");
+        const optionsHTML =
+          '<option value="">-- Chọn sản phẩm --</option>' +
+          data.products
+            .map(
+              (p) =>
+                `<option value="${p.id}">${p.brand} ${p.name} (${p.year || ""})</option>`,
+            )
+            .join("");
+        
+        selects.forEach((select) => {
+          select.innerHTML = optionsHTML;
+        });
+      }
+    })
+    .catch((err) => console.error("Error loading products:", err));
 }
 
 function addImportItemRow() {
@@ -2769,9 +2987,9 @@ function loadCategories() {
   })
     .then((response) => response.json())
     .then((result) => {
-      if (result.success && result.data) {
+      if (result.success && result.categories) {
         tbody.innerHTML = "";
-        result.data.forEach((cat) => {
+        result.categories.forEach((cat) => {
           const row = `
                     <tr>
                         <td style="padding:12px;text-align:left;">${cat.name}</td>
@@ -2855,7 +3073,10 @@ function addCategory() {
       if (result.success) {
         alert("✓ Thêm loại sản phẩm thành công!");
         closeAddCategoryModal();
+        // Refresh all category-related UIs
         loadCategories();
+        loadCategoriesForPricingFilter();
+        loadCategoriesForProductSelect();
       } else {
         alert("Lỗi: " + (result.message || "Không thể thêm loại"));
       }
@@ -2925,7 +3146,10 @@ function submitEditCategory(id) {
       if (result.success) {
         alert("✓ Cập nhật loại sản phẩm thành công!");
         closeEditCategoryModal();
+        // Refresh all category-related UIs
         loadCategories();
+        loadCategoriesForPricingFilter();
+        loadCategoriesForProductSelect();
       } else {
         alert("Lỗi: " + (result.message || "Không thể cập nhật"));
       }
@@ -2952,7 +3176,10 @@ function deleteCategory(id, name) {
     .then((result) => {
       if (result.success) {
         alert("✓ Xóa loại sản phẩm thành công!");
+        // Refresh all category-related UIs
         loadCategories();
+        loadCategoriesForPricingFilter();
+        loadCategoriesForProductSelect();
       } else {
         alert("Lỗi: " + (result.message || "Không thể xóa loại sản phẩm"));
       }
@@ -2985,20 +3212,16 @@ function showEditProductModal(id) {
                         <button onclick="closeEditProductModal()" style="background:#dc3545;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.2em;cursor:pointer;">&times;</button>
                     </div>
                     
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                    <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:15px;">
                         <div>
                             <label style="display:block;margin-bottom:5px;font-weight:600;">Tên sản phẩm:</label>
                             <input type="text" id="editProductName" value="${p.name}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
                         </div>
-                        <div>
-                            <label style="display:block;margin-bottom:5px;font-weight:600;">Hãng (Brand):</label>
-                            <input type="text" id="editProductBrand" value="${p.brand}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
-                        </div>
                     </div>
                     
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                    <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:15px;">
                         <div>
-                            <label style="display:block;margin-bottom:5px;font-weight:600;">Loại sản phẩm:</label>
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Thương hiệu:</label>
                             <select id="editProductCategory" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
                                 <option value="${p.category_id}">${p.category_name}</option>
                             </select>
@@ -3020,20 +3243,39 @@ function showEditProductModal(id) {
                         </div>
                     </div>
                     
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+                    <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:15px;">
                         <div>
                             <label style="display:block;margin-bottom:5px;font-weight:600;">Số lượng tồn:</label>
                             <input type="number" id="editProductStock" value="${p.stock}" required min="0" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
                         </div>
-                        <div>
-                            <label style="display:block;margin-bottom:5px;font-weight:600;">Hình ảnh URL:</label>
-                            <input type="url" id="editProductImage" value="${p.image_url || ""}" placeholder="https://..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Hình ảnh:</label>
+                        <div style="display:flex;gap:10px;align-items:flex-start;">
+                            <input type="url" id="editProductImage" value="${p.image_url || ""}" placeholder="https://..." style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+                            <button type="button" onclick="document.getElementById('editProductImageUpload').click()" style="padding:8px 12px;background:#007bff;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;margin-top:0;">
+                                <i class="fas fa-folder-open"></i> Browse
+                            </button>
                         </div>
+                        <input type="file" id="editProductImageUpload" accept="image/*" style="display:none;" onchange="handleImageUpload('editProductImage', this)">
                     </div>
                     
                     <div style="margin-bottom:15px;">
                         <label style="display:block;margin-bottom:5px;font-weight:600;">Mô tả:</label>
                         <textarea id="editProductDescription" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" rows="3">${p.description || ""}</textarea>
+                    </div>
+                    
+                    <div style="margin-bottom:15px;padding:12px;background:#f8f9fa;border-radius:6px;">
+                        <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                            <input type="checkbox" id="editIsLongStock" ${p.is_long_stock ? 'checked' : ''} style="width:18px;height:18px;">
+                            <span style="font-weight:600;"><strong>Đánh dấu là xe tồn kho lâu</strong></span>
+                        </label>
+                        
+                        <div id="editLongStockReasonGroup" style="display:${p.is_long_stock ? 'block' : 'none'};">
+                            <label style="display:block;margin-bottom:5px;font-weight:600;">Lý do tồn:</label>
+                            <textarea id="editLongStockReason" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" rows="2" placeholder="VD: Ít người mua do giá cao, Lỗi kỹ thuật...">${p.long_stock_reason || ""}</textarea>
+                        </div>
                     </div>
                     
                     <div style="display:flex;gap:10px;justify-content:flex-end;">
@@ -3045,6 +3287,16 @@ function showEditProductModal(id) {
             </div>
         `;
       document.body.insertAdjacentHTML("beforeend", html);
+      loadCategoriesForProductSelect();
+      
+      // Setup toggle cho edit long stock
+      const editCheckbox = document.getElementById("editIsLongStock");
+      const editReasonGroup = document.getElementById("editLongStockReasonGroup");
+      if (editCheckbox && editReasonGroup) {
+        editCheckbox.addEventListener("change", function() {
+          editReasonGroup.style.display = this.checked ? "block" : "none";
+        });
+      }
     })
     .catch((error) => alert("Lỗi: " + error.message));
 }
@@ -3056,10 +3308,9 @@ function closeEditProductModal() {
 
 function submitEditProduct(id) {
   const name = document.getElementById("editProductName")?.value?.trim();
-  const brand = document.getElementById("editProductBrand")?.value?.trim();
-  const category = parseInt(
-    document.getElementById("editProductCategory")?.value || "1",
-  );
+  const categorySelect = document.getElementById("editProductCategory");
+  const categoryId = parseInt(categorySelect?.value || "1");
+  const categoryName = categorySelect?.options[categorySelect.selectedIndex]?.text || "";
   const price = parseFloat(
     document.getElementById("editProductPrice")?.value || "0",
   );
@@ -3076,9 +3327,11 @@ function submitEditProduct(id) {
     document.getElementById("editProductImage")?.value?.trim() || "";
   const description =
     document.getElementById("editProductDescription")?.value?.trim() || "";
+  const isLongStock = document.getElementById("editIsLongStock")?.checked ? 1 : 0;
+  const longStockReason = document.getElementById("editLongStockReason")?.value?.trim() || "";
 
-  if (!name || !brand || price <= 0) {
-    alert("Vui lòng nhập tên, hãng và giá bán hợp lệ");
+  if (!name || !categoryName || price <= 0) {
+    alert("Vui lòng nhập tên, thương hiệu và giá bán hợp lệ");
     return;
   }
 
@@ -3089,14 +3342,16 @@ function submitEditProduct(id) {
     body: JSON.stringify({
       id,
       name,
-      brand,
-      category_id: category,
+      brand: categoryName,
+      category_id: categoryId,
       price,
       cost_price: cost,
       profit_margin: margin,
       stock,
       image_url: image,
       description,
+      is_long_stock: isLongStock,
+      long_stock_reason: longStockReason,
     }),
   })
     .then((response) => response.json())
@@ -3155,6 +3410,7 @@ window.showSingleProduct = showSingleProduct;
 window.editProduct = editProduct;
 window.showAddProductModal = showAddProductModal;
 window.closeAddProductModal = closeAddProductModal;
+window.handleImageUpload = handleImageUpload;
 window.filterAdminOrders = filterAdminOrders;
 window.loadAdminOrders = loadAdminOrders;
 window.filterImports = filterImports;
@@ -3163,6 +3419,10 @@ window.loadOldStock = loadOldStock;
 window.initStockSection = loadOldStock;
 window.loadPricing = loadPricing;
 window.loadCategories = loadCategories;
+// Export long stock management functions
+window.loadLongStockProducts = loadLongStockProducts;
+window.markProductAsLongStock = markProductAsLongStock;
+window.loadLongStockList = loadLongStockList;
 // Export category management functions
 window.showAddCategoryModal = showAddCategoryModal;
 window.closeAddCategoryModal = closeAddCategoryModal;
@@ -3177,3 +3437,8 @@ window.closeEditProductModal = closeEditProductModal;
 window.submitEditProduct = submitEditProduct;
 window.confirmDeleteProduct = confirmDeleteProduct;
 window.deleteProduct = deleteProduct;
+
+// Export main navigation and customer functions
+window.showSection = showSection;
+window.onStockTabSelect = onStockTabSelect;
+window.loadCustomers = loadCustomers;

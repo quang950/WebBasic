@@ -1,5 +1,7 @@
 <?php
 session_start();
+// Kiểm tra xem admin có đang xem trang chủ không
+$isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
 ?>
 <!doctype html>
 <html lang="vi">
@@ -238,17 +240,9 @@ session_start();
           <a href="#contact">Liên hệ</a>
         </div>
         <div class="user-actions">
-          <a href="pages/user/cart.php" onclick="checkLoginAndGoToCart()" class="cart-icon">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-text">Xem giỏ hàng</span>
-            <span class="cart-count">0</span>
-          </a>
-          <div class="login-options" id="loginOptions">
-            <a
-              href="pages/user/login.php"
-              class="blob-btn login-btn"
-              id="loginBtn"
-            >
+          <?php if ($isAdminView): ?>
+            <!-- Nút quay lại Admin -->
+            <a href="/WebBasic/FrontEnd/pages/admin/admin-themsanpham.php" class="blob-btn login-btn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);">
               <span class="blob-btn__inner">
                 <span class="blob-btn__blobs">
                   <span class="blob-btn__blob"></span>
@@ -257,17 +251,41 @@ session_start();
                   <span class="blob-btn__blob"></span>
                 </span>
               </span>
-              Đăng nhập
+              <i class="fas fa-arrow-left"></i> Quay lại Admin
             </a>
-          </div>
-          <div class="user-info" id="userInfo" style="display: none">
-            <span
-              class="user-name"
-              id="userName"
-              style="cursor: pointer"
-            ></span>
-            <a href="#" class="logout-link" onclick="logout(); return false;">Đăng xuất</a>
-          </div>
+          <?php else: ?>
+            <!-- UI bình thường cho user -->
+            <a href="pages/user/cart.php" onclick="checkLoginAndGoToCart()" class="cart-icon">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="cart-text">Xem giỏ hàng</span>
+              <span class="cart-count">0</span>
+            </a>
+            <div class="login-options" id="loginOptions">
+              <a
+                href="pages/user/login.php"
+                class="blob-btn login-btn"
+                id="loginBtn"
+              >
+                <span class="blob-btn__inner">
+                  <span class="blob-btn__blobs">
+                    <span class="blob-btn__blob"></span>
+                    <span class="blob-btn__blob"></span>
+                    <span class="blob-btn__blob"></span>
+                    <span class="blob-btn__blob"></span>
+                  </span>
+                </span>
+                Đăng nhập
+              </a>
+            </div>
+            <div class="user-info" id="userInfo" style="display: none">
+              <span
+                class="user-name"
+                id="userName"
+                style="cursor: pointer"
+              ></span>
+              <a href="#" class="logout-link" onclick="logout(); return false;">Đăng xuất</a>
+            </div>
+          <?php endif; ?>
         </div>
       </nav>
     </header>
@@ -3294,25 +3312,48 @@ session_start();
     <div id="carModal" class="modal">
       <div class="modal-content">
         <span class="close-btn">&times;</span>
-        <img id="modalImg" src="" alt="Xe ô tô" />
-        <h2 id="modalTitle"></h2>
-        <p id="modalPrice" style="font-size: 18px; font-weight: bold; color: #ffc107; margin: 10px 0;"></p>
+        <img id="modalImg" src="" alt="Xe ô tô" style="border-radius: 12px; margin-bottom: 20px; width: 100%;" />
+        <h2 id="modalTitle" style="font-size: 26px; margin: 15px 0 10px 0; color: #fff; font-weight: 700;"></h2>
+        <p id="modalPrice" style="font-size: 22px; font-weight: bold; color: #ffc107; margin: 10px 0 20px 0;"></p>
         
         <!-- Chi tiết thông tin sản phẩm -->
-        <div id="modalDetails" style="margin: 15px 0; font-size: 14px; line-height: 1.8;">
-          <div id="modalOrigin" style="display: none;"><i class="fas fa-location-dot" style="color: #e74c3c; margin-right: 8px;"></i><span>Xuất xứ: </span><span id="modalOriginValue"></span></div>
-          <div id="modalYear" style="display: none;"><i class="fas fa-calendar" style="color: #3498db; margin-right: 8px;"></i><span>Năm sản xuất: </span><span id="modalYearValue"></span></div>
-          <div id="modalFuel" style="display: none;"><i class="fas fa-gas-pump" style="color: #e67e22; margin-right: 8px;"></i><span>Nhiên liệu: </span><span id="modalFuelValue"></span></div>
-          <div id="modalSeats" style="display: none;"><i class="fas fa-car" style="color: #27ae60; margin-right: 8px;"></i><span>Số ghế: </span><span id="modalSeatsValue"></span></div>
-          <div id="modalTransmission" style="display: none;"><i class="fas fa-cog" style="color: #9b59b6; margin-right: 8px;"></i><span>Hộp số: </span><span id="modalTransmissionValue"></span></div>
-          <div id="modalEngine" style="display: none;"><i class="fas fa-wrench" style="color: #34495e; margin-right: 8px;"></i><span>Động cơ: </span><span id="modalEngineValue"></span></div>
+        <div id="modalDetails" style="margin: 20px 0; font-size: 15px; line-height: 2.2; color: #ddd;">
+          <div id="modalOrigin" style="display: none;">
+            <i class="fas fa-map-pin" style="color: #e74c3c; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Xuất xứ:</span> <span id="modalOriginValue"></span>
+          </div>
+          <div id="modalYear" style="display: none;">
+            <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Năm sản xuất:</span> <span id="modalYearValue"></span>
+          </div>
+          <div id="modalFuel" style="display: none;">
+            <i class="fas fa-gas-pump" style="color: #e67e22; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Nhiên liệu:</span> <span id="modalFuelValue"></span>
+          </div>
+          <div id="modalSeats" style="display: none;">
+            <i class="fas fa-chair" style="color: #27ae60; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Số ghế:</span> <span id="modalSeatsValue"></span>
+          </div>
+          <div id="modalTransmission" style="display: none;">
+            <i class="fas fa-cog" style="color: #9b59b6; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Hộp số:</span> <span id="modalTransmissionValue"></span>
+          </div>
+          <div id="modalEngine" style="display: none;">
+            <i class="fas fa-wrench" style="color: #34495e; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Động cơ:</span> <span id="modalEngineValue"></span>
+          </div>
+          <div id="modalDescContainer" style="display: none; margin-top: 10px;">
+            <i class="fas fa-file-alt" style="color: #95a5a6; margin-right: 10px; width: 18px; text-align: center;"></i>
+            <span style="font-weight: 600;">Mô tả:</span> <span id="modalDesc" style="display: inline;"></span>
+          </div>
         </div>
         
-        <p id="modalDesc" style="margin: 15px 0; line-height: 1.6; color: #ccc;"></p>
         <button
           id="addToCartBtn"
           class="btn"
-          style="cursor: pointer; opacity: 1; width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;"
+          style="cursor: pointer; opacity: 1; width: 100%; padding: 14px; font-size: 16px; margin-top: 20px; background: #0088cc; border: none; border-radius: 8px; color: #fff; font-weight: 600; transition: all 0.3s ease;"
+          onmouseover="this.style.background='#0066aa'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0, 136, 204, 0.4)'"
+          onmouseout="this.style.background='#0088cc'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
         >
           Thêm vào giỏ
         </button>
@@ -3342,6 +3383,9 @@ session_start();
     <script src="assets/js/main.js?v=20260408-1"></script>
     <script src="assets/js/brand-page.js?v=20260408-1"></script>
     <script>
+      // Biến isAdminView từ PHP
+      const isAdminView = <?php echo $isAdminView ? 'true' : 'false'; ?>;
+      
       // ===== HERO SLIDER =====
       (function () {
         var slides = document.querySelectorAll(".hero-slide");
@@ -3776,38 +3820,24 @@ session_start();
 
       // Kiểm tra trạng thái đăng nhập và hiển thị thông tin user/admin
       function checkUserLoginStatus() {
-        const isAdminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-        const isAdminViewingHome = localStorage.getItem("adminViewingHome") === "true";
         const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-        const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
-        const adminUsername = localStorage.getItem("adminUsername") || "Admin";
 
         const loginBtn = document.getElementById("loginBtn");
         const userInfoDiv = document.getElementById("userInfo");
 
-        // Nếu admin đang xem trang chủ - ẩn login button và user info
-        if (isAdminViewingHome && isAdminLoggedIn) {
+        // Nếu ở trong admin view mode (?admin_view=true), ẩn tất cả
+        if (isAdminView) {
           loginBtn.style.display = "none";
           userInfoDiv.style.display = "none";
         }
-        // Nếu admin đã đăng nhập
-        else if (isAdminLoggedIn) {
-          // Ẩn nút đăng nhập, hiển thị thông tin admin
+        // Nếu có user đã đăng nhập, hiển thị user info
+        else if (userInfo.name) {
           loginBtn.style.display = "none";
           userInfoDiv.style.display = "flex";
-
-          // Cập nhật thông tin admin
-          const displayName = adminInfo.name || adminUsername;
-          document.getElementById("userName").textContent = displayName;
-        } else if (userInfo.name) {
-          // User đã login - hiển thị info từ localStorage
-          loginBtn.style.display = "none";
-          userInfoDiv.style.display = "flex";
-
-          // Cập nhật thông tin user
           document.getElementById("userName").textContent = userInfo.name;
-        } else {
-          // Chưa login - hiển thị nút đăng nhập
+        }
+        // Chưa login - hiển thị nút đăng nhập
+        else {
           loginBtn.style.display = "inline-block";
           userInfoDiv.style.display = "none";
         }
@@ -3817,13 +3847,15 @@ session_start();
       function logout() {
         const isAdmin = localStorage.getItem("adminLoggedIn") === "true";
 
-        if (isAdmin) {
-          // Đăng xuất admin
+        if (isAdmin && !isAdminView) {
+          // Đăng xuất admin từ admin panel
           localStorage.removeItem("adminLoggedIn");
           localStorage.removeItem("adminUsername");
           localStorage.removeItem("adminInfo");
-          localStorage.removeItem("adminViewingHome");
           showToast("Admin đã đăng xuất thành công!");
+          setTimeout(() => {
+            window.location.href = "/WebBasic/FrontEnd/pages/admin/admin-login.php";
+          }, 1500);
         } else {
           // Đăng xuất user thường
           localStorage.removeItem("userLoggedIn");
@@ -3835,20 +3867,20 @@ session_start();
           const cartBadge = document.querySelector(".cart-count");
           if (cartBadge) cartBadge.textContent = "0";
           showToast("Đã đăng xuất thành công!");
+
+          // Đồng bộ lại navbar: hiển thị lại login button và giỏ hàng
+          if (!isAdminView) {
+            checkUserLoginStatus();
+          }
         }
-
-        // Đồng bộ lại navbar: xóa nút "Quay lại Admin" nếu còn và hiển thị lại icon giỏ hàng
-        const adminReturnBtn = document.querySelector(".admin-return-btn");
-        if (adminReturnBtn) adminReturnBtn.remove();
-        const cartIcon = document.querySelector(".cart-icon");
-        if (cartIcon) cartIcon.style.display = "";
-
-        checkUserLoginStatus();
       }
 
       // Gọi function kiểm tra khi trang load
       document.addEventListener("DOMContentLoaded", function () {
-        checkUserLoginStatus();
+        // Nếu admin view thì không chạy checkUserLoginStatus
+        if (!isAdminView) {
+          checkUserLoginStatus();
+        }
 
         // Handle buy button clicks - event delegation
         document.addEventListener('click', function(e) {
@@ -4054,12 +4086,10 @@ session_start();
         const elem = document.getElementById(elementId);
         const valElem = document.getElementById(valueId);
         if (elem && valElem) {
-          if (value && value !== 'Không rõ' && value !== '' && value !== 'undefined') {
-            valElem.innerText = value;
-            elem.style.display = 'block';
-          } else {
-            elem.style.display = 'none';
-          }
+          // Always show the field, but use "Không rõ" as default if no value
+          const displayValue = (value && value !== '' && value !== 'undefined') ? value : 'Không rõ';
+          valElem.innerText = displayValue;
+          elem.style.display = 'block';
         }
       }
 
@@ -4073,7 +4103,7 @@ session_start();
             const productId = card.dataset.id;
             const productName = card.querySelector('h3')?.innerText || 'Sản phẩm';
             const productPrice = card.querySelector('.price')?.innerText || '0 VNĐ';
-            const productDesc = card.dataset.desc || 'Không có mô tả';
+            const productDesc = card.dataset.desc || '';
             const productImg = card.querySelector('img')?.src || 'assets/images/1.jpg';
             
             // Get detail attributes from card
@@ -4095,7 +4125,6 @@ session_start();
 
             document.getElementById('modalTitle').innerText = productName;
             document.getElementById('modalPrice').innerText = productPrice;
-            document.getElementById('modalDesc').innerText = productDesc;
             document.getElementById('modalImg').src = productImg;
             
             // Update detail fields
@@ -4105,6 +4134,16 @@ session_start();
             setDetailField('modalSeats', 'modalSeatsValue', seats);
             setDetailField('modalTransmission', 'modalTransmissionValue', transmission);
             setDetailField('modalEngine', 'modalEngineValue', engine);
+            
+            // Handle description display
+            const descContainer = document.getElementById('modalDescContainer');
+            const descText = document.getElementById('modalDesc');
+            if (productDesc && productDesc !== 'Không có mô tả' && productDesc !== '') {
+              descText.innerText = '"' + productDesc + '"';
+              descContainer.style.display = 'block';
+            } else {
+              descContainer.style.display = 'none';
+            }
             
             modal.style.display = 'block';
           }

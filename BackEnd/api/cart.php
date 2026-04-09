@@ -25,6 +25,12 @@ require_once dirname(__DIR__) . '/config/db_connect.php';
 require_once dirname(__DIR__) . '/controllers/CartController.php';
 
 try {
+	if (!$conn) {
+		http_response_code(500);
+		echo json_encode(['success' => false, 'message' => 'Database connection error']);
+		exit;
+	}
+	
 	// FIX giống product
 	$action = strtolower(trim($_GET['action'] ?? ''));
 
