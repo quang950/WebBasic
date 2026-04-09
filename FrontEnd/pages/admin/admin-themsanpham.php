@@ -15,9 +15,6 @@
                 <h1>Admin Panel - 3 Boys Auto</h1>
                 <div class="admin-actions">
                     <span id="admin-welcome">Xin chào, Admin!</span>
-                    <button onclick="goToHomePage()" class="home-btn">
-                        <i class="fas fa-home"></i> Trang chủ
-                    </button>
                     <button onclick="adminLogout()" class="logout-btn">
                         <i class="fas fa-sign-out-alt"></i> Đăng xuất
                     </button>
@@ -672,13 +669,6 @@
 
         <script src="/WebBasic/FrontEnd/assets/js/admin.js"></script>
     <script>
-        // Function để quay về trang chủ
-        function goToHomePage() {
-            // Redirect tới index với admin_view=true
-            // Query param cho phép admin xem trang chủ mà không cần thiết lập localStorage
-            window.location.href = BASE_URL + '/FrontEnd/index.php?admin_view=true';
-        }
-        
         // Function để đăng xuất admin
         function adminLogout() {
             if (!confirm('Bạn chắc chắn muốn đăng xuất?')) {

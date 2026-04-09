@@ -22,26 +22,31 @@
                     <div class="form-group half">
                         <label for="firstName"><i class="fas fa-user"></i> Họ</label>
                         <input type="text" id="firstName" name="firstName" placeholder="Nhập họ" required>
+                        <small id="firstNameError" class="error-text" style="display:none; color:red;">✗ Họ không được để trống hoặc chứa ký tự đặc biệt</small>
                     </div>
                     <div class="form-group half">
                         <label for="lastName"><i class="fas fa-user"></i> Tên</label>
                         <input type="text" id="lastName" name="lastName" placeholder="Nhập tên" required>
+                        <small id="lastNameError" class="error-text" style="display:none; color:red;">✗ Tên không được để trống hoặc chứa ký tự đặc biệt</small>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="email"><i class="fas fa-envelope"></i> Email</label>
                     <input type="email" id="email" name="email" placeholder="example@email.com" required>
+                    <small id="emailError" class="error-text" style="display:none; color:red;">✗ Email không hợp lệ</small>
                 </div>
 
                 <div class="form-group">
                     <label for="phone"><i class="fas fa-phone"></i> Số điện thoại</label>
-                    <input type="tel" id="phone" name="phone" placeholder="0123456789" pattern="[0-9]{10,11}" required>
+                    <input type="tel" id="phone" name="phone" placeholder="0123456789" required>
+                    <small id="phoneError" class="error-text" style="display:none; color:red;">✗ Số điện thoại phải 10-11 chữ số</small>
                 </div>
 
                 <div class="form-group">
                     <label for="birthDate"><i class="fas fa-calendar"></i> Ngày sinh</label>
                     <input type="date" id="birthDate" name="birthDate" required>
+                    <small id="birthDateError" class="error-text" style="display:none; color:red;">✗ Ngày sinh không được để trống</small>
                 </div>
 
                 <div class="form-group">
@@ -112,31 +117,37 @@
                         <option value="vinhphuc">Vĩnh Phúc</option>
                         <option value="yenbai">Yên Bái</option>
                     </select>
+                    <small id="provinceError" class="error-text" style="display:none; color:red;">✗ Tỉnh/Thành phố không được để trống</small>
                 </div>
 
                 <div class="form-group">
                     <label for="district"><i class="fas fa-building"></i> Quận/Huyện</label>
                     <input type="text" id="district" name="district" placeholder="Nhập quận/huyện" required>
+                    <small id="districtError" class="error-text" style="display:none; color:red;">✗ Quận/Huyện không được để trống</small>
                 </div>
 
                 <div class="form-group">
                     <label for="ward"><i class="fas fa-city"></i> Phường/Xã</label>
                     <input type="text" id="ward" name="ward" placeholder="Nhập phường/xã" required>
+                    <small id="wardError" class="error-text" style="display:none; color:red;">✗ Phường/Xã không được để trống</small>
                 </div>
 
                 <div class="form-group">
                     <label for="addressDetail"><i class="fas fa-home"></i> Địa chỉ giao hàng</label>
                     <input type="text" id="addressDetail" name="addressDetail" placeholder="Số nhà, tên đường" required>
+                    <small id="addressDetailError" class="error-text" style="display:none; color:red;">✗ Địa chỉ không được để trống</small>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="password"><i class="fas fa-lock"></i> Mật khẩu</label>
                         <input type="password" id="password" name="password" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+                        <small id="passwordError" class="error-text" style="display:none; color:red;">✗ Mật khẩu tối thiểu 6 ký tự (Tốt hơn: chứa chữ và số)</small>
                     </div>
                     <div class="form-group half">
                         <label for="confirmPassword"><i class="fas fa-lock"></i> Xác nhận mật khẩu</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu" required>
+                        <small id="confirmPasswordError" class="error-text" style="display:none; color:red;">✗ Mật khẩu xác nhận không khớp</small>
                     </div>
                 </div>
 
@@ -274,32 +285,88 @@
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Kiểm tra tất cả trường trước khi gửi
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const province = document.getElementById('province').value;
+            const district = document.getElementById('district').value.trim();
+            const ward = document.getElementById('ward').value.trim();
+            const addressDetail = document.getElementById('addressDetail').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                showToast('Mật khẩu xác nhận không khớp!', 'error');
-                return;
-            }
-            
             const agreeTerms = document.getElementById('agreeTerms').checked;
+            
+            let hasError = false;
+            
+            // Kiểm tra từng trường
+            if (!firstName || !isValidName(firstName)) {
+                document.getElementById('firstNameError').style.display = 'block';
+                hasError = true;
+            }
+            if (!lastName || !isValidName(lastName)) {
+                document.getElementById('lastNameError').style.display = 'block';
+                hasError = true;
+            }
+            if (!email || !validateEmail(email)) {
+                document.getElementById('emailError').style.display = 'block';
+                hasError = true;
+            }
+            if (!phone || phone.length < 10 || phone.length > 11) {
+                document.getElementById('phoneError').style.display = 'block';
+                hasError = true;
+            }
+            if (!birthDate) {
+                document.getElementById('birthDateError').style.display = 'block';
+                hasError = true;
+            }
+            if (!province) {
+                document.getElementById('provinceError').style.display = 'block';
+                hasError = true;
+            }
+            if (!district) {
+                document.getElementById('districtError').style.display = 'block';
+                hasError = true;
+            }
+            if (!ward) {
+                document.getElementById('wardError').style.display = 'block';
+                hasError = true;
+            }
+            if (!addressDetail) {
+                document.getElementById('addressDetailError').style.display = 'block';
+                hasError = true;
+            }
+            if (password.length < 6) {
+                document.getElementById('passwordError').style.display = 'block';
+                hasError = true;
+            }
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').style.display = 'block';
+                hasError = true;
+            }
             if (!agreeTerms) {
                 showToast('Bạn phải đồng ý với điều khoản sử dụng!', 'error');
+                hasError = true;
+            }
+            
+            if (hasError) {
+                showToast('Vui lòng kiểm tra lại thông tin!', 'error');
                 return;
             }
             
             // Thu thập dữ liệu form
             const provinceSelect = document.getElementById('province');
             const provinceLabel = provinceSelect.options[provinceSelect.selectedIndex]?.text || '';
-            const email = document.getElementById('email').value.trim();
             const formData = {
-                firstName: document.getElementById('firstName').value.trim(),
-                lastName: document.getElementById('lastName').value.trim(),
+                firstName: firstName,
+                lastName: lastName,
                 email: email,
-                phone: document.getElementById('phone').value,
-                birthDate: document.getElementById('birthDate').value,
-                province: document.getElementById('province').value,
-                address: `${document.getElementById('addressDetail').value}, ${document.getElementById('ward').value}, ${document.getElementById('district').value}, ${provinceLabel}`,
+                phone: phone,
+                birthDate: birthDate,
+                province: province,
+                address: `${addressDetail}, ${ward}, ${district}, ${provinceLabel}`,
                 password: password
             };
             
@@ -320,13 +387,151 @@
                         window.location.href = 'login.php';
                     }, 1200);
                 } else {
-                    showToast(data.message || 'Đăng ký thất bại!', 'error');
+                    // Nếu có lỗi chi tiết từng trường
+                    if (data.errors && typeof data.errors === 'object' && Object.keys(data.errors).length > 0) {
+                        let errorMessages = [];
+                        
+                        // Duyệt qua các lỗi từng trường
+                        for (const [field, message] of Object.entries(data.errors)) {
+                            errorMessages.push(`${message}`);
+                            
+                            // Hiển thị lỗi trực tiếp dưới input field nếu có
+                            const errorElement = document.getElementById(`${field}Error`);
+                            if (errorElement && errorElement.nextElementSibling) {
+                                // Đã có error element, update nó
+                                const display = errorElement;
+                                if (!display.textContent.includes('✗')) {
+                                    display.innerHTML = `✗ ${message}`;
+                                }
+                                display.style.display = 'block';
+                            }
+                        }
+                        
+                        // Hiển thị toast với tất cả lỗi
+                        const errorText = errorMessages.join(' | ');
+                        showToast(errorText, 'error');
+                    } else {
+                        // Nếu không có lỗi chi tiết, hiển thị thông báo chung
+                        showToast(data.message || 'Đăng ký thất bại!', 'error');
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showToast('Lỗi kết nối: ' + error.message, 'error');
             });
+        });
+        
+        // Hàm kiểm tra email
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Hàm kiểm tra tên (chỉ chứa chữ, khoảng trắng, hyphen)
+        function isValidName(name) {
+            const re = /^[a-zA-Zà-ỿ\s-]+$/;
+            return re.test(name) && name.length > 0;
+        }
+        
+        // Real-time validation - Họ
+        document.getElementById('firstName').addEventListener('blur', function() {
+            if (!this.value.trim() || !isValidName(this.value)) {
+                document.getElementById('firstNameError').style.display = 'block';
+            } else {
+                document.getElementById('firstNameError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Tên
+        document.getElementById('lastName').addEventListener('blur', function() {
+            if (!this.value.trim() || !isValidName(this.value)) {
+                document.getElementById('lastNameError').style.display = 'block';
+            } else {
+                document.getElementById('lastNameError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Email
+        document.getElementById('email').addEventListener('blur', function() {
+            if (!this.value.trim() || !validateEmail(this.value)) {
+                document.getElementById('emailError').style.display = 'block';
+            } else {
+                document.getElementById('emailError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Phone
+        document.getElementById('phone').addEventListener('blur', function() {
+            if (!this.value || this.value.length < 10 || this.value.length > 11) {
+                document.getElementById('phoneError').style.display = 'block';
+            } else {
+                document.getElementById('phoneError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Ngày sinh
+        document.getElementById('birthDate').addEventListener('blur', function() {
+            if (!this.value) {
+                document.getElementById('birthDateError').style.display = 'block';
+            } else {
+                document.getElementById('birthDateError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Tỉnh/Thành phố
+        document.getElementById('province').addEventListener('change', function() {
+            if (!this.value) {
+                document.getElementById('provinceError').style.display = 'block';
+            } else {
+                document.getElementById('provinceError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Quận/Huyện
+        document.getElementById('district').addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                document.getElementById('districtError').style.display = 'block';
+            } else {
+                document.getElementById('districtError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Phường/Xã
+        document.getElementById('ward').addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                document.getElementById('wardError').style.display = 'block';
+            } else {
+                document.getElementById('wardError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Địa chỉ
+        document.getElementById('addressDetail').addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                document.getElementById('addressDetailError').style.display = 'block';
+            } else {
+                document.getElementById('addressDetailError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Mật khẩu
+        document.getElementById('password').addEventListener('blur', function() {
+            if (this.value.length < 6) {
+                document.getElementById('passwordError').style.display = 'block';
+            } else {
+                document.getElementById('passwordError').style.display = 'none';
+            }
+        });
+        
+        // Real-time validation - Xác nhận mật khẩu
+        document.getElementById('confirmPassword').addEventListener('blur', function() {
+            const password = document.getElementById('password').value;
+            if (this.value !== password) {
+                document.getElementById('confirmPasswordError').style.display = 'block';
+            } else {
+                document.getElementById('confirmPasswordError').style.display = 'none';
+            }
         });
         
         // Hiển thị modal
@@ -350,7 +555,7 @@
             }
         }
         
-        // Validate số điện thoại
+        // Validate số điện thoại - chỉ cho phép chữ số
         document.getElementById('phone').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });

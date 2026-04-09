@@ -1,7 +1,5 @@
 <?php
 session_start();
-// Kiểm tra xem admin có đang xem trang chủ không
-$isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
 ?>
 <!doctype html>
 <html lang="vi">
@@ -240,21 +238,7 @@ $isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
           <a href="#contact">Liên hệ</a>
         </div>
         <div class="user-actions">
-          <?php if ($isAdminView): ?>
-            <!-- Nút quay lại Admin -->
-            <a href="/WebBasic/FrontEnd/pages/admin/admin-themsanpham.php" class="blob-btn login-btn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);">
-              <span class="blob-btn__inner">
-                <span class="blob-btn__blobs">
-                  <span class="blob-btn__blob"></span>
-                  <span class="blob-btn__blob"></span>
-                  <span class="blob-btn__blob"></span>
-                  <span class="blob-btn__blob"></span>
-                </span>
-              </span>
-              <i class="fas fa-arrow-left"></i> Quay lại Admin
-            </a>
-          <?php else: ?>
-            <!-- UI bình thường cho user -->
+            <!-- UI cho user -->
             <a href="pages/user/cart.php" onclick="checkLoginAndGoToCart()" class="cart-icon">
               <i class="fas fa-shopping-cart"></i>
               <span class="cart-text">Xem giỏ hàng</span>
@@ -285,7 +269,6 @@ $isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
               ></span>
               <a href="#" class="logout-link" onclick="logout(); return false;">Đăng xuất</a>
             </div>
-          <?php endif; ?>
         </div>
       </nav>
     </header>
@@ -3383,9 +3366,6 @@ $isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
     <script src="assets/js/main.js?v=20260408-1"></script>
     <script src="assets/js/brand-page.js?v=20260408-1"></script>
     <script>
-      // Biến isAdminView từ PHP
-      const isAdminView = <?php echo $isAdminView ? 'true' : 'false'; ?>;
-      
       // ===== HERO SLIDER =====
       (function () {
         var slides = document.querySelectorAll(".hero-slide");
@@ -3825,13 +3805,8 @@ $isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
         const loginBtn = document.getElementById("loginBtn");
         const userInfoDiv = document.getElementById("userInfo");
 
-        // Nếu ở trong admin view mode (?admin_view=true), ẩn tất cả
-        if (isAdminView) {
-          loginBtn.style.display = "none";
-          userInfoDiv.style.display = "none";
-        }
         // Nếu có user đã đăng nhập, hiển thị user info
-        else if (userInfo.name) {
+        if (userInfo.name) {
           loginBtn.style.display = "none";
           userInfoDiv.style.display = "flex";
           document.getElementById("userName").textContent = userInfo.name;
@@ -3843,44 +3818,27 @@ $isAdminView = isset($_GET['admin_view']) && $_GET['admin_view'] === 'true';
         }
       }
 
-      // Function đăng xuất
+      // Function đăng xuất (cho user)
       function logout() {
-        const isAdmin = localStorage.getItem("adminLoggedIn") === "true";
+        // Đăng xuất user thường
+        localStorage.removeItem("userLoggedIn");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userInfo");
+        // Xóa giỏ hàng khi đăng xuất
+        localStorage.removeItem("cart");
+        // Cập nhật badge giỏ hàng về 0
+        const cartBadge = document.querySelector(".cart-count");
+        if (cartBadge) cartBadge.textContent = "0";
+        showToast("Đã đăng xuất thành công!");
 
-        if (isAdmin && !isAdminView) {
-          // Đăng xuất admin từ admin panel
-          localStorage.removeItem("adminLoggedIn");
-          localStorage.removeItem("adminUsername");
-          localStorage.removeItem("adminInfo");
-          showToast("Admin đã đăng xuất thành công!");
-          setTimeout(() => {
-            window.location.href = "/WebBasic/FrontEnd/pages/admin/admin-login.php";
-          }, 1500);
-        } else {
-          // Đăng xuất user thường
-          localStorage.removeItem("userLoggedIn");
-          localStorage.removeItem("userEmail");
-          localStorage.removeItem("userInfo");
-          // Xóa giỏ hàng khi đăng xuất
-          localStorage.removeItem("cart");
-          // Cập nhật badge giỏ hàng về 0
-          const cartBadge = document.querySelector(".cart-count");
-          if (cartBadge) cartBadge.textContent = "0";
-          showToast("Đã đăng xuất thành công!");
-
-          // Đồng bộ lại navbar: hiển thị lại login button và giỏ hàng
-          if (!isAdminView) {
-            checkUserLoginStatus();
-          }
-        }
+        // Đồng bộ lại navbar: hiển thị lại login button và giỏ hàng
+        checkUserLoginStatus();
       }
 
       // Gọi function kiểm tra khi trang load
       document.addEventListener("DOMContentLoaded", function () {
-        // Nếu admin view thì không chạy checkUserLoginStatus
-        if (!isAdminView) {
-          checkUserLoginStatus();
-        }
+        // Kiểm tra trạng thái đăng nhập
+        checkUserLoginStatus();
 
         // Handle buy button clicks - event delegation
         document.addEventListener('click', function(e) {

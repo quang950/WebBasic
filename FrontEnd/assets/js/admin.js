@@ -193,15 +193,8 @@ function showSection(sectionName) {
   return false;
 }
 
-// Đăng xuất
-function logout() {
-  if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
-    localStorage.removeItem("adminLoggedIn");
-    localStorage.removeItem("adminUsername");
-    localStorage.removeItem("adminViewingHome");
-    window.location.href = "admin-login.php";
-  }
-}
+// Đăng xuất - sử dụng hàm adminLogout() từ admin-themsanpham.php thay vào
+// (không dùng hàm này, giữ để tương thích ngược)
 
 // Hiển thị modal thêm sản phẩm
 function showAddProductModal() {

@@ -171,14 +171,10 @@ CREATE TABLE import_items (
 );
 
 -- Insert default users
-INSERT INTO users (first_name, last_name, email, password, phone, province, is_admin)
+INSERT INTO users (first_name, last_name, email, password, phone, province, is_admin, created_at, updated_at)
 VALUES 
-('Nguyễn', 'Vinh', 'vinhlhox2122006@gmail.com', 'ILOCKED!', '0923365944', 'hcm', 1),
-('Vinh', 'Nguyen', 'vinh', '$2y$10$66qxPdWTX.0u/sFEiYP7HuzeAczLYFUtL1Gho/gREaVNy4AfCx0uC', NULL, NULL, 1),
-('Trung', 'Nguyen', 'trung', '$2y$10$aUWJLvKQTx9kWrSge0IaK.Ou6vqNWjgSUTy5xIS2/F9dsZBOJIhom', NULL, NULL, 1),
-('Tuấn', 'Nguyen', 'tuan', '$2y$10$7WFsZKhQ0h9.4cvcKy6XTuxrbJ7cKjQIeWq/ZVElH03Cmj3ehER5y', NULL, NULL, 1),
-('Quang', 'Nguyen', 'quang', '$2y$10$mkYffWQ4t74.sZ/2WNz9lOjLDI2yltV2IWgFCo/Fgi4fIjk9r55H6', NULL, NULL, 1),
-('Admin', 'System', 'admin', '123456', NULL, NULL, 1);
+('Admin', 'System', 'admin', '$2y$10$0tTGLYe15d4yVaercUVeLOqWuzlvoLEY3zcyQCenSAvUdYOhAPFam', NULL, NULL, 1, NOW(), NOW()),
+('Người Dùng', 'Demo', 'demo@gmail.com', '$2y$10$g8xNwTq8MZLF2dLz7K8qfuZZ9q/H1P2Q3R4S5T6U7V8W9X0Y1Z2a3', '0123456789', 'hcm', 0, NOW(), NOW());
 
 -- Insert default categories
 INSERT INTO categories (name, description, is_visible, status) VALUES 

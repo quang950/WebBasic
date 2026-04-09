@@ -22,25 +22,59 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-// Validate input
-if (!isset($data['email'], $data['password'])) {
+// ========== VALIDATION INPUT ==========
+$errors = [];
+
+// Email/Username validation
+if (empty($data['email'])) {
+    $errors['email'] = 'Email hoặc tên đăng nhập không được để trống';
+} else {
+    $email = trim($data['email']);
+    // Cho phép cả email và username (để login với "admin" hoặc "admin@example.com")
+    if (strlen($email) < 2) {
+        $errors['email'] = 'Email/Tên đăng nhập quá ngắn';
+    }
+}
+
+// Password validation
+if (empty($data['password'])) {
+    $errors['password'] = 'Mật khẩu không được để trống';
+} else {
+    $password = $data['password'];
+    if (strlen($password) < 6) {
+        $errors['password'] = 'Mật khẩu tối thiểu 6 ký tự';
+    }
+}
+
+// Return errors if any
+if (!empty($errors)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Email and password required']);
+    echo json_encode(['success' => false, 'errors' => $errors]);
     exit;
 }
 
-$email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
-$password = $data['password'];
+// ========== QUERY DATABASE ==========
+$stmt = $conn->prepare("
+    SELECT id, email, password, first_name, last_name, 
+           phone, province, address, is_admin, locked 
+    FROM users 
+    WHERE email = ?
+");
 
-// Get user from database
-$stmt = $conn->prepare("SELECT id, email, password, first_name, last_name, phone, province, address, is_admin, locked FROM users WHERE email = ?");
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+    exit;
+}
+
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
+// User not found
 if ($result->num_rows === 0) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Invalid email or password']);
+    echo json_encode(['success' => false, 'message' => 'Email hoặc mật khẩu không chính xác']);
     $stmt->close();
     exit;
 }
@@ -48,28 +82,32 @@ if ($result->num_rows === 0) {
 $user = $result->fetch_assoc();
 $stmt->close();
 
-// Check if account is locked
+// ========== CHECK ACCOUNT STATUS ==========
 if ($user['locked']) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Tài khoản bị khóa. Vui lòng liên hệ admin']);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Tài khoản bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ'
+    ]);
     exit;
 }
 
-// Verify password
+// ========== VERIFY PASSWORD ==========
 if (!password_verify($password, $user['password'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Invalid email or password']);
+    echo json_encode(['success' => false, 'message' => 'Email hoặc mật khẩu không chính xác']);
     exit;
 }
 
-// Success
-http_response_code(200);
-//  SET SESSION CHO USER
+// ========== LOGIN SUCCESS - SET SESSION ==========
 $_SESSION['user_id'] = $user['id'];
-$_SESSION['is_admin'] = $user['is_admin'];
+$_SESSION['email'] = $user['email'];
+$_SESSION['is_admin'] = (bool)$user['is_admin'];
+
+http_response_code(200);
 echo json_encode([
     'success' => true,
-    'message' => 'Login successful',
+    'message' => 'Đăng nhập thành công',
     'user' => [
         'id' => $user['id'],
         'email' => $user['email'],
