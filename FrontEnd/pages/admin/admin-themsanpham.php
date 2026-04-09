@@ -135,13 +135,6 @@
                     
                     <div style="margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
                         <input type="text" id="stockSearchName" placeholder="Tìm theo tên sản phẩm" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:250px;font-size:14px;">
-                        <select id="stockCategoryFilter" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
-                            <option value="">Tất cả loại xe</option>
-                            <option value="sedan">Sedan</option>
-                            <option value="suv">SUV</option>
-                            <option value="hatchback">Hatchback</option>
-                            <option value="pickup">Pickup</option>
-                        </select>
                         <button onclick="searchStockProduct()" class="search-btn" style="padding:9px 16px;"><i class="fas fa-search"></i> Tìm kiếm</button>
                     </div>
 
@@ -244,9 +237,6 @@
                     </div>
                     <div style="margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
                         <input type="text" id="pricingSearchProduct" placeholder="Tìm theo tên sản phẩm" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:250px;font-size:14px;">
-                        <select id="pricingCategoryFilter" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;">
-                            <option value="">Tất cả loại xe</option>
-                        </select>
                         <input type="number" id="pricingCostMin" min="0" step="1000" placeholder="Giá vốn từ" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
                         <input type="number" id="pricingCostMax" min="0" step="1000" placeholder="Giá vốn đến" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:140px;font-size:14px;">
                         <input type="number" id="pricingMarginMin" min="0" max="500" step="0.1" placeholder="% LN từ" style="padding:9px 12px;border-radius:6px;border:1px solid #ddd;min-width:120px;font-size:14px;">
@@ -1145,28 +1135,6 @@
     // ==========================================
     // PRICING MANAGEMENT FUNCTIONS
     // ==========================================
-    async function loadPricingCategories() {
-        const categoryFilter = document.getElementById('pricingCategoryFilter');
-        if (!categoryFilter) return;
-
-        const currentValue = categoryFilter.value || '';
-        try {
-            const response = await fetch(`${API_BASE}categories.php?action=list`);
-            const result = await response.json();
-
-            if (response.ok && result.success && Array.isArray(result.categories)) {
-                categoryFilter.innerHTML = '<option value="">Tất cả loại xe</option>' +
-                    result.categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
-
-                if (currentValue) {
-                    categoryFilter.value = currentValue;
-                }
-            }
-        } catch (error) {
-            console.error('Load pricing categories error:', error);
-        }
-    }
-
     function renderPricingTable(products) {
         const pricingGrid = document.getElementById('pricingGrid');
         if (!pricingGrid) return;
@@ -1256,7 +1224,6 @@
         pricingGrid.innerHTML = '<div style="text-align:center;padding:40px;"><p>Đang tải dữ liệu...</p></div>';
 
         const searchKeyword = (document.getElementById('pricingSearchProduct')?.value || '').trim();
-        const categoryValue = document.getElementById('pricingCategoryFilter')?.value || '';
         const costMin = (document.getElementById('pricingCostMin')?.value || '').trim();
         const costMax = (document.getElementById('pricingCostMax')?.value || '').trim();
         const marginMin = (document.getElementById('pricingMarginMin')?.value || '').trim();
@@ -1267,9 +1234,6 @@
         let apiUrl = BASE_URL + '/BackEnd/api/pricing.php?action=list&limit=500';
         if (searchKeyword) {
             apiUrl += `&search=${encodeURIComponent(searchKeyword)}`;
-        }
-        if (categoryValue) {
-            apiUrl += `&categoryId=${encodeURIComponent(categoryValue)}`;
         }
         if (costMin !== '') {
             apiUrl += `&costMin=${encodeURIComponent(costMin)}`;
@@ -1379,11 +1343,6 @@
         });
     }
 
-    const pricingCategoryFilter = document.getElementById('pricingCategoryFilter');
-    if (pricingCategoryFilter) {
-        pricingCategoryFilter.addEventListener('change', () => searchPricingProduct());
-    }
-
     ['pricingCostMin', 'pricingCostMax', 'pricingMarginMin', 'pricingMarginMax', 'pricingSellMin', 'pricingSellMax'].forEach((id) => {
         const input = document.getElementById(id);
         if (!input) return;
@@ -1430,7 +1389,7 @@
         }
 
         try {
-            const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+            const response = await fetch(`${PRICING_API}?action=list&search=${encodeURIComponent(query)}&limit=20`);
             const data = await response.json();
             
             if (!data.success || !data.data || data.data.length === 0) {
@@ -1443,15 +1402,16 @@
                 const costPrice = parseFloat(product.cost_price || product.price_cost || 0);
                 const sellingPrice = parseFloat(product.selling_price || 0);
                 const profitMargin = parseFloat(product.profit_margin || 0);
+                const profitAmount = parseFloat(product.profit_amount || (sellingPrice - costPrice));
                 
                 return `
                 <div onclick="selectProductForImport(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${costPrice})" 
                      style="padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:#f9f9f9;font-size:11px;transition:all 0.2s;hover:background:#f0f0f0;"
                      onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='#f9f9f9'">
-                    <div style="font-weight:600;color:#0d6efd;margin-bottom:4px;">🚗 ${product.name}</div>
+                    <div style="font-weight:600;color:#0d6efd;margin-bottom:4px;">🚗 ${escapeHtml(product.name)}</div>
                     <div style="color:#666;margin-bottom:6px;">
                         <span style="margin-right:12px;">ID: ${product.id}</span>
-                        <span>${product.category_name || ''}</span>
+                        <span>${product.category_name || product.category || ''}</span>
                     </div>
                     <table style="width:100%;font-size:10px;color:#333;">
                         <tr>
@@ -1464,7 +1424,7 @@
                         </tr>
                         <tr>
                             <td>📈 Lợi nhuận:</td>
-                            <td style="text-align:right;font-weight:600;color:#ff9800;">${parseFloat(profitMargin).toFixed(1)}%</td>
+                            <td style="text-align:right;font-weight:600;color:#ff9800;">₫${formatMoney(profitAmount)} (${parseFloat(profitMargin).toFixed(1)}%)</td>
                         </tr>
                     </table>
                 </div>
@@ -1845,7 +1805,7 @@
         }
 
         try {
-            const response = await fetch(`${API_BASE}products.php?name=${encodeURIComponent(query)}&limit=20`);
+            const response = await fetch(`${PRICING_API}?action=list&search=${encodeURIComponent(query)}&limit=20`);
             const data = await response.json();
 
             if (!data.success || !data.data || data.data.length === 0) {
@@ -1858,6 +1818,7 @@
                 const costPrice = parseFloat(product.cost_price || product.price_cost || 0);
                 const sellingPrice = parseFloat(product.selling_price || 0);
                 const profitMargin = parseFloat(product.profit_margin || 0);
+                const profitAmount = parseFloat(product.profit_amount || (sellingPrice - costPrice));
                 
                 return `
                 <div onclick="selectProductForDetail(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${costPrice})"
@@ -1879,7 +1840,7 @@
                         </tr>
                         <tr>
                             <td>📈 Lợi nhuận:</td>
-                            <td style="text-align:right;font-weight:600;color:#ff9800;">${parseFloat(profitMargin).toFixed(1)}%</td>
+                            <td style="text-align:right;font-weight:600;color:#ff9800;">₫${formatMoney(profitAmount)} (${parseFloat(profitMargin).toFixed(1)}%)</td>
                         </tr>
                     </table>
                 </div>
@@ -2192,11 +2153,6 @@
                     searchPricingProduct();
                 }
             });
-        }
-
-        const pricingCategoryFilter = document.getElementById('pricingCategoryFilter');
-        if (pricingCategoryFilter) {
-            pricingCategoryFilter.addEventListener('change', searchPricingProduct);
         }
 
         ['statusImportFilter', 'dateFromImportFilter', 'dateToImportFilter'].forEach(function(id) {
