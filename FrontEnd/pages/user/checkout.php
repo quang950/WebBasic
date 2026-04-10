@@ -670,7 +670,14 @@
 
         async function loadCartItems() {
             // Load từ localStorage hoặc API
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        // Get cart from API
+        const apiBase = (typeof BASE_URL !== 'undefined') ? BASE_URL + '/BackEnd/api' : '/WebBasic/BackEnd/api';
+        const response = await fetch(apiBase + '/cart.php', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        const data = await response.json();
+        const cart = (data.success && Array.isArray(data.data)) ? data.data : [];
             cartData = cart;
 
             if (cart.length === 0) {

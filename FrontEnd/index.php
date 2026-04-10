@@ -3811,8 +3811,8 @@ session_start();
         localStorage.removeItem("userLoggedIn");
         localStorage.removeItem("userEmail");
         localStorage.removeItem("userInfo");
-        // Xóa giỏ hàng khi đăng xuất
-        localStorage.removeItem("cart");
+        
+        // Clear cart via API instead of localStorage
         // Cập nhật badge giỏ hàng về 0
         const cartBadge = document.querySelector(".cart-count");
         if (cartBadge) cartBadge.textContent = "0";

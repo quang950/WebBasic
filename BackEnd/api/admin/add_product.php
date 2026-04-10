@@ -47,8 +47,8 @@ checkPost();
 $data = getJsonInput();
 $errors = [];
 
-// Validate required fields
-$requiredFields = ['name', 'price'];
+// Validate required fields (only name is truly required)
+$requiredFields = ['name'];
 $requiredErrors = validateRequired($data, $requiredFields);
 if (!empty($requiredErrors)) {
     $errors = array_merge($errors, $requiredErrors);
@@ -68,7 +68,7 @@ if (!empty($data['name'])) {
 }
 
 // Price validation
-if (!empty($data['price'])) {
+if (isset($data['price']) && $data['price'] !== '') {
     $priceCheck = validateCurrency($data['price'], 'Giá bán');
     if (!$priceCheck['valid']) {
         $errors['price'] = $priceCheck['message'];
@@ -76,14 +76,14 @@ if (!empty($data['price'])) {
 }
 
 // Cost price validation (optional)
-if (!empty($data['cost_price'])) {
+if (isset($data['cost_price']) && $data['cost_price'] !== '') {
     $costCheck = validateCurrency($data['cost_price'], 'Giá nhập');
     if (!$costCheck['valid']) {
         $errors['cost_price'] = $costCheck['message'];
-    } else if (!empty($data['price'])) {
-        // Check cost_price < price
-        if (floatval($data['cost_price']) >= floatval($data['price'])) {
-            $errors['cost_price'] = 'Giá nhập phải < giá bán';
+    } else if (isset($data['price']) && $data['price'] !== '') {
+        // Check cost_price < price (only if both are set)
+        if (floatval($data['cost_price']) > floatval($data['price']) && floatval($data['price']) > 0) {
+            $errors['cost_price'] = 'Giá nhập phải ≤ giá bán';
         }
     }
 }

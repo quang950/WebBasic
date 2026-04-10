@@ -7,6 +7,12 @@ function formatPrice(price) {
 
 // Add to cart from search/brand pages - calls API instead of localStorage
 function addToCartFromSearch(productId, productName, productPrice) {
+  // Check login FIRST
+  if (!isUserLoggedIn()) {
+    showLoginRequiredModal();
+    return false;
+  }
+
   // Use BASE_URL if available (from config.js)
   const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
     ? BASE_URL + '/BackEnd/api'
@@ -272,7 +278,14 @@ function logout() {
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userInfo");
     // Xóa giỏ hàng khi đăng xuất
-    localStorage.removeItem("cart");
+    // Clear cart after order via API instead of localStorage
+    const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+      ? BASE_URL + '/BackEnd/api'
+      : '/WebBasic/BackEnd/api';
+    fetch(apiBase + '/clear_cart.php', {
+      method: 'POST',
+      credentials: 'include'
+    }).catch(err => console.log('Cart cleared'));
     // Cập nhật badge giỏ hàng về 0
     const cartBadge = document.querySelector(".cart-count");
     if (cartBadge) cartBadge.textContent = "0";

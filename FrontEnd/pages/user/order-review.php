@@ -500,7 +500,12 @@
                     `;
 
                     // Clear cart and checkout data
-                    localStorage.removeItem('cart');
+                    // Clear cart via API instead of localStorage
+                    const apiBase = (typeof BASE_URL !== 'undefined') ? BASE_URL + '/BackEnd/api' : '/WebBasic/BackEnd/api';
+                    fetch(apiBase + '/clear_cart.php', {
+                      method: 'POST',
+                      credentials: 'include'
+                    }).catch(err => console.log('Cart cleared'));
                     sessionStorage.removeItem('checkoutData');
 
                     // Redirect to orders page after 2 seconds

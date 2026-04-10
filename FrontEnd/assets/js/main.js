@@ -211,13 +211,29 @@ function isUserLoggedIn() {
     return localStorage.getItem('userLoggedIn') === 'true';
 }
 
-function getCartItems() {
-    const cart = JSON.parse(localStorage.getItem('cart'));
-    return Array.isArray(cart) ? cart : [];
+// Cart operations now use API only - NO localStorage
+// Get cart from API instead of localStorage
+async function getCartItems() {
+    const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+        ? BASE_URL + '/BackEnd/api'
+        : '/WebBasic/BackEnd/api';
+    
+    try {
+        const response = await fetch(apiBase + '/cart.php', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        return (data.success && Array.isArray(data.data)) ? data.data : [];
+    } catch (error) {
+        console.error('Error fetching cart:', error);
+        return [];
+    }
 }
 
+// Cart saved automatically to server via API - no localStorage needed
 function saveCartItems(cartItems) {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
+    // Cart is persisted on server automatically, just update UI
     updateCartCount();
 }
 
@@ -383,14 +399,16 @@ function changeQuantity(cartId, delta) {
 }
 
 // Hàm load giỏ hàng không cập nhật tổng (prototype mode)
-function loadCartWithoutTotalUpdate() {
+async function loadCartWithoutTotalUpdate() {
     const tbody = document.getElementById('cart-body');
     const totalEl = document.getElementById('cart-total');
-    const stored = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    // Load cart from API, not localStorage
+    const cartItems = await getCartItems();
 
     if (!tbody) return;
 
-    if (stored.length === 0) {
+    if (cartItems.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3">Giỏ hàng trống</td></tr>';
         if (totalEl) totalEl.textContent = 'Tổng cộng: 0 VNĐ';
         updateCartCount();

@@ -248,8 +248,8 @@ function validateCurrency($amount, $fieldName = 'Giá') {
     
     $numAmount = floatval($amount);
     
-    if ($numAmount <= 0) {
-        return ['valid' => false, 'message' => $fieldName . ' phải > 0'];
+    if ($numAmount < 0) {
+        return ['valid' => false, 'message' => $fieldName . ' không được âm'];
     }
     
     if ($numAmount > 999999999999) {
@@ -272,8 +272,8 @@ function validateQuantity($quantity, $maxQuantity = null) {
     
     $numQuantity = intval($quantity);
     
-    if ($numQuantity <= 0) {
-        return ['valid' => false, 'message' => 'Số lượng phải > 0'];
+    if ($numQuantity < 0) {
+        return ['valid' => false, 'message' => 'Số lượng không được âm'];
     }
     
     if ($maxQuantity !== null && $numQuantity > $maxQuantity) {

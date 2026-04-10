@@ -409,12 +409,26 @@ function addToCartFromSearch(productId, productName, productPrice) {
 }
 
 // Update cart count badge
-function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-  const cartBadge = document.querySelector(".cart-count");
-  if (cartBadge) {
-    cartBadge.textContent = totalItems;
+async function updateCartCount() {
+  // Get cart from API instead of localStorage
+  const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+    ? BASE_URL + '/BackEnd/api'
+    : '/WebBasic/BackEnd/api';
+  
+  try {
+    const response = await fetch(apiBase + '/cart.php', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    const data = await response.json();
+    const cart = (data.success && Array.isArray(data.data)) ? data.data : [];
+    const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    const cartBadge = document.querySelector(".cart-count");
+    if (cartBadge) {
+      cartBadge.textContent = totalItems;
+    }
+  } catch (error) {
+    console.error('Error updating cart count:', error);
   }
 }
 
@@ -429,7 +443,14 @@ function logout() {
   localStorage.removeItem("userLoggedIn");
   localStorage.removeItem("userEmail");
   localStorage.removeItem("userInfo");
-  localStorage.removeItem("cart");
+  // Clear cart after order via API
+  const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+    ? BASE_URL + '/BackEnd/api'
+    : '/WebBasic/BackEnd/api';
+  fetch(apiBase + '/clear_cart.php', {
+    method: 'POST',
+    credentials: 'include'
+  }).catch(err => console.log('Cart cleared'));
   const cartBadge = document.querySelector(".cart-count");
   if (cartBadge) cartBadge.textContent = "0";
   showToast("Đã đăng xuất thành công!");

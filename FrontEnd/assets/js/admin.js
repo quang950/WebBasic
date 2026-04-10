@@ -257,51 +257,77 @@ function addProduct(event) {
   const form = document.getElementById("addProductForm");
   if (!form) return false;
 
-  const editId = form.dataset.editId;
-  const name = document.getElementById("productName").value.trim();
-  const code = document.getElementById("productCode").value.trim() || "";
-  const brand = document.getElementById("productCategory").value.trim();
-  const price = parseFloat(document.getElementById("productPrice").value);
-  const cost = parseFloat(document.getElementById("productCost").value || "0");
-  const margin = parseFloat(
-    document.getElementById("productMargin").value || "10",
-  );
-  const stock = parseInt(document.getElementById("productStock").value || "0");
-  const unit = document.getElementById("productUnit").value.trim() || "chiếc";
-  const year = parseInt(document.getElementById("productYear").value);
-  const fuel = document.getElementById("productFuel").value.trim();
-  const transmission = document
-    .getElementById("productTransmission")
-    .value.trim();
-  const image = document.getElementById("productImageUrl").value.trim();
-  const description = document
-    .getElementById("productDescription")
-    .value.trim();
-  const status = document.getElementById("productStatus").checked ? 1 : 0;
+  // Get all form elements with null checks
+  const categorySelect = document.getElementById("productCategory");
+  const nameInput = document.getElementById("productName");
+  const codeInput = document.getElementById("productCode");
+  const priceInput = document.getElementById("productPrice");
+  const costInput = document.getElementById("productCost");
+  const marginInput = document.getElementById("productMargin");
+  const stockInput = document.getElementById("productStock");
+  const unitInput = document.getElementById("productUnit");
+  const yearInput = document.getElementById("productYear");
+  const fuelInput = document.getElementById("productFuel");
+  const transmissionInput = document.getElementById("productTransmission");
+  const imageInput = document.getElementById("productImageUrl");
+  const descriptionInput = document.getElementById("productDescription");
+  const statusCheckbox = document.getElementById("productStatus");
 
-  // Validate
-  if (!name || !categoryId || !price) {
+  // Validate all required elements exist
+  if (!categorySelect || !nameInput || !priceInput) {
+    alert("Form elements not found. Please refresh the page.");
+    return false;
+  }
+
+  // Get form values
+  const editId = form.dataset.editId;
+  const brand = (categorySelect?.value || "").trim();
+  const categoryId = parseInt(brand) || 0;
+  const categoryName = categorySelect?.options[categorySelect.selectedIndex]?.text || brand;
+  const name = nameInput?.value?.trim() || "";
+  const code = codeInput?.value?.trim() || "";
+  const price = parseFloat(priceInput?.value) || 0;
+  const cost = parseFloat(costInput?.value || "0");
+  const margin = parseFloat(marginInput?.value || "10");
+  const stock = parseInt(stockInput?.value || "0");
+  const unit = unitInput?.value?.trim() || "chiếc";
+  const year = parseInt(yearInput?.value) || new Date().getFullYear();
+  const fuel = fuelInput?.value?.trim() || "";
+  const transmission = transmissionInput?.value?.trim() || "";
+  const image = imageInput?.value?.trim() || "";
+  const description = descriptionInput?.value?.trim() || "";
+  const status = statusCheckbox?.checked ? 1 : 0;
+
+  // VALIDATE after all values are captured
+  if (!name || !categoryId) {
     alert(
-      "Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Thương hiệu, Giá bán)!",
+      "Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Thương hiệu)!",
     );
     return false;
   }
 
-  if (price <= 0) {
-    alert("Giá phải lớn hơn 0!");
+  if (isNaN(price)) {
+    alert("Giá bán phải là số hợp lệ!");
+    return false;
+  }
+
+  if (isNaN(cost)) {
+    alert("Giá vốn phải là số hợp lệ!");
+    return false;
+  }
+
+  if (isNaN(stock) || stock < 0) {
+    alert("Số lượng phải là số không âm!");
     return false;
   }
 
   // Show loading
   const submitBtn = form.querySelector(".save-btn");
+  if (!submitBtn) return false;
+  
   const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
   submitBtn.textContent = "Đang lưu...";
-
-  // Get category name from dropdown selected text
-  const categorySelect = document.getElementById("productCategory");
-  const categoryId = parseInt(brand) || 0;
-  const categoryName = categorySelect?.options[categorySelect.selectedIndex]?.text || brand;
 
   // Determine which API to call based on edit mode
   const apiUrl = editId 
@@ -313,7 +339,7 @@ function addProduct(event) {
     product_code: code,
     brand: categoryName,
     price: price,
-    price_cost: cost,
+    cost_price: cost,
     profit_margin: margin,
     stock: stock,
     initial_stock: stock,
@@ -321,12 +347,12 @@ function addProduct(event) {
     year: year,
     fuel: fuel,
     transmission: transmission,
-    category_id: categoryId,
-    image: image || BASE_URL + `/FrontEnd/assets/images/logo-${categoryName.toLowerCase()}.png`,
+    category: categoryName,
+    image_url: image || BASE_URL + `/FrontEnd/assets/images/logo-${categoryName.toLowerCase()}.png`,
     description: description,
     status: status,
-    is_long_stock: document.getElementById("isLongStock").checked ? 1 : 0,
-    long_stock_reason: document.getElementById("longStockReason").value.trim() || "",
+    is_long_stock: document.getElementById("isLongStock")?.checked ? 1 : 0,
+    long_stock_reason: document.getElementById("longStockReason")?.value?.trim() || "",
   };
 
   // Add ID for edit
@@ -349,21 +375,22 @@ function addProduct(event) {
     .then((response) => {
       console.log("Response status:", response.status, response.statusText);
       
-      // Check if response is OK
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      return response.text(); // Get raw response first
+      // Always parse as text first
+      return response.text().then(text => ({
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
+        text: text
+      }));
     })
-    .then((text) => {
-      console.log("Raw response:", text);
+    .then((result) => {
+      console.log("Raw response:", result.text);
       
       try {
-        const result = JSON.parse(text);
-        console.log("Parsed result:", result);
+        const data = JSON.parse(result.text);
+        console.log("Parsed result:", data);
 
-        if (result.success) {
+        if (result.ok && data.success) {
           const message = editId ? "✓ Cập nhật sản phẩm thành công!" : "✓ Thêm sản phẩm thành công!";
           alert(message);
           closeAddProductModal();
@@ -373,16 +400,27 @@ function addProduct(event) {
             loadProducts();
           }
           
-          // Reload categories list (để hiện danh sách loại sản phẩm mới nếu có brand mới)
+          // Reload categories list
           if (typeof loadCategories === "function") {
             loadCategories();
           }
         } else {
-          alert("Lỗi: " + (result.message || "Không thể lưu sản phẩm"));
+          // Show detailed error message
+          let errorMsg = data.message || "Không thể lưu sản phẩm";
+          
+          // If there are field errors, show them
+          if (data.errors && typeof data.errors === 'object') {
+            const fieldErrors = Object.entries(data.errors)
+              .map(([field, msg]) => `${field}: ${msg}`)
+              .join('\n');
+            errorMsg = errorMsg + '\n\n' + fieldErrors;
+          }
+          
+          alert("Lỗi: " + errorMsg);
         }
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
-        alert("Lỗi server: " + text);
+        alert("Lỗi server: " + result.text);
       }
     })
     .catch((error) => {

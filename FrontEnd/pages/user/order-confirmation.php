@@ -406,7 +406,7 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
       // Kiểm tra đăng nhập
       const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
       if (!isLoggedIn) {
@@ -417,25 +417,37 @@
       
       // Lấy thông tin đơn hàng từ sessionStorage
       const orderData = JSON.parse(sessionStorage.getItem('currentOrder') || '{}');
+      const apiBase = (typeof BASE_URL !== 'undefined') ? BASE_URL + '/BackEnd/api' : '/WebBasic/BackEnd/api';
       
       if (!orderData.products || orderData.products.length === 0) {
-        // Nếu không có dữ liệu, dùng dữ liệu mẫu từ giỏ hàng
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        if (cart.length === 0) {
-          alert('Không có thông tin đơn hàng!');
-          window.location.href = 'cart.php';
+        // Load from API instead of localStorage
+        try {
+          const response = await fetch(apiBase + '/cart.php', {
+            method: 'GET',
+            credentials: 'include'
+          });
+          const data = await response.json();
+          const cart = (data.success && Array.isArray(data.data)) ? data.data : [];
+          if (cart.length === 0) {
+            alert('Không có thông tin đơn hàng!');
+            window.location.href = 'cart.php';
+            return;
+          }
+        
+          // Tạo dữ liệu đơn hàng mẫu
+          orderData.orderId = 'DH' + Date.now().toString().slice(-6);
+          orderData.orderDate = new Date().toLocaleString('vi-VN');
+          orderData.products = cart;
+          orderData.receiverName = 'Nguyễn Văn A';
+          orderData.receiverPhone = '0901234567';
+          orderData.receiverEmail = localStorage.getItem('userEmail') || 'customer@example.com';
+          orderData.receiverAddress = '123 Nguyễn Văn Linh, Phường Tân Thuận Đông, Quận 7, TP. Hồ Chí Minh';
+          orderData.paymentMethod = 'Thanh toán khi nhận hàng (COD)';
+        } catch(err) {
+          console.error('Error loading cart:', err);
+          alert('Không thể tải thông tin đơn hàng!');
           return;
         }
-        
-        // Tạo dữ liệu đơn hàng mẫu
-        orderData.orderId = 'DH' + Date.now().toString().slice(-6);
-        orderData.orderDate = new Date().toLocaleString('vi-VN');
-        orderData.products = cart;
-        orderData.receiverName = 'Nguyễn Văn A';
-        orderData.receiverPhone = '0901234567';
-        orderData.receiverEmail = localStorage.getItem('userEmail') || 'customer@example.com';
-        orderData.receiverAddress = '123 Nguyễn Văn Linh, Phường Tân Thuận Đông, Quận 7, TP. Hồ Chí Minh';
-        orderData.paymentMethod = 'Thanh toán khi nhận hàng (COD)';
       }
       
       // Hiển thị thông tin đơn hàng
@@ -494,8 +506,11 @@
       // Hiển thị tổng tiền
       document.getElementById('totalAmount').textContent = formatPrice(totalAmount);
       
-      // Xóa giỏ hàng sau khi đặt hàng thành công
-      localStorage.removeItem('cart');
+      // Clear cart via API after order confirmation
+      fetch(apiBase + '/clear_cart.php', {
+        method: 'POST',
+        credentials: 'include'
+      }).catch(err => console.log('Cart cleared'));
     });
     
     function formatPrice(price) {
