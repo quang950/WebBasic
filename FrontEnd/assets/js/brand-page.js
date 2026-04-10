@@ -7,12 +7,15 @@ function formatPrice(price) {
 
 // Add to cart from search/brand pages - calls API instead of localStorage
 function addToCartFromSearch(productId, productName, productPrice) {
-  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  // Use BASE_URL if available (from config.js)
+  const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+    ? BASE_URL + '/BackEnd/api'
+    : '/WebBasic/BackEnd/api';
   
   // If productId is text (like "Camry"), search for product by name first
   if (isNaN(productId)) {
     // Search for product by name to get the ID
-    fetch(baseUrl + '/BackEnd/api/products.php?name=' + encodeURIComponent(productName), {
+    fetch(apiBase + '/products.php?name=' + encodeURIComponent(productName), {
       method: 'GET',
       credentials: 'include'
     })
@@ -40,9 +43,12 @@ function addToCartFromSearch(productId, productName, productPrice) {
 
 // Helper function to add to cart with known product ID
 function addToCartWithId(productId, productPrice) {
-  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  // Use BASE_URL if available (from config.js)
+  const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+    ? BASE_URL + '/BackEnd/api'
+    : '/WebBasic/BackEnd/api';
   
-  fetch(baseUrl + '/BackEnd/api/add_to_cart.php', {
+  fetch(apiBase + '/add_to_cart.php', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -62,7 +68,7 @@ function addToCartWithId(productId, productPrice) {
       // Nếu chưa đăng nhập, redirect tới login page
       if (data.message && data.message.includes('đăng nhập')) {
         alert("Vui lòng đăng nhập để mua hàng!");
-        window.location.href = "../../pages/user/login.php";
+        window.location.href = BASE_URL + '/FrontEnd/pages/user/login.php';
       } else {
         alert("Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
       }
@@ -282,7 +288,7 @@ function checkLoginAndGoToCart() {
 
   if (!isUserLoggedIn && !isAdminLoggedIn) {
     alert("Vui lòng đăng nhập để xem giỏ hàng!");
-    window.location.href = "../user/login.php";
+    window.location.href = BASE_URL + '/FrontEnd/pages/user/login.php';
     return false;
   }
   window.location.href = "../user/cart.php";

@@ -306,6 +306,15 @@ async function showProductDetail(productId) {
       modal.style.display = 'none';
     };
 
+    // Thêm event listener cho button "Thêm vào giỏ"
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    addToCartBtn.onclick = function(e) {
+      e.preventDefault();
+      addToCartFromSearch(productId, title, price);
+      modal.style.display = 'none';
+      return false;
+    };
+
     window.onclick = function(event) {
       if (event.target === modal) {
         modal.style.display = 'none';
@@ -360,10 +369,12 @@ function addToCartFromSearch(productId, productName, productPrice) {
   // Ensure productId is always a number
   productId = Number(productId);
 
-  // Call API to add to cart
-  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  // Use BASE_URL if available (from config.js)
+  const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+    ? BASE_URL + '/BackEnd/api'
+    : '/WebBasic/BackEnd/api';
   
-  fetch(baseUrl + '/BackEnd/api/add_to_cart.php', {
+  fetch(apiBase + '/add_to_cart.php', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -383,7 +394,7 @@ function addToCartFromSearch(productId, productName, productPrice) {
       // Nếu chưa đăng nhập, redirect tới login page
       if (data.message && data.message.includes('đăng nhập')) {
         alert("Vui lòng đăng nhập để mua hàng!");
-        window.location.href = "login.php";
+        window.location.href = BASE_URL + '/FrontEnd/pages/user/login.php';
       } else {
         alert("Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
       }
@@ -437,7 +448,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Check user login status
 function checkUserLoginStatus() {
-  const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+  const baseUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL : '/WebBasic';
   
   // Check session from server instead of localStorage
   fetch(baseUrl + '/BackEnd/api/check_session.php', {

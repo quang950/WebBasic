@@ -650,14 +650,15 @@
                     : '/WebBasic/BackEnd/api/admin/update_order_status.php';
 
                 const response = await fetch(apiUrl, {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ order_id: orderId, status: newStatus })
+                    body: JSON.stringify({ order_id: orderId, status: newStatus }),
+                    credentials: 'include'
                 });
 
                 const result = await response.json();
 
-                if (result.success) {
+                if (result.status === 'success') {
                     alert('Cập nhật trạng thái thành công');
                     closeOrderModal();
                     await loadOrders(currentPage);

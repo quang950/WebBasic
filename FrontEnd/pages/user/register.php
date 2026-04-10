@@ -268,15 +268,6 @@
             }, 2000);
         }
 
-        function getStoredUsers() {
-            try {
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                return Array.isArray(users) ? users : [];
-            } catch (e) {
-                return [];
-            }
-        }
-
         function normalizeEmail(email) {
             return String(email || '').trim().toLowerCase();
         }

@@ -309,7 +309,8 @@
       const ordersList = document.getElementById('ordersList');
 
       fetch('../../../BackEnd/api/get_orders.php', {
-          credentials: 'include' 
+          credentials: 'include',
+          cache: 'no-store'
       })
       .then(res => res.json())
       .then(data => {

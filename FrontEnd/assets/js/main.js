@@ -156,9 +156,12 @@ function parseCurrencyToNumber(text) {
 
 // Cập nhật badge số lượng giỏ hàng
 function updateCartCount() {
-    const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+    // Use BASE_URL if available (from config.js)
+    const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+        ? BASE_URL + '/BackEnd/api'
+        : '/WebBasic/BackEnd/api';
     
-    fetch(baseUrl + '/BackEnd/api/cart.php?action=get', {
+    fetch(apiBase + '/cart.php?action=get', {
         method: 'GET',
         credentials: 'include'
     })
@@ -278,26 +281,42 @@ function addToCart(name, price, img, quantity = 1, product_id = '') {
         return false;
     }
 
-    const cart = getCartItems();
-    // Try to find by product_id first, then by name
-    const idx = product_id ? cart.findIndex(item => item.product_id === product_id) : 
-                            cart.findIndex(item => item.name === name);
-    const qty = Math.max(1, Number(quantity) || 1);
-
-    if (idx >= 0) {
-        cart[idx].quantity = (Number(cart[idx].quantity) || 0) + qty;
-    } else {
-        cart.push({
-            name,
-            price: Number(price) || 0,
-            img: img || '',
-            product_id: product_id || '',
-            quantity: qty
-        });
-    }
-
-    saveCartItems(cart);
-    showToast('Đã thêm vào giỏ hàng', 'success');
+    // Call API to add to cart instead of just localStorage
+    isAddingToCart = true;
+    
+    // Use BASE_URL if available (from config.js)
+    const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+        ? BASE_URL + '/BackEnd/api'
+        : '/WebBasic/BackEnd/api';
+    
+    fetch(apiBase + '/add_to_cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: Number(product_id) || 0,
+            quantity: Math.max(1, Number(quantity) || 1)
+        }),
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartCount();
+            showToast('Đã thêm vào giỏ hàng', 'success');
+        } else {
+            alert('Lỗi: ' + (data.message || 'Không thể thêm vào giỏ hàng'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi kết nối khi thêm vào giỏ hàng');
+    })
+    .finally(() => {
+        isAddingToCart = false;
+    });
+    
     return false;
 }
 
@@ -514,7 +533,7 @@ function goToLogin() {
     // Set flag để ngăn chặn các click tiếp theo
     isRedirectingToLogin = true;
     closeLoginRequiredModal();
-    window.location.href = _basePath + 'pages/user/login.php';
+    window.location.href = _basePath + 'FrontEnd/pages/user/login.php';
 }
 
 // Kiểm tra đăng nhập trước khi vào giỏ hàng

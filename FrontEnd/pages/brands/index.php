@@ -233,18 +233,16 @@ try {
     <script>
     // Add to cart function - calls API instead of localStorage
     function addToCartFromSearch(productId, productName, productPrice) {
-      const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-      if (!isLoggedIn) {
-        alert("Vui lòng đăng nhập để mua hàng!");
-        window.location.href = "../user/login.php";
-        return false;
-      }
-
       // Ensure productId is always a number
       productId = Number(productId);
 
+      // Use BASE_URL if available (from config.js)
+      const apiBase = (typeof BASE_URL !== 'undefined' && BASE_URL) 
+        ? BASE_URL + '/BackEnd/api'
+        : '/WebBasic/BackEnd/api';
+
       // Call API to add to cart
-      fetch(BASE_URL + '/BackEnd/api/add_to_cart.php', {
+      fetch(apiBase + '/add_to_cart.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +260,13 @@ try {
           updateCartCount();
           showToast("Đã thêm vào giỏ hàng!");
         } else {
-          alert("Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
+          // Nếu chưa đăng nhập, redirect tới login page
+          if (data.message && data.message.includes('đăng nhập')) {
+            alert("Vui lòng đăng nhập để mua hàng!");
+            window.location.href = BASE_URL + '/FrontEnd/pages/user/login.php';
+          } else {
+            alert("Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
+          }
         }
       })
       .catch(error => {

@@ -292,7 +292,7 @@ if (!isset($_SESSION['user_id'])) {
         try {
           const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
           const userId = userInfo.id;
-          const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+          const baseUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL : '/WebBasic';
           
           if (!userId) {
             console.log('No user ID, using fallback');
@@ -411,7 +411,7 @@ if (!isset($_SESSION['user_id'])) {
       async function loadAddressDetails(addressId) {
         try {
           const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-          const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+          const baseUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL : '/WebBasic';
           
           const response = await fetch(baseUrl + '/BackEnd/api/get_shipping_addresses.php?user_id=' + userInfo.id, {
             method: 'GET',
@@ -540,7 +540,7 @@ if (!isset($_SESSION['user_id'])) {
             }
             
             // Fetch cart từ database API thay vì localStorage
-            const baseUrl = localStorage.getItem('baseUrl') || '/WebBasic';
+            const baseUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL : '/WebBasic';
             
             fetch(baseUrl + '/BackEnd/api/cart.php?action=get', {
               method: 'GET',

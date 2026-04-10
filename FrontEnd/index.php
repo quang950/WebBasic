@@ -3737,19 +3737,29 @@ session_start();
           return;
         }
 
-        const users = JSON.parse(localStorage.getItem("users") || "[]");
-        if (Array.isArray(users)) {
-          const userIdx = users.findIndex((u) => {
-            if (userInfo.id && u.id) return String(u.id) === String(userInfo.id);
-            return (
-              String(u.email || "").trim().toLowerCase() ===
-              String(emailValue || "").trim().toLowerCase()
-            );
-          });
-
-          if (userIdx >= 0) {
-            users[userIdx] = {
-              ...users[userIdx],
+        // Call API to update user profile instead of storing users list in localStorage
+        fetch(BASE_URL + '/BackEnd/api/user.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            id: userInfo.id,
+            firstName,
+            lastName,
+            phone,
+            province,
+            address,
+            birthDate: document.getElementById("accountBirthDate")?.value || ''
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update localStorage userInfo with new data
+            const nextUserInfo = {
+              ...userInfo,
               firstName,
               lastName,
               first_name: firstName,
@@ -3759,43 +3769,20 @@ session_start();
               province,
               address,
             };
-          } else if (emailValue) {
-            users.push({
-              id: userInfo.id || `u_${Date.now()}`,
-              email: emailValue,
-              firstName,
-              lastName,
-              first_name: firstName,
-              last_name: lastName,
-              name: firstName + " " + lastName,
-              phone,
-              province,
-              address,
-              password: "",
-              isAdmin: Boolean(userInfo.isAdmin),
-            });
+            localStorage.setItem("userInfo", JSON.stringify(nextUserInfo));
+            localStorage.setItem("userEmail", emailValue);
+            document.getElementById("userName").textContent = nextUserInfo.name;
+            
+            closeAccountModal();
+            showToast("Đã cập nhật thông tin tài khoản");
+          } else {
+            showToast(data.message || "Cập nhật thất bại", "error");
           }
-
-          localStorage.setItem("users", JSON.stringify(users));
-        }
-
-        const nextUserInfo = {
-          ...userInfo,
-          id: userInfo.id || `u_${Date.now()}`,
-          email: emailValue,
-          firstName,
-          lastName,
-          name: firstName + " " + lastName,
-          phone,
-          province,
-          address,
-        };
-        localStorage.setItem("userInfo", JSON.stringify(nextUserInfo));
-        localStorage.setItem("userEmail", nextUserInfo.email || "");
-        document.getElementById("userName").textContent = nextUserInfo.name;
-
-        closeAccountModal();
-        showToast("Đã cập nhật thông tin tài khoản");
+        })
+        .catch(error => {
+          console.error('Update profile error:', error);
+          showToast("Lỗi cập nhật thông tin", "error");
+        });
       }
 
       // Kiểm tra trạng thái đăng nhập và hiển thị thông tin user/admin
@@ -3919,6 +3906,14 @@ session_start();
               brandContainer.classList.add("show-page-2");
             }
           });
+        });
+
+        // Listen for storage changes from other tabs (for adminLoggedIn flag)
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'adminLoggedIn' || e.key === 'userLoggedIn') {
+            // User or admin status changed in another tab, reload page to refresh UI
+            location.reload();
+          }
         });
       });
 

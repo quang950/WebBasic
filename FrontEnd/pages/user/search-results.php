@@ -263,7 +263,7 @@
             <h2 id="modalTitle"></h2>
             <p id="modalPrice"></p>
             <p id="modalDesc"></p>
-            <button id="addToCartBtn" class="btn" onclick="return false;" style="cursor: pointer; opacity: 1;">Thêm vào giỏ</button>
+            <button id="addToCartBtn" class="btn" style="cursor: pointer; opacity: 1;">Thêm vào giỏ</button>
         </div>
     </div>
 
