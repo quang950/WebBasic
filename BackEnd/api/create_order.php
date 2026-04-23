@@ -163,14 +163,17 @@ try {
         $shipping_province = $addressParts[3] ?? '';
         
         $stmt = $conn->prepare("
-            INSERT INTO orders (user_id, shipping_name, shipping_address, shipping_phone, shipping_ward, shipping_district, shipping_province, status, payment_method, total_price)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (user_id, shipping_address, shipping_phone, shipping_ward, shipping_district, shipping_province, status, payment_method, total_price)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
+        if (!$stmt) {
+            throw new Exception("Lỗi chuẩn bị truy vấn SQL: " . $conn->error);
+        }
+        
         $stmt->bind_param(
-            "issssssssd",
+            "isssssssd",
             $user_id,
-            $receiver_name,
             $shipping_address,
             $shipping_phone,
             $shipping_ward,
